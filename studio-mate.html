@@ -115,6 +115,46 @@
     #calendar.calendar-compact .fc-daygrid-day-number { font-size: 13px; }
     #calendar.calendar-compact .fc-daygrid-day.calendar-day-selected { background-color: #F4F6F3; }
 
+    /* ============ 電腦版排版（畫面寬度 > 700，body 會加上 desktop-layout）============ */
+    #desktop-sidebar { display: none; }
+    .desktop-only { display: none; }
+    body.desktop-layout .desktop-only { display: block; }
+    body.desktop-layout .mobile-only { display: none !important; }
+    body.desktop-layout { padding: 0; }
+    body.desktop-layout #desktop-sidebar { display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; width: 220px; background: #fff; border-right: 1px solid #ECE8E0; padding: 22px 12px 16px 12px; box-sizing: border-box; z-index: 50; text-align: left; overflow-y: auto; }
+    .sb-brand { font-size: 18px; font-weight: 600; letter-spacing: 1px; padding: 0 12px 6px 12px; color: #4A4A4A; word-break: break-all; }
+    .sb-sub { font-size: 12px; color: #aaa; padding: 0 12px 18px 12px; margin: 0; }
+    .sb-item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 12px; margin: 0 0 2px 0; border: none; background: none; border-radius: 8px; font-size: 15px; color: #555; cursor: pointer; text-align: left; font-family: inherit; }
+    .sb-item:hover { background: #F4F6F3; }
+    .sb-item.active { background: #E7ECE5; color: #3F5140; font-weight: 600; }
+    .sb-bottom { margin-top: auto; border-top: 1px solid #ECE8E0; padding-top: 10px; }
+    .sb-bottom .sb-item { font-size: 14px; padding: 8px 12px; }
+    .sb-account { font-size: 11px; color: #999; padding: 8px 12px 2px 12px; margin: 0; word-break: break-all; line-height: 1.4; }
+    body.desktop-layout #app-root { margin-left: 220px; padding: 26px 32px 40px 32px; }
+    /* 內容最寬 1000px，大螢幕兩側留白，不會把按鈕拉滿整個螢幕 */
+    body.desktop-layout #app-root > div[id$="-page"] { max-width: 1000px; margin-left: auto; margin-right: auto; }
+    /* 卡片的寬度把內距也算進去，跟同一頁其他 90% 寬的東西左右對齊 */
+    body.desktop-layout .card { box-sizing: border-box; }
+    /* 月曆頁比其他頁寬一點，月曆跟右邊行程才放得下 */
+    body.desktop-layout #app-root > #calendar-page { max-width: 1200px; }
+    body.desktop-layout #calendar-layout { width: 90%; margin: 0 auto; }
+    body.desktop-layout #announcement-bar { max-width: 1000px !important; width: auto !important; margin: 0 auto 16px auto !important; }
+    /* 左側選單已經可以切換所有頁面，各頁的「返回首頁」按鈕在電腦版就不需要了 */
+    body.desktop-layout #app-root [onclick="goHome()"] { display: none !important; }
+    /* 首頁：今日課程（左）＋待辦事項（右）兩欄 */
+    body.desktop-layout .dash-columns { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 16px; width: 90%; margin: 0 auto; align-items: start; }
+    body.desktop-layout .dash-columns > .card { width: auto !important; margin: 0 !important; }
+    .dash-greeting { font-size: 15px; color: #888; margin: 4px 0 18px 0; }
+    /* 月曆：左邊月曆、右邊當天行程 */
+    body.desktop-layout #calendar-layout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 16px; align-items: start; }
+    body.desktop-layout #calendar-day-panel { margin-top: 15px !important; position: sticky; top: 16px; max-height: calc(100vh - 40px); overflow-y: auto; }
+    #calendar .fc-daygrid-day.calendar-day-selected { background-color: #F4F6F3; }
+    /* 學生名單：卡片排成好幾欄 */
+    body.desktop-layout #manage-list, body.desktop-layout #manage-withdrawn-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; width: 90%; margin: 14px auto 0 auto; align-items: start; }
+    body.desktop-layout #manage-withdrawn-list[style*="none"] { display: none !important; }
+    body.desktop-layout #manage-list > .card, body.desktop-layout #manage-withdrawn-list > .card { width: auto; margin: 0; }
+    body.desktop-layout #manage-list > p, body.desktop-layout #manage-withdrawn-list > p { grid-column: 1 / -1; }
+
     #print-report { display: none; }
     @media print {
       @page { size: A4; margin: 14mm 12mm; }
@@ -200,14 +240,33 @@
     </div>
   </div>
 
+  <div id="app-root">
+  <!-- 電腦版左側選單（手機版不顯示，手機用下方的分頁列） -->
+  <nav id="desktop-sidebar">
+    <div class="sb-brand studio-name-label">Studio Mate</div>
+    <p class="sb-sub">工作室管理系統</p>
+    <button class="sb-item" data-page="dashboard-page" onclick="showPage('dashboard-page')">🏠 首頁</button>
+    <button class="sb-item" data-page="calendar-page" onclick="showPage('calendar-page')">📅 月曆與點名</button>
+    <button class="sb-item" data-page="manage-page" onclick="showPage('manage-page')">👥 學生名單</button>
+    <button class="sb-item" data-page="salary-page" onclick="showPage('salary-page')">💰 每月結算</button>
+    <button class="sb-item" data-page="todo-page" onclick="showPage('todo-page')">📝 待辦事項</button>
+    <button class="sb-item" data-page="unmarked-page" onclick="openUnmarkedPage()">🔍 未點名檢查</button>
+    <button class="sb-item" data-page="inventory-page" onclick="openInventoryPage()">📦 進銷存管理</button>
+    <button class="sb-item" data-page="expense-page" onclick="openExpensePage()">💸 支出紀錄</button>
+    <div class="sb-bottom">
+      <button class="sb-item" data-page="more-page" onclick="showPage('more-page')">⚙️ 設定與備份</button>
+      <button class="sb-item" onclick="openFeedbackModal()">💬 意見回饋</button>
+      <button class="sb-item admin-link-btn" style="display:none;" onclick="location.href='admin.html'">🛠️ 管理後台</button>
+      <p class="sb-account account-label"></p>
+      <button class="sb-item logout-btn" style="display:none;" onclick="doLogout()">↪ 登出</button>
+    </div>
+  </nav>
   <!-- 管理員公告：登入後如果有公告就顯示在最上方，按 ✕ 收起來之後同一則不會再出現 -->
   <div id="announcement-bar" style="display:none; margin:10px auto 0 auto; width:90%; max-width:600px; background:#FFF8E6; border:1px solid #E8C979; border-radius:8px; padding:10px 12px; font-size:13px; color:#6B5A2B; text-align:left; position:relative; box-sizing:border-box;">
     <div style="font-weight:bold; margin-bottom:4px;">📢 公告</div>
     <div id="announcement-text" style="white-space:pre-wrap; line-height:1.5; padding-right:18px;"></div>
     <span onclick="dismissAnnouncement()" style="position:absolute; top:6px; right:10px; cursor:pointer; color:#999; font-size:16px;">✕</span>
   </div>
-
-  <div id="app-root">
   <div id="main-menu" style="display: none;">
     <h1 class="studio-name-label">Studio Mate</h1>
     <p>工作室管理系統</p>
@@ -236,8 +295,10 @@
   </div>
 
   <div id="dashboard-page" style="display: none;">
-    <h1 style="margin-bottom:0;" class="studio-name-label">Studio Mate</h1>
-    <p style="margin-top:4px;">工作室管理系統</p>
+    <h1 style="margin-bottom:0;" class="studio-name-label mobile-only">Studio Mate</h1>
+    <p style="margin-top:4px;" class="mobile-only">工作室管理系統</p>
+    <h2 class="desktop-only" style="font-weight:300; margin:0;">🏠 首頁</h2>
+    <p class="desktop-only dash-greeting" id="dashboard-greeting"></p>
 
     <div style="width:90%; margin:0 auto 12px auto; display:flex; gap:10px;">
       <div class="card dashboard-count-card" style="flex:1; margin:0; cursor:pointer;" onclick="goToManageFiltered('owed')">
@@ -256,6 +317,7 @@
     </div>
     <div id="dashboard-unmarked-alert" class="card" style="display:none; margin:0 auto 12px auto; cursor:pointer; background-color:#FFF4EE; border:1px solid #E08E79; font-size:13px; color:#B5651D; font-weight:bold;" onclick="openUnmarkedPage()"></div>
 
+    <div class="dash-columns">
     <div class="card" style="width:90%; margin:0 auto 12px auto; text-align:left;">
       <h3 style="margin-top:0; font-size:15px;">📅 今日課程</h3>
       <div id="dashboard-today-content"></div>
@@ -266,18 +328,20 @@
       <div id="dashboard-todo-content"></div>
       <button class="small-btn" style="width:100%; margin-top:8px; padding:8px; background-color:#E2E8DF; color:#333;" onclick="showPage('todo-page')">查看全部待辦事項</button>
     </div>
+    </div>
   </div>
 
   <div id="more-page" style="display: none;">
-    <h2 style="font-weight: 300;">⚙️ 更多</h2>
+    <h2 style="font-weight: 300;" class="mobile-only">⚙️ 更多</h2>
+    <h2 style="font-weight: 300;" class="desktop-only">⚙️ 設定與備份</h2>
     <button class="small-btn" style="width:90%; margin:0 auto 15px auto; display:block; padding:10px; background-color:#E2E8DF; color:#333;" onclick="goHome()">‹ 返回首頁</button>
-    <button class="small-btn" style="width:90%; margin:0 auto 15px auto; display:block; padding:10px; background-color:#E08E79; color:white;" onclick="openInventoryPage()">📦 進銷存管理</button>
-    <button class="small-btn" style="width:90%; margin:0 auto 15px auto; display:block; padding:10px; background-color:#E08E79; color:white;" onclick="openExpensePage()">💸 支出紀錄</button>
+    <button class="small-btn mobile-only" style="width:90%; margin:0 auto 15px auto; display:block; padding:10px; background-color:#E08E79; color:white;" onclick="openInventoryPage()">📦 進銷存管理</button>
+    <button class="small-btn mobile-only" style="width:90%; margin:0 auto 15px auto; display:block; padding:10px; background-color:#E08E79; color:white;" onclick="openExpensePage()">💸 支出紀錄</button>
     <button class="small-btn" style="width:90%; margin:0 auto 15px auto; display:block; padding:10px; background-color:#8C9C8A; color:white;" onclick="openSettingsModal()">⚙️ 工作室設定（名稱、上課地點）</button>
-    <button class="small-btn" style="width:90%; margin:0 auto 15px auto; display:block; padding:10px; background-color:#7C93B3; color:white;" onclick="openFeedbackModal()">💬 意見回饋</button>
-    <button class="small-btn admin-link-btn" style="display:none; width:90%; margin:0 auto 15px auto; padding:10px; background-color:#4A4A4A; color:white;" onclick="location.href='admin.html'">🛠️ 管理後台</button>
-    <p class="account-label" style="font-size:12px; color:#888; margin:0 0 6px 0;"></p>
-    <button class="button btn-secondary logout-btn" style="display:none; width:90%; margin:0 auto 15px auto;" onclick="doLogout()">登出</button>
+    <button class="small-btn mobile-only" style="width:90%; margin:0 auto 15px auto; display:block; padding:10px; background-color:#7C93B3; color:white;" onclick="openFeedbackModal()">💬 意見回饋</button>
+    <button class="small-btn mobile-only admin-link-btn" style="display:none; width:90%; margin:0 auto 15px auto; padding:10px; background-color:#4A4A4A; color:white;" onclick="location.href='admin.html'">🛠️ 管理後台</button>
+    <p class="account-label mobile-only" style="font-size:12px; color:#888; margin:0 0 6px 0;"></p>
+    <button class="button btn-secondary logout-btn mobile-only" style="display:none; width:90%; margin:0 auto 15px auto;" onclick="doLogout()">登出</button>
 
     <div style="display:flex; gap:8px; width:90%; margin:0 auto;">
       <button class="small-btn" style="flex:1; padding:8px; background-color:#E2E8DF; color:#333;" onclick="exportBackup()">📤 匯出備份</button>
@@ -342,10 +406,12 @@
       <button class="small-btn" style="flex:1; padding:10px; background-color:#E08E79; color:white;" onclick="openNewMakeupModal()">🔄 新增補課</button>
       <button class="small-btn" style="flex:1; padding:10px; background-color:#E2E8DF; color:#333;" onclick="goHome()">返回首頁</button>
     </div>
+    <div id="calendar-layout">
     <div id="calendar"></div>
     <div id="calendar-day-panel" style="display:none; margin-top:12px; background-color:white; border-radius:8px; padding:12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
       <h3 id="calendar-day-panel-title" style="font-size:15px; text-align:left; margin:0 0 10px 0; color:#4A4A4A;"></h3>
       <div id="calendar-day-panel-list"></div>
+    </div>
     </div>
   </div>
 
@@ -2141,10 +2207,21 @@
       }
     }
 
+    // 電腦版左側選單：亮起目前所在的頁面（學生詳細頁算在「學生名單」底下）
+    function updateSidebarHighlight(pageId) {
+      let target = (pageId === 'student-detail-page') ? 'manage-page' : (pageId === 'main-menu' ? 'dashboard-page' : pageId);
+      document.querySelectorAll('#desktop-sidebar .sb-item[data-page]').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.page === target);
+      });
+    }
+
     function showPage(pageId) {
+      // 電腦版改用首頁總覽，不再顯示舊的按鈕主選單
+      if (pageId === 'main-menu' && document.body.classList.contains('desktop-layout')) pageId = 'dashboard-page';
       const pages = ['main-menu', 'dashboard-page', 'calendar-page', 'manage-page', 'student-detail-page', 'salary-page', 'inventory-page', 'expense-page', 'unmarked-page', 'todo-page', 'more-page'];
       pages.forEach(p => document.getElementById(p).style.display = 'none');
       updateBottomTabHighlight(pageId);
+      updateSidebarHighlight(pageId);
       
       if(pageId === 'dashboard-page') { renderDashboard(); }
       if(pageId === 'expense-page') {
@@ -2187,6 +2264,8 @@
         let panel = document.getElementById('calendar-day-panel');
         if (panel) panel.style.display = 'none';
         renderCalendar();
+        // 電腦版右邊一開始就先顯示今天的行程
+        if (!isMobileCalendarMode) selectCalendarDay(formatDate(new Date()));
       }
     }
 
@@ -2330,8 +2409,7 @@
             successCallback(events);
           },
           dateClick: function(info) {
-            if (!isMobileCalendarMode) return; // 桌面版維持原本互動方式，點空白處不會有動作
-            selectCalendarDay(info.dateStr);
+            selectCalendarDay(info.dateStr); // 手機版在月曆下方、電腦版在右邊列出這一天的課
           },
           moreLinkClick: function(info) {
             selectCalendarDay(formatDate(info.date));
@@ -2343,6 +2421,7 @@
               selectCalendarDay(info.event.extendedProps.dateStr);
               return;
             }
+            selectCalendarDay(info.event.extendedProps.dateStr); // 電腦版：右邊同時換成這一天，點名完回來就看得到最新狀態
             let timeStr = info.event.start.toLocaleTimeString('zh-TW', {hour: '2-digit', minute:'2-digit', hour12: false});
             openModalForCalendarEvent(info.event.extendedProps, info.event.title, info.event.extendedProps.dateStr, timeStr, info.event.allDay);
           }
@@ -2394,7 +2473,7 @@
         }, '這天沒有要上的課。');
       }
       document.getElementById('calendar-day-panel').style.display = 'block';
-      document.getElementById('calendar-day-panel').scrollIntoView({ block: 'nearest' }); // 點日期後直接把下方課表捲進畫面，不用自己再滑下去找
+      if (isMobileCalendarMode) document.getElementById('calendar-day-panel').scrollIntoView({ block: 'nearest' }); // 手機版：點日期後直接把下方課表捲進畫面（電腦版行程就在右邊，不用捲）
     }
 
     // 「原本時段其實沒上課」的幾種狀態：延期、轉補課、已調課（原本那堂）、取消。手機月曆只畫細條、清單收到下面、電腦版排到最後
@@ -2693,7 +2772,7 @@
 
     // 手機版：如果下方目前正展開著某一天的清單，資料異動後順便刷新，不用手動重新點一次日期就能看到最新狀態
     function refreshDayPanelIfNeeded() {
-      if (isMobileCalendarMode && selectedCalendarDate) selectCalendarDay(selectedCalendarDate);
+      if (selectedCalendarDate && document.getElementById('calendar-day-panel').style.display === 'block') selectCalendarDay(selectedCalendarDate);
       // 從首頁「今日課程」點進來點名／調課的話，首頁清單也要跟著更新，不然會一直顯示舊狀態
       if (document.getElementById('dashboard-page').style.display === 'block') renderDashboard();
       // 從未點名檢查清單點進去處理完，清單要馬上更新，處理好的那堂就會消失
@@ -4606,6 +4685,13 @@
     // ============ 未點名檢查結束 ============
 
     function renderDashboard() {
+      // 電腦版首頁標題下面的日期與今天堂數（手機版不顯示）
+      let gEl = document.getElementById('dashboard-greeting');
+      if (gEl) {
+        let now = new Date();
+        let todayCount = getEventsForDate(formatDate(now)).filter(it => !isInactiveEventItem(it)).length;
+        gEl.innerText = (now.getMonth() + 1) + ' 月 ' + now.getDate() + ' 日（' + getDayName(now.getDay().toString()) + '）・今天有 ' + todayCount + ' 堂課';
+      }
       renderDashboardCounts();
       renderDashboardUnmarked();
       renderDashboardToday();
@@ -6253,7 +6339,7 @@
 
     // ============ 版本更新檢查 ============
     // 每次修改程式、上傳新檔案時，要把這個版本號改掉（任何不一樣的字都可以），手機才會知道有新版本。
-    const APP_VERSION = 'sm-2026.10.15-1';
+    const APP_VERSION = 'sm-2026.10.15-2';
 
     // 加入主畫面的 App 常常直接拿手機裡存的舊檔案，而且沒有重新整理按鈕。
     // 做法：去網路上抓一份「現在的這個網頁」（網址加上時間，強迫不能用舊的），比對裡面寫的版本號，不一樣就提示更新。
@@ -6295,10 +6381,10 @@
     showLoginScreen('loading');
     if (window.innerWidth <= 700) {
       document.body.classList.add('mobile-tabs');
-      showPage('dashboard-page');
     } else {
-      showPage('main-menu');
+      document.body.classList.add('desktop-layout');
     }
+    showPage('dashboard-page');
   </script>
 
   <!-- ============ Firebase 雲端同步設定 ============ -->
