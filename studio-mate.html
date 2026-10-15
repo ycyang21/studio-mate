@@ -191,6 +191,11 @@
     .todo-quad { border-top: 4px solid #ccc; border-radius: 8px; padding: 10px 12px; text-align: left; box-shadow: 0 2px 5px rgba(0,0,0,0.04); }
     .todo-quad-head { font-weight: bold; font-size: 14px; margin-bottom: 4px; }
     .todo-quad .pay-history-row { border-bottom-color: rgba(0,0,0,0.06); }
+    .todo-grip { flex-shrink: 0; cursor: grab; color: #aaa; font-size: 15px; padding: 0 8px 0 2px; margin-top: 1px; touch-action: none; user-select: none; -webkit-user-select: none; letter-spacing: -2px; }
+    .todo-ghost { position: fixed; z-index: 100001; pointer-events: none; background: white; border-radius: 6px; box-shadow: 0 6px 18px rgba(0,0,0,0.18); opacity: 0.95; padding-left: 6px !important; padding-right: 6px !important; }
+    .todo-placeholder { border: 2px dashed #C9C2B0; border-radius: 6px; margin: 4px 0; background: rgba(255,255,255,0.6); }
+    body.todo-dragging { user-select: none; -webkit-user-select: none; }
+    .todo-quad.todo-drop-target { outline: 2px solid rgba(140,156,138,0.5); }
 
     #print-report { display: none; }
     @media print {
@@ -1379,6 +1384,7 @@
         <button class="small-btn todo-view-btn" data-view="quad" style="margin:0; padding:6px 12px;" onclick="setTodoView('quad')">🔲 四象限</button>
         <button class="small-btn todo-view-btn" data-view="list" style="margin:0; padding:6px 12px;" onclick="setTodoView('list')">☰ 清單</button>
       </div>
+      <p id="todo-drag-hint" style="font-size:12px; color:#999; margin:0 0 8px 0;">💡 按住待辦左邊的 ⋮⋮ 拖曳，可以調整順序，或拖到別的象限。</p>
       <div id="todo-category-filter" style="display:flex; gap:6px; flex-wrap:wrap;"></div>
     </div>
     <div id="todo-pending-list"></div>
@@ -5273,6 +5279,7 @@
 
       if (!checkDuplicateNameWarning(name, instrument, null)) return;
       if (!checkScheduleConflictWarning(freq, dayIndex, timeVal, anchorDate, duration, null)) return;
+      if (!confirmRecurringRentalClash(freq, dayIndex, timeVal, duration, anchorDate, startDate, location, null)) return; // 固定時段撞到已經租出去的琴房，先提醒
 
       let newId = generateId();
       students.push({ id: newId, name: name, instrument: instrument, freq: freq, startDate: startDate, duration: duration, singleLessonPay: singleLessonPay, location: location, locationAbbr: locationAbbr, dayIndex: dayIndex, timeVal: timeVal, fee: fee, phone: phone, anchorDate: anchorDate, attendedDates: [], canceledDates: [], makeupConvertedDates: [] });
@@ -5536,6 +5543,7 @@
 
       if (!checkDuplicateNameWarning(oldS.name, instrument, oldS.id)) return;
       if (!checkScheduleConflictWarning(freq, dayIndex, timeVal, anchorDate, duration, oldS.id)) return;
+      if (!confirmRecurringRentalClash(freq, dayIndex, timeVal, duration, anchorDate, effectiveDate, location, null)) return; // 新方案的固定時段撞到已經租出去的琴房，先提醒
 
       if (!confirm('確定要幫「' + oldS.name + '」異動課程方案嗎？' + effectiveDate + ' 開始會套用新設定，' + effectiveDate + ' 以前的紀錄完全不會變動。')) return;
 
@@ -5672,8 +5680,9 @@
         let tagRow = `<div style="margin-bottom:3px;">${priorityTag}${studentTag}${dueTag}</div>`;
         let textStyle = t.done ? 'text-decoration:line-through; color:#aaa;' : '';
         let restoreBtn = t.done ? `<button class="small-btn" style="padding:2px 8px; font-size:11px; margin-left:8px; background-color:#7C93B3; color:white; flex-shrink:0;" onclick="toggleTodoDone('${t.id}')">↩️ 恢復未完成</button>` : '';
-        return `<div class="pay-history-row" style="align-items:flex-start; padding:8px 0;">
-          <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTodoDone('${t.id}')" style="margin-top:3px; flex-shrink:0; width:18px; height:18px;">
+        let grip = opts.draggable && !t.done ? `<span class="todo-grip" title="按住拖曳" onpointerdown="startTodoDrag(event, '${t.id}')">⋮⋮</span>` : '';
+        return `<div class="pay-history-row todo-row" data-todo-id="${t.id}" style="align-items:flex-start; padding:8px 0;">
+          ${grip}<input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTodoDone('${t.id}')" style="margin-top:3px; flex-shrink:0; width:18px; height:18px;">
           <span style="flex:1; margin-left:8px; text-align:left;">${tagRow}<span style="${textStyle}">${t.text}</span></span>
           ${restoreBtn}
           <button class="small-btn" style="padding:2px 8px; font-size:11px; margin-left:8px; background-color:#E2E8DF; color:#333; flex-shrink:0;" onclick="openEditTodoModal('${t.id}')">編輯</button>
@@ -5742,11 +5751,85 @@
     function setTodoView(v) { todoView = v; try { localStorage.setItem('sm_todo_view', v); } catch (e) {} renderTodoPage(); }
     function setTodoCategoryFilter(c) { todoCategoryFilter = (todoCategoryFilter === c) ? null : c; renderTodoPage(); }
 
+    // ---- 拖曳待辦：按住左邊的 ⋮⋮ 拖到同一格的其他位置，或拖到別的象限 ----
+    // 用 pointer 事件自己做（手機、電腦都能用）；只有抓 ⋮⋮ 才會拖，不影響一般的上下捲動
+    let todoDrag = null;
+    function startTodoDrag(e, id) {
+      if (e.button !== undefined && e.button !== 0) return;
+      e.preventDefault();
+      let row = e.target.closest('.todo-row');
+      if (!row) return;
+      let rect = row.getBoundingClientRect();
+      let ghost = row.cloneNode(true);
+      ghost.classList.add('todo-ghost');
+      Object.assign(ghost.style, { left: rect.left + 'px', top: rect.top + 'px', width: rect.width + 'px' });
+      document.body.appendChild(ghost);
+      let ph = document.createElement('div');
+      ph.className = 'todo-placeholder';
+      ph.style.height = rect.height + 'px';
+      row.parentNode.insertBefore(ph, row);
+      row.style.display = 'none';
+      document.body.classList.add('todo-dragging');
+      todoDrag = { id, row, ghost, ph, dx: e.clientX - rect.left, dy: e.clientY - rect.top };
+      document.addEventListener('pointermove', onTodoDragMove, { passive: false });
+      document.addEventListener('pointerup', endTodoDrag);
+      document.addEventListener('pointercancel', endTodoDrag);
+    }
+    function onTodoDragMove(e) {
+      if (!todoDrag) return;
+      e.preventDefault();
+      todoDrag.ghost.style.left = (e.clientX - todoDrag.dx) + 'px';
+      todoDrag.ghost.style.top = (e.clientY - todoDrag.dy) + 'px';
+      if (e.clientY < 70) window.scrollBy(0, -14); else if (e.clientY > window.innerHeight - 90) window.scrollBy(0, 14); // 拖到畫面邊緣自動捲動
+      let el = document.elementFromPoint(e.clientX, e.clientY);
+      let quad = el && el.closest('.todo-quad');
+      if (!quad) return;
+      let list = quad.querySelector('.todo-quad-list');
+      let rows = Array.from(list.querySelectorAll('.todo-row')).filter(r => r !== todoDrag.row);
+      let before = rows.find(r => { let b = r.getBoundingClientRect(); return e.clientY < b.top + b.height / 2; });
+      if (before) list.insertBefore(todoDrag.ph, before); else list.appendChild(todoDrag.ph);
+      document.querySelectorAll('.todo-quad-empty').forEach(p => { p.style.display = p.parentNode === list ? 'none' : ''; });
+      document.querySelectorAll('.todo-quad').forEach(q => q.classList.toggle('todo-drop-target', q === quad));
+    }
+    function endTodoDrag() {
+      if (!todoDrag) return;
+      document.removeEventListener('pointermove', onTodoDragMove);
+      document.removeEventListener('pointerup', endTodoDrag);
+      document.removeEventListener('pointercancel', endTodoDrag);
+      document.body.classList.remove('todo-dragging');
+      let { id, ghost, ph } = todoDrag;
+      ghost.remove();
+      let quadEl = ph.closest('.todo-quad');
+      // 找出放下的位置前後是哪一筆（只看畫面上看得到的），換算回完整清單裡的位置
+      let sib = (node, dir) => { let n = node[dir]; while (n && !(n.classList && n.classList.contains('todo-row') && n.style.display !== 'none')) n = n[dir]; return n; };
+      let next = sib(ph, 'nextElementSibling'), prev = sib(ph, 'previousElementSibling');
+      todoDrag = null;
+      if (quadEl) applyTodoMove(id, quadEl.dataset.quad, prev ? prev.dataset.todoId : null, next ? next.dataset.todoId : null);
+      renderTodoPage();
+    }
+    function applyTodoMove(id, quad, prevId, nextId) {
+      let t = todos.find(x => x.id === id);
+      if (!t || !TODO_QUADRANTS[quad]) return;
+      let full = todos.filter(x => !x.done && x.id !== id && getTodoQuadrant(x) === quad).sort(compareTodos);
+      let idx = nextId ? full.findIndex(x => x.id === nextId) : (prevId ? full.findIndex(x => x.id === prevId) + 1 : full.length);
+      if (idx < 0) idx = full.length;
+      t.quadrant = quad;
+      delete t.priority;
+      full.splice(idx, 0, t);
+      full.forEach((x, i) => { x.order = i; }); // 這一格全部重新編號，之後就照這個順序
+      saveTodosToMemory();
+      if (document.getElementById('dashboard-page').style.display === 'block') renderDashboardTodos();
+    }
+
     // 待辦排序：先比輕重緩急（四象限順序），同一格裡面再照日期排（沒設日期的排最後）
     function compareTodos(a, b) {
       let pa = Number(getTodoQuadrant(a).slice(1));
       let pb = Number(getTodoQuadrant(b).slice(1));
       if (pa !== pb) return pa - pb;
+      // 同一格裡：自己拖曳排過的照拖曳的順序；還沒排過的（例如剛新增的）排在後面，照日期
+      let oa = typeof a.order === 'number', ob = typeof b.order === 'number';
+      if (oa && ob) return a.order - b.order;
+      if (oa !== ob) return oa ? -1 : 1;
       return (a.dueDate || '9999-99-99').localeCompare(b.dueDate || '9999-99-99');
     }
 
@@ -5764,6 +5847,7 @@
       let uncategorized = pendingAll.filter(t => !t.category || !cats.includes(t.category)).length;
       if (uncategorized > 0) chips += chip('', '未分類', uncategorized);
       document.getElementById('todo-category-filter').innerHTML = chips;
+      document.getElementById('todo-drag-hint').style.display = todoView === 'quad' ? 'block' : 'none';
       document.querySelectorAll('.todo-view-btn').forEach(b => {
         let on = b.dataset.view === todoView;
         b.style.backgroundColor = on ? '#8C9C8A' : '#E2E8DF'; b.style.color = on ? 'white' : '#333';
@@ -5775,9 +5859,9 @@
         box.innerHTML = '<div class="todo-quad-grid">' + Object.keys(TODO_QUADRANTS).map(q => {
           let meta = TODO_QUADRANTS[q];
           let list = pending.filter(t => getTodoQuadrant(t) === q);
-          return '<div class="todo-quad" style="border-top-color:' + meta.color + '; background:' + meta.bg + ';">' +
+          return '<div class="todo-quad" data-quad="' + q + '" style="border-top-color:' + meta.color + '; background:' + meta.bg + ';">' +
             '<div class="todo-quad-head" style="color:' + meta.color + ';">' + meta.label + ' <span style="font-weight:normal; color:#999;">' + list.length + '</span></div>' +
-            (list.length === 0 ? '<p style="color:#bbb; font-size:12px; margin:6px 0;">沒有</p>' : renderTodoItems(list, { hideQuadrant: true })) + '</div>';
+            '<div class="todo-quad-list">' + (list.length === 0 ? '<p class="todo-quad-empty" style="color:#bbb; font-size:12px; margin:6px 0;">沒有（可以把待辦拖到這裡）</p>' : renderTodoItems(list, { hideQuadrant: true, draggable: true })) + '</div></div>';
         }).join('') + '</div>';
       } else {
         box.innerHTML = '<div style="width:90%; margin:0 auto;">' + renderTodoItems(pending) + '</div>';
@@ -5978,7 +6062,9 @@
       t.studentId = stu ? stu.id : null;
       t.studentName = stu ? stu.name : null;
       t.dueDate = document.getElementById('edit-todo-due').value;
-      t.quadrant = document.querySelector('input[name="edit-todo-priority"]:checked').value;
+      let newQuadrant = document.querySelector('input[name="edit-todo-priority"]:checked').value;
+      if (newQuadrant !== getTodoQuadrant(t)) delete t.order; // 換到別的象限，排到那一格的後面
+      t.quadrant = newQuadrant;
       delete t.priority;
       t.category = document.getElementById('edit-todo-category').value;
 
@@ -6411,6 +6497,7 @@
       let editId = students[editingIndex].id;
       if (!checkDuplicateNameWarning(name, instrument, editId)) return;
       if (!checkScheduleConflictWarning(freq, dayIndex, timeVal, anchorDate, duration, editId)) return;
+      if (!confirmRecurringRentalClash(freq, dayIndex, timeVal, duration, anchorDate, startDate, location, editId)) return; // 改過的固定時段撞到已經租出去的琴房，先提醒
 
       let s = students[editingIndex];
       s.name = name; s.instrument = instrument; s.freq = freq; s.startDate = startDate; s.duration = duration; s.singleLessonPay = singleLessonPay; s.location = location; s.locationAbbr = locationAbbr; s.dayIndex = dayIndex; s.timeVal = timeVal; s.fee = fee; s.phone = phone; s.anchorDate = anchorDate;
@@ -6461,6 +6548,7 @@
       
       if (!checkDuplicateNameWarning(name, instrument, null)) return;
       if (!checkScheduleConflictWarning(freq, dayIndex, timeVal, anchorDate, duration, null)) return;
+      if (!confirmRecurringRentalClash(freq, dayIndex, timeVal, duration, anchorDate, startDate, location, null)) return; // 固定時段撞到已經租出去的琴房，先提醒
 
       students.push({ id: generateId(), name: name, instrument: instrument, freq: freq, startDate: startDate, duration: duration, singleLessonPay: singleLessonPay, location: location, locationAbbr: locationAbbr, dayIndex: dayIndex, timeVal: timeVal, fee: fee, phone: phone, anchorDate: anchorDate, attendedDates: [], canceledDates: [], makeupConvertedDates: [] });
       saveToMemory(); 
@@ -6750,6 +6838,31 @@
       box.innerHTML = locs.length === 0
         ? '<span style="font-size:13px; color:#B08A8A;">還沒有設定可出租的地點，請先到「工作室設定」勾選「可出租」。</span>'
         : locs.map((name, i) => '<label><input type="radio" name="rental-location" value="' + escHTML(name) + '"' + (i === 0 ? ' checked' : '') + '> ' + escHTML(name) + '</label>').join('');
+    }
+
+    // 固定上課的學生（每週／隔週）：從開始上課日（或今天，比較晚的那天）往後，找出同一間工作室、時間重疊、已經租出去的日子
+    function findRecurringRentalClashes(freq, dayIndex, timeVal, duration, anchorDate, startDate, location, studentId) {
+      if (freq === 'appointment' || !location || !timeVal || dayIndex === '' || dayIndex == null) return [];
+      let from = formatDate(new Date());
+      if (startDate && startDate > from) from = startDate;
+      let st = studentId ? students.find(x => x.id === studentId) : null;
+      let skip = st ? [].concat(st.canceledDates || [], st.makeupConvertedDates || [], st.rescheduledDates || []) : [];
+      return rentalData.rentals.filter(r => {
+        if (r.location !== location || !r.date || r.date < from) return false;
+        if (new Date(r.date + 'T00:00:00').getDay().toString() !== String(dayIndex)) return false;
+        if (freq === 'biweekly' && !isBiweeklyOnWeek(anchorDate, r.date)) return false;
+        if (st && st.endDate && r.date > st.endDate) return false;
+        if (skip.includes(r.date)) return false; // 這位學生那天本來就延期／調課了
+        return timeRangesOverlap(timeVal, Number(duration) || 60, r.time, Number(r.duration) || 60);
+      }).sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+    }
+    function confirmRecurringRentalClash(freq, dayIndex, timeVal, duration, anchorDate, startDate, location, studentId) {
+      let hits = findRecurringRentalClashes(freq, dayIndex, timeVal, duration, anchorDate, startDate, location, studentId);
+      if (hits.length === 0) return true;
+      let lines = hits.slice(0, 8).map(r => '• ' + formatReportDate(r.date) + ' ' + r.time + '–' + computeEndTime(r.time, Number(r.duration) || 60) + ' ' + (r.renterName || '租借'));
+      if (hits.length > 8) lines.push('…還有 ' + (hits.length - 8) + ' 筆');
+      return confirm('🔑 這個固定時段（' + getDayName(String(dayIndex)) + ' ' + timeVal + '，' + location + '）會撞到已經租出去的琴房：\n' + lines.join('\n') +
+        '\n\n可以先去琴房租借調整這幾筆，或改上課時間。\n確定還是要用這個時段嗎？');
     }
 
     // ---- 新增／編輯租借 ----
@@ -7217,7 +7330,7 @@
 
     // ============ 版本更新檢查 ============
     // 每次修改程式、上傳新檔案時，要把這個版本號改掉（任何不一樣的字都可以），手機才會知道有新版本。
-    const APP_VERSION = 'sm-2026.10.15-4';
+    const APP_VERSION = 'sm-2026.10.15-5';
 
     // 加入主畫面的 App 常常直接拿手機裡存的舊檔案，而且沒有重新整理按鈕。
     // 做法：去網路上抓一份「現在的這個網頁」（網址加上時間，強迫不能用舊的），比對裡面寫的版本號，不一樣就提示更新。
