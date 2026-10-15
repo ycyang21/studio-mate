@@ -34,6 +34,31 @@
     .payment-owed { border-left: 4px solid #E08E79; }
     .payment-settled { border-left: 4px solid #8C9C8A; }
     .pay-history-row { font-size: 12px; color: #666; display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #eee; }
+    /* 學費袋 */
+    .env-card { text-align: left; }
+    .env-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+    .env-copy-btn { background-color: #8C9C8A; color: white; padding: 6px 10px; font-size: 12px; white-space: nowrap; }
+    .env-explain { font-size: 11px; color: #999; line-height: 1.6; margin: 6px 0 8px; }
+    .env-summary { font-size: 14px; font-weight: bold; margin: 4px 0 12px; line-height: 1.6; }
+    .env-period { border: 1px solid #E2E8DF; border-radius: 8px; padding: 10px; margin-bottom: 10px; background: #fff; }
+    .env-period.env-active { border-color: #8C9C8A; background: #F6F8F5; }
+    .env-period.env-done { background: #FAFAFA; }
+    .env-period.env-unpaid { border-color: #E08E79; background: #FDF3F0; }
+    .env-period-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-weight: bold; font-size: 14px; color: #333; }
+    .env-amt { font-size: 13px; color: #5d705b; white-space: nowrap; font-weight: bold; }
+    .env-amt-missing { font-size: 12px; color: #7C93B3; font-weight: normal; cursor: pointer; white-space: nowrap; }
+    .env-chips { display: flex; flex-wrap: wrap; gap: 4px; margin: 8px 0 6px; }
+    .env-chip { font-size: 12px; padding: 2px 8px; border-radius: 10px; background: #E2E8DF; color: #333; white-space: nowrap; }
+    .env-chip-proj { background: #fff; border: 1px dashed #8C9C8A; color: #5d705b; padding: 1px 7px; }
+    .env-chip-overdue { border-color: #E0A458; color: #A06A1E; }
+    .env-chip-adj { background: #F3E9E4; color: #8A5A4A; }
+    .env-chip-unpaid { background: #FBE3DC; color: #B5543F; }
+    .env-sub { font-size: 12px; color: #666; margin: 4px 0; line-height: 1.6; }
+    .env-status { font-size: 12px; color: #5d705b; margin-top: 4px; }
+    .env-done .env-status { color: #999; }
+    .env-actions { display: flex; gap: 16px; justify-content: flex-end; margin-top: 6px; font-size: 12px; }
+    .env-actions a { color: #7C93B3; cursor: pointer; text-decoration: none; }
+    .env-warn { font-size: 12px; color: #8A5A4A; background: #FBEFE6; border-radius: 6px; padding: 8px 10px; margin-bottom: 10px; line-height: 1.6; }
     
     .student-title { font-size: 18px; font-weight: bold; margin-bottom: 5px; color: #333; }
     .student-detail { font-size: 13px; color: #666; margin-bottom: 12px; }
@@ -73,6 +98,25 @@
     .event-temp { background-color: #7C93B3 !important; color: white !important; }
     .event-reschedule-lesson { background-color: #8F7FB8 !important; color: white !important; } /* 調課（調過去的新時段）：跟臨時課分開，用紫色 */
     .event-absent-charged { background-color: #C1666B !important; color: white !important; }
+    .event-group { background-color: #5E8C8F !important; color: white !important; } /* 團體課（還沒點完名） */
+    .gm-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 10px 0; border-bottom: 1px solid #eee; }
+    .gm-info { flex: 1; min-width: 0; }
+    .gm-name { font-size: 15px; font-weight: bold; color: #333; }
+    .gm-tag { font-size: 11px; font-weight: normal; color: #5d705b; background: #EEF3EC; border-radius: 8px; padding: 1px 6px; margin-left: 4px; white-space: nowrap; }
+    .gm-tag.gm-owe { color: #B5543F; background: #FBE3DC; }
+    .gm-st { font-size: 13px; color: #666; margin-top: 2px; }
+    .gm-paid { display: flex; align-items: center; gap: 4px; font-size: 12px; color: #888; margin-top: 4px; font-weight: normal; }
+    .gm-paid input { width: auto; margin: 0; }
+    .gm-btns { display: flex; gap: 4px; flex-shrink: 0; }
+    .gm-btn { border: none; border-radius: 6px; padding: 8px 10px; font-size: 13px; cursor: pointer; color: white; white-space: nowrap; }
+    .gm-ok { background: #8C9C8A; } .gm-absent { background: #C1666B; } .gm-undo { background: #fff; color: #888; border: 1px solid #ddd; } .gm-more { background: #E2E8DF; color: #333; }
+    .group-card { background: #fff; border: 1px solid #DCE6E6; border-radius: 8px; padding: 10px; margin-bottom: 10px; text-align: left; }
+    .group-card-head { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; align-items: baseline; }
+    .group-card-sched { font-size: 12px; color: #888; }
+    .group-chip { display: inline-block; font-size: 12px; padding: 3px 8px; border-radius: 10px; background: #EEF3F3; color: #333; margin: 6px 4px 0 0; cursor: pointer; }
+    .group-chip.owe { background: #FBE3DC; color: #B5543F; }
+    .group-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .group-actions .small-btn { font-size: 12px; padding: 6px 10px; }
     .event-rescheduled { background-color: #F3F0F8 !important; color: #8F7FB8 !important; border: 1px dashed #8F7FB8 !important; opacity: 0.8; } /* 調課（原本空出來的時段）：跟新時段同色系的虛線 */
 
     /* 手機版精簡月曆：只在偵測到窄螢幕時，由 JS 加上 calendar-compact 這個 class 才會生效，桌面版完全不受影響 */
@@ -956,6 +1000,10 @@
     <div class="modal-content" style="text-align: left; max-height: 85vh; overflow-y: auto;">
       <h3 style="margin-top: 0; font-size: 18px; color: #333; text-align:center;">✏️ 編輯學生資料</h3>
       <div class="form-group"><label>學生姓名</label><input type="text" id="edit-name" class="form-control"></div>
+      <div class="form-group"><label>團體課（選填）</label>
+        <select id="edit-group" class="form-control" onchange="onStudentGroupChange('edit')"><option value="">不是團體課（個別上課）</option></select>
+        <div style="font-size:11px; color:#999; margin-top:4px; line-height:1.5;">選了團體，上課時間、地點會自動帶入跟同團同學一樣；同一團在月曆上合併成一格、可以一起點名，學費和繳費還是每個人分開。</div>
+      </div>
       <div class="form-group"><label>學習樂器</label><div class="radio-group">
         <label><input type="radio" name="edit-instrument" value="鋼琴" onclick="checkEditInstrument()"> 鋼琴</label>
         <label><input type="radio" name="edit-instrument" value="小提琴" onclick="checkEditInstrument()"> 小提琴</label>
@@ -1028,6 +1076,10 @@
       <h3 style="margin-top:0; font-size: 16px; cursor:pointer; display:flex; justify-content:space-between; align-items:center;" onclick="toggleAddStudentForm()">➕ 新增學生資料 <span id="add-student-toggle-arrow" style="font-size:13px; color:#8C9C8A;">▸ 展開</span></h3>
       <div id="add-student-form-body" style="display:none;">
       <div class="form-group"><label>學生姓名</label><input type="text" id="add-name" class="form-control" placeholder="例如：王大花"></div>
+      <div class="form-group"><label>團體課（選填）</label>
+        <select id="add-group" class="form-control" onchange="onStudentGroupChange('add')"><option value="">不是團體課（個別上課）</option></select>
+        <div style="font-size:11px; color:#999; margin-top:4px; line-height:1.5;">選了團體，上課時間、地點會自動帶入跟同團同學一樣；同一團在月曆上合併成一格、可以一起點名，學費和繳費還是每個人分開。</div>
+      </div>
       <div class="form-group"><label>學習樂器</label><div class="radio-group"><label><input type="radio" name="add-instrument" value="鋼琴" onclick="checkInstrument()" checked> 鋼琴</label><label><input type="radio" name="add-instrument" value="小提琴" onclick="checkInstrument()"> 小提琴</label><label><input type="radio" name="add-instrument" value="其他" onclick="checkInstrument()"> 其他</label><input type="text" id="other-instrument" class="form-control" style="display: none; width: auto; flex-grow: 1; padding: 5px;" placeholder="請輸入樂器"></div></div>
 
       <div class="form-group"><label>上課頻率</label><div class="radio-group">
@@ -1082,6 +1134,14 @@
       </div>
       <div class="form-group"><label>聯絡電話</label><input type="tel" id="add-phone" class="form-control" placeholder="家長或學生電話"></div>
       <button class="button" style="width:100%; margin:0;" onclick="addStudent()">確認新增</button>
+      </div>
+    </div>
+    <div class="card" style="background-color:#F2F6F6; border:1px solid #5E8C8F;">
+      <h3 style="margin-top:0; margin-bottom:0; font-size:16px; cursor:pointer; display:flex; justify-content:space-between; align-items:center;" onclick="toggleGroupManage()">👥 團體課<span id="group-manage-count" style="font-weight:normal;"></span> <span id="group-manage-arrow" style="font-size:13px; color:#5E8C8F; margin-left:auto;">▸ 展開</span></h3>
+      <div id="group-manage-body" style="display:none; margin-top:10px;">
+        <p style="font-size:12px; color:#888; line-height:1.6; margin-top:0;">團體課的每位同學都是一位獨立學生，學費、繳費、學費袋各自分開；同一團在月曆上合併成一格，點開可以一起點名。</p>
+        <div id="group-list"></div>
+        <button class="small-btn" style="width:100%; padding:10px; background-color:#5E8C8F; color:white;" onclick="createGroupPrompt()">＋ 建立新的團體課</button>
       </div>
     </div>
     <input type="text" id="manage-search" class="form-control" style="width:90%; margin:15px auto 0 auto; display:block;" placeholder="🔍 搜尋學生姓名" oninput="renderManageList()">
@@ -1408,6 +1468,33 @@
       <button class="button" style="width:100%; margin:10px 0 0 0; background-color:#7C8A9A;" onclick="submitPauseModal()">💾 儲存</button>
       <button id="pause-delete-btn" class="button" style="display:none; width:100%; margin:10px 0 0 0; background-color:#FFB6B9;" onclick="deletePause()">🗑️ 刪除這次停課</button>
       <button class="button btn-secondary" style="width:100%; margin:10px 0 0 0;" onclick="closePauseModal()">取消</button>
+    </div>
+  </div>
+
+  <div id="group-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; align-items: center; justify-content: center;">
+    <div class="modal-content" style="text-align: left;">
+      <h3 id="group-modal-title" style="margin-top: 0; margin-bottom: 4px; font-size: 18px; color: #333; text-align:center;"></h3>
+      <p id="group-modal-date" style="text-align:center; color:#888; font-size:13px; margin:0 0 6px 0;"></p>
+      <p id="group-modal-note" style="text-align:center; color:#8F7FB8; font-size:13px; margin:0 0 6px 0; display:none;"></p>
+      <div id="group-modal-members"></div>
+      <div id="group-modal-actions" style="margin-top:12px;"></div>
+      <p style="font-size:11px; color:#aaa; line-height:1.6; margin:10px 0 0 0;">按「⋯」可以單獨處理某一位同學：轉補課、調課、課堂記錄、待辦、學生異動。</p>
+      <button class="button btn-secondary" style="width:100%; margin:10px 0 0 0;" onclick="closeGroupModal()">關閉</button>
+    </div>
+  </div>
+
+  <div id="payedit-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; align-items: center; justify-content: center;">
+    <div class="modal-content" style="text-align: left;">
+      <h3 style="margin-top: 0; font-size: 18px; color: #333; text-align:center;">✏️ 編輯繳費紀錄</h3>
+      <p id="payedit-student" style="font-size:15px; font-weight:bold; color:#333; margin-bottom:6px;"></p>
+      <p id="payedit-lock-note" style="display:none; font-size:12px; color:#888; line-height:1.6; margin-top:0;">這筆是點名時勾選「已收費」自動產生的，日期和堂數會跟著點名一起變動，所以這裡只能補記實收金額。要改堂數請回到那堂課的點名視窗。</p>
+      <div class="form-group"><label>繳費日期</label><input type="date" id="payedit-date" class="form-control"></div>
+      <div class="form-group"><label>堂數</label><input type="number" id="payedit-lessons" class="form-control" step="0.5"></div>
+      <div class="form-group"><label>實收金額 NT$（選填）</label><input type="number" id="payedit-amount" class="form-control" min="0"></div>
+      <div class="form-group"><label>備註（選填）</label><input type="text" id="payedit-note" class="form-control"></div>
+      <button class="button" style="width:100%; margin:10px 0 0 0;" onclick="submitPayEditModal()">💾 儲存</button>
+      <button class="button" style="width:100%; margin:10px 0 0 0; background-color:#FFB6B9;" onclick="deletePayFromEditModal()">🗑️ 刪除這筆</button>
+      <button class="button btn-secondary" style="width:100%; margin:10px 0 0 0;" onclick="closePayEditModal()">取消</button>
     </div>
   </div>
 
@@ -1936,7 +2023,7 @@
       document.getElementById('pause-delete-btn').style.display = p ? 'block' : 'none';
       document.getElementById('pause-modal').style.display = 'flex';
     }
-    function closePauseModal() { document.getElementById('pause-modal').style.display = 'none'; pausingStudentId = null; editingPauseId = null; }
+    function closePauseModal() { document.getElementById('pause-modal').style.display = 'none'; pausingStudentId = null; editingPauseId = null; pausingGroupId = null; }
     function afterPauseChange() {
       saveToMemory();
       if (calendar) calendar.refetchEvents();
@@ -1946,6 +2033,7 @@
       if (document.getElementById('dashboard-page').style.display === 'block') renderDashboard();
     }
     function submitPauseModal() {
+      if (pausingGroupId) { submitGroupPause(); return; }
       let s = students.find(x => x.id === pausingStudentId);
       if (!s) { closePauseModal(); return; }
       let start = document.getElementById('pause-start').value;
@@ -1995,11 +2083,12 @@
       alert('✅ ' + resume + ' 起恢復上課！');
     }
 
-    function checkScheduleConflictWarning(freq, dayIndex, timeVal, anchorDate, duration, excludeId) {
+    function checkScheduleConflictWarning(freq, dayIndex, timeVal, anchorDate, duration, excludeId, groupId) {
       if (freq === 'appointment') return true;
       let conflictName = null;
       for (let other of students) {
         if (other.id === excludeId) continue;
+        if (groupId && other.groupId === groupId) continue; // 同一團的同學本來就一起上課，不算撞課
         if (other.endDate) continue;
         if (other.freq === 'appointment') continue;
         if (other.dayIndex !== dayIndex) continue;
@@ -2637,6 +2726,8 @@
       } else if (props.type === 'rental') {
         let r0 = rentalData.rentals.find(x => x.id === props.rentalId);
         return (r0 && Number(r0.duration)) || 60;
+      } else if (props.type === 'group') {
+        return props.duration || 60;
       }
       return 60;
     }
@@ -2757,7 +2848,7 @@
 
             while (d < info.end) {
               let dateStr = formatDate(d);
-              getEventsForDate(dateStr).forEach(it => {
+              getDisplayItemsForDate(dateStr).forEach(it => {
                 events.push({
                   title: it.title,
                   className: it.className,
@@ -2815,7 +2906,7 @@
     // 你可以連續點好幾個不同日期比較，不用每次都要返回或往上捲。
     function selectCalendarDay(dateStr) {
       selectedCalendarDate = dateStr;
-      let items = getEventsForDate(dateStr);
+      let items = getDisplayItemsForDate(dateStr);
       currentDayPanelItems = items;
 
       document.querySelectorAll('#calendar .calendar-day-selected').forEach(el => el.classList.remove('calendar-day-selected'));
@@ -2897,6 +2988,7 @@
 
     function openModalForCalendarEvent(props, title, dateStr, timeStr, allDay) {
       if (props && props.type === 'rental') { openRentalDetail(props.rentalId); return; } // 琴房租借不是課，打開租借自己的視窗
+      if (props && props.type === 'group') { openGroupModal(props.groupId, props.dateStr, props.time || timeStr || ''); return; } // 團體課：開一起點名的視窗
       currentModalEvent = props;
 
       let cleanTitle = title.replace(/💰 |✅ |❌ |🔄 |📌 |💸 |🔀 |\[補課\] |\[補\] /g, '').replace(/\s*\(延期\)|\s*\(轉補\)|\s*\(取消\)|\s*\(缺席收費\)|\s*\(已調課\)|\s*\([\d.]+堂\)/g, '').replace(/・.*$/, '').replace(/（原[\d/]+）/g, '');
@@ -3156,6 +3248,15 @@
       document.getElementById('attendance-modal').style.display = 'none';
       unlockBodyScroll();
       refreshDayPanelIfNeeded();
+      // 從團體課視窗點「⋯」進來的：關掉之後回到團體課視窗（如果接著開了別的視窗，例如調課，就不回去）
+      if (groupModalReturn) {
+        let back = groupModalReturn;
+        groupModalReturn = null;
+        setTimeout(() => {
+          let anyOpen = Array.from(document.querySelectorAll('[id$="-modal"]')).some(el => el.style.display === 'flex' || el.style.display === 'block');
+          if (!anyOpen) openGroupModal(back.groupId, back.dateStr, back.time);
+        }, 0);
+      }
     }
 
     // 一般課點名視窗的三層選單：main（出席/課堂異動/學生異動入口）、lesson（延期/轉補課/調課/恢復未點名）、student（課程方案異動/退班）
@@ -3236,11 +3337,19 @@
       let stuIdx = currentModalEvent.stuIdx;
       let dateStr = currentModalEvent.dateStr;
       let s = students[stuIdx];
+      if (!s) { closeModal(); return; }
 
       // 出席／缺席收費代表「這堂課確定發生過了」，如果日期還沒到，先跟你確認一下，避免手滑點錯
       if ((status === 'attended' || status === 'absent_charged') && dateStr > formatDate(new Date())) {
         if (!confirm('⚠️ ' + dateStr + ' 這天還沒到，出席狀況應該還未確定，確定要現在標記嗎？')) return;
       }
+      let payCheckbox = document.getElementById('modal-mark-paid');
+      if (!applyNormalLessonStatus(s, dateStr, status, !!(payCheckbox && payCheckbox.checked))) return;
+      saveToMemory(); if (calendar) calendar.refetchEvents(); closeModal();
+    }
+
+    // 一般課改狀態的核心：點名視窗、團體課一起點名都用這一份。回傳 false＝被擋下或按了取消（資料沒動）
+    function applyNormalLessonStatus(s, dateStr, status, markPaid) {
 
       // 這堂原本已經調到別天：改成其他狀態（出席、延期、恢復未點名…）的話，調過去的那堂也要一起處理，
       // 不然同一堂課會變成兩堂。調過去的那堂已經出席的話就先擋下來，避免動到已經算學費的紀錄。
@@ -3249,11 +3358,11 @@
         let lockedOne = linked.find(isTempLessonLocked);
         if (lockedOne) {
           alert('這堂已經調到 ' + formatReportDate(lockedOne.date) + '，而且那堂已經' + tempLockedWord(lockedOne) + '了，所以這裡先不能改。\n\n如果真的要改回來，請先到 ' + formatReportDate(lockedOne.date) + '那堂按「' + tempLockedUndoLabel(lockedOne) + '」，再按「↩️ 取消調課」。');
-          return;
+          return false;
         }
         if (linked.length > 0) {
           let where = linked.map(t => formatReportDate(t.date) + (t.time ? ' ' + t.time : '')).join('、');
-          if (!confirm('這堂已經調到 ' + where + '。\n\n改成別的狀態的話，會一併刪除調過去的那堂調課，確定嗎？')) return;
+          if (!confirm('這堂已經調到 ' + where + '。\n\n改成別的狀態的話，會一併刪除調過去的那堂調課，確定嗎？')) return false;
           let linkedIds = linked.map(t => t.id);
           tempLessons = tempLessons.filter(t => !linkedIds.includes(t.id));
           saveTempToMemory();
@@ -3269,7 +3378,7 @@
       if (s.makeupConvertedDates.includes(dateStr)) {
         // 取消轉補課：分三種情況（沒排／已排沒上／已經上過），詳見 confirmRemoveConvertedMakeup
         let relatedRecord = makeupBank.find(r => r.studentId === s.id && r.dateGen === dateStr && !r.fromTempId);
-        if (!confirmRemoveConvertedMakeup(relatedRecord)) return;
+        if (!confirmRemoveConvertedMakeup(relatedRecord)) return false;
         makeupBank = makeupBank.filter(r => !(r.studentId === s.id && r.dateGen === dateStr && !r.fromTempId));
         saveMakeupToMemory();
       }
@@ -3289,17 +3398,15 @@
 
       if (status === 'attended') {
         s.attendedDates.push(dateStr);
-        let payCheckbox = document.getElementById('modal-mark-paid');
-        if (payCheckbox && payCheckbox.checked) {
-          paymentRecords.push({ id: generateId(), studentId: s.id, studentName: s.name, date: dateStr, lessons: 1, note: '點名時登記' });
+        if (markPaid) {
+          paymentRecords.push({ id: generateId(), studentId: s.id, studentName: s.name, date: dateStr, lessons: 1, note: '點名時登記', amount: autoPayAmount(s, 1) });
           paymentChanged = true;
         }
       }
       if (status === 'absent_charged') {
         s.absentChargedDates.push(dateStr);
-        let payCheckbox = document.getElementById('modal-mark-paid');
-        if (payCheckbox && payCheckbox.checked) {
-          paymentRecords.push({ id: generateId(), studentId: s.id, studentName: s.name, date: dateStr, lessons: 1, note: '缺席收費點名時登記' });
+        if (markPaid) {
+          paymentRecords.push({ id: generateId(), studentId: s.id, studentName: s.name, date: dateStr, lessons: 1, note: '缺席收費點名時登記', amount: autoPayAmount(s, 1) });
           paymentChanged = true;
         }
       }
@@ -3314,7 +3421,7 @@
         saveMakeupToMemory();
       }
       if (paymentChanged) savePaymentToMemory();
-      saveToMemory(); if (calendar) calendar.refetchEvents(); closeModal();
+      return true;
     }
 
     function markMakeupStatus(status) {
@@ -3343,7 +3450,7 @@
           if (record.remaining === 0 && record.schedules.every(s => s.attended)) { record.status = 'history'; }
           let payCheckbox = document.getElementById('modal-makeup-mark-paid');
           if (payCheckbox && payCheckbox.checked) {
-            paymentRecords.push({ id: generateId(), studentId: record.studentId, studentName: record.studentName, date: sch.date, lessons: Number(sch.amount) || 1, note: '補課點名時登記' });
+            paymentRecords.push({ id: generateId(), studentId: record.studentId, studentName: record.studentName, date: sch.date, lessons: Number(sch.amount) || 1, note: '補課點名時登記', amount: autoPayAmount(students.find(x => x.id === record.studentId), Number(sch.amount) || 1) });
             paymentChanged = true;
           }
         } else if (status === 'revert') {
@@ -3369,11 +3476,18 @@
       if ((status === 'attended' || status === 'absent_charged') && t.date > formatDate(new Date())) {
         if (!confirm('⚠️ ' + t.date + ' 這天還沒到，出席狀況應該還未確定，確定要現在標記嗎？')) return;
       }
+      let payCheckbox = document.getElementById('modal-temp-mark-paid');
+      if (!applyTempLessonStatus(t, status, !!(payCheckbox && payCheckbox.checked))) return;
+      saveTempToMemory(); if (calendar) calendar.refetchEvents(); closeModal();
+    }
+
+    // 臨時課／調課改狀態的核心（點名視窗、團體課一起點名共用）。回傳 false＝被擋下
+    function applyTempLessonStatus(t, status, markPaid) {
 
       // 原本轉成補課的調課：改成其他狀態前，先照三種情況檢查補課紀錄能不能拿掉
       if (t.makeupConverted) {
         let rec = makeupBank.find(r => r.fromTempId === t.id);
-        if (!confirmRemoveConvertedMakeup(rec)) return;
+        if (!confirmRemoveConvertedMakeup(rec)) return false;
         makeupBank = makeupBank.filter(r => r.fromTempId !== t.id);
         saveMakeupToMemory();
         t.makeupConverted = false;
@@ -3390,15 +3504,14 @@
       t.attended = false;
       t.canceled = false;
       t.absentCharged = false;
-      let payCheckbox = document.getElementById('modal-temp-mark-paid');
-      let isChecked = !!(payCheckbox && payCheckbox.checked);
+      let isChecked = !!markPaid;
       let payNote = isRescheduleTemp(t) ? '調課點名時登記' : '臨時課點名時登記';
 
       if (status === 'attended' || status === 'absent_charged') {
         if (status === 'attended') t.attended = true; else t.absentCharged = true;
         if (t.studentId) {
           if (isChecked) {
-            paymentRecords.push({ id: generateId(), studentId: t.studentId, studentName: t.studentName, date: t.date, lessons: (Number(t.amount) || 1), note: payNote });
+            paymentRecords.push({ id: generateId(), studentId: t.studentId, studentName: t.studentName, date: t.date, lessons: (Number(t.amount) || 1), note: payNote, amount: autoPayAmount(students.find(x => x.id === t.studentId), Number(t.amount) || 1) });
             paymentChanged = true;
           }
         } else {
@@ -3417,7 +3530,7 @@
         if (!t.studentId) t.paid = false;
       }
       if (paymentChanged) savePaymentToMemory();
-      saveTempToMemory(); if (calendar) calendar.refetchEvents(); closeModal();
+      return true;
     }
 
     function deleteTempLesson() {
@@ -3898,12 +4011,13 @@
 
     // 找出某個日期＋時間有沒有已經被別人卡住（固定/隔週課、排定的補課、其他臨時課），
     // 回傳卡住的那個人的姓名；已經延期／轉補課／取消的紀錄不算卡位，沒有衝突則回傳 null。
-    function findScheduleConflict(dateStr, timeStr, duration, excludeMakeupKey, excludeTempId, excludeStudentOnDate) {
+    function findScheduleConflict(dateStr, timeStr, duration, excludeMakeupKey, excludeTempId, excludeStudentOnDate, excludeGroupOnDate) {
       let dayOfWeek = new Date(dateStr + 'T00:00:00').getDay().toString();
 
       for (let s of students) {
         if (s.freq === 'appointment') continue;
         if (excludeStudentOnDate && s.id === excludeStudentOnDate.studentId && dateStr === excludeStudentOnDate.date) continue;
+        if (excludeGroupOnDate && s.groupId === excludeGroupOnDate.groupId && dateStr === excludeGroupOnDate.date) continue;
         if (s.dayIndex !== dayOfWeek) continue;
         if (!timeRangesOverlap(timeStr, duration, s.timeVal, s.duration)) continue;
         if (s.freq === 'biweekly' && !isBiweeklyOnWeek(s.anchorDate, dateStr)) continue;
@@ -4829,6 +4943,7 @@
       let target = new Date(now.getFullYear(), now.getMonth() + offset, 1);
       let count = countScheduledInMonth(s, target.getFullYear(), target.getMonth());
       document.getElementById(idPrefix + 'paylessons_' + studentId).value = count;
+      autoFillPayAmount(studentId, idPrefix);
     }
 
     // 把目前系統算出來的「已上課堂數」直接帶入輸入框，方便設定起始餘額時參考／快速對齊
@@ -4865,12 +4980,18 @@
 
       if (!dateInput) { alert('請選擇繳費日期！'); return; }
       if (lessonsInput === '' || isNaN(lessons) || lessons === 0) { alert('請輸入有效的堂數（可以是小數，例如 0.5；修正錯誤時也可以輸入負數）！'); return; }
+      let amountEl = document.getElementById(idPrefix + 'payamount_' + studentId);
+      let amount = parsePayAmount(amountEl ? amountEl.value : '');
+      if (amount === null) { alert('實收金額請輸入 0 以上的數字，或是留空！'); return; }
 
-      paymentRecords.push({ id: generateId(), studentId: s.id, studentName: s.name, date: dateInput, lessons: lessons, note: noteInput });
+      let rec = { id: generateId(), studentId: s.id, studentName: s.name, date: dateInput, lessons: lessons, note: noteInput };
+      if (amount !== undefined) rec.amount = amount;
+      paymentRecords.push(rec);
       savePaymentToMemory();
 
       document.getElementById(idPrefix + 'paylessons_' + studentId).value = '';
       document.getElementById(idPrefix + 'paynote_' + studentId).value = '';
+      if (amountEl) { amountEl.value = ''; amountEl.dataset.manual = ''; }
       renderStudentDetailPayment();
       alert('✅ 已登記繳費！');
     }
@@ -4884,8 +5005,854 @@
       }
     }
 
+
+
+    // ============ 團體課 ============
+    // 團體課的每位同學都是一般學生（各自的學費、繳費、學費袋、停課、退班），只多一個 groupId。
+    // 月曆／清單上把「同一團、同一天、同一個時間」的同學合併成一格（getDisplayItemsForDate），點開是一起點名的視窗。
+    // 學費、堂數的計算完全不變，所以結算、學費袋、未點名檢查都跟個別學生一樣準。
+    let currentGroupCtx = null;     // 團體課視窗目前開的是哪一堂 {groupId, dateStr, time}
+    let groupModalReturn = null;    // 從團體課視窗按「⋯」去看單一同學，關掉後要回到哪一堂
+    let rescheduleGroupCtx = null;  // 整團調課時，調課視窗用的是團體模式
+    let pausingGroupId = null;      // 整團停課時，停課視窗用的是團體模式
+    const MEMBER_INACTIVE = ['canceled', 'converted', 'rescheduled'];
+
+    function getGroups() { return Array.isArray(appSettings.groups) ? appSettings.groups : []; }
+    function getGroupById(id) { return id ? (getGroups().find(g => g.id === id) || null) : null; }
+    function getGroupMembers(groupId, includeEnded) { return students.filter(s => s.groupId === groupId && (includeEnded || !s.endDate)); }
+    function getItemGroupId(it) {
+      let p = (it && it.props) || {};
+      if (p.type === 'normal') { let s = students[p.stuIdx]; return (s && getGroupById(s.groupId)) ? s.groupId : null; }
+      if (p.type === 'temp') { let t = tempLessons.find(x => x.id === p.tempId); return (t && getGroupById(t.groupId)) ? t.groupId : null; }
+      return null;
+    }
+    function getMemberStatus(mp) {
+      if (mp.type === 'normal') { let s = students[mp.stuIdx]; return s ? getNormalLessonStatus(s, mp.dateStr) : 'none'; }
+      let t = tempLessons.find(x => x.id === mp.tempId);
+      return t ? getTempLessonStatus(t) : 'none';
+    }
+    function getMemberStudent(mp) {
+      if (mp.type === 'normal') return students[mp.stuIdx] || null;
+      let t = tempLessons.find(x => x.id === mp.tempId);
+      return t ? (students.find(s => s.id === t.studentId) || null) : null;
+    }
+
+    // 畫面用的清單：個別的課照舊，同一團同一時間的合併成一格
+    function getDisplayItemsForDate(dateStr) { return mergeGroupItems(getEventsForDate(dateStr)); }
+    function mergeGroupItems(items) {
+      let out = [], byKey = {};
+      items.forEach(it => {
+        let gid = getItemGroupId(it);
+        if (!gid) { out.push(it); return; }
+        let key = gid + '|' + (it.time || '');
+        if (!byKey[key]) { byKey[key] = { __group: gid, its: [] }; out.push(byKey[key]); }
+        byKey[key].its.push(it);
+      });
+      return out.map(x => x.__group ? buildGroupItem(x.__group, x.its) : x);
+    }
+    function buildGroupItem(gid, its) {
+      let g = getGroupById(gid);
+      let members = its.map(it => it.props);
+      let sts = members.map(getMemberStatus);
+      let isTemp = members.every(m => m.type === 'temp');
+      let active = sts.filter(st => !MEMBER_INACTIVE.includes(st));
+      let done = active.filter(st => st === 'attended' || st === 'absent');
+      let label = '👥 ' + g.name;
+      let className, title;
+      if (active.length === 0) {
+        if (sts.every(st => st === 'rescheduled')) { className = 'event-rescheduled'; title = '🔀 ' + label + ' (已調課)'; }
+        else if (sts.every(st => st === 'converted')) { className = 'event-makeup-conv'; title = '🔄 ' + label + ' (轉補)'; }
+        else { className = 'event-canceled'; title = '❌ ' + label + ' (延期)'; }
+      } else if (done.length === active.length) {
+        className = 'event-attended'; title = '✅ ' + label;
+      } else {
+        className = isTemp ? 'event-reschedule-lesson' : 'event-group';
+        title = (isTemp ? '🔀 ' : '') + label + (done.length > 0 ? '（' + done.length + '/' + active.length + ' 已點名）' : '（' + active.length + '人）');
+      }
+      if (members.some(m => { let s = getMemberStudent(m); return s && getStudentBalance(s.id) > 0; })) title = '💰 ' + title;
+      let first = its[0];
+      let loc = getItemLocation(first);
+      let abbr = first.locationAbbr || '';
+      let shortTitle = title + (loc ? '・' + (abbr || loc) : '');
+      if (loc) title += '・' + loc;
+      let duration = Math.max(...its.map(it => getDurationForProps(it.props)));
+      return { title, shortTitle, className, time: first.time, allDay: first.allDay, name: g.name, locationAbbr: abbr,
+        endTime: first.allDay ? '' : computeEndTime(first.time, duration),
+        props: { type: 'group', groupId: gid, dateStr: first.props.dateStr, time: first.time || '', duration, members } };
+    }
+
+    // ---- 一起點名的視窗 ----
+    function getGroupLessonMembers(ctx) {
+      return getEventsForDate(ctx.dateStr)
+        .filter(it => getItemGroupId(it) === ctx.groupId && (it.time || '') === (ctx.time || ''))
+        .map(it => ({ it, props: it.props, s: getMemberStudent(it.props), st: getMemberStatus(it.props), temp: it.props.type === 'temp' ? tempLessons.find(x => x.id === it.props.tempId) : null }));
+    }
+    function openGroupModal(groupId, dateStr, time) {
+      currentGroupCtx = { groupId, dateStr, time: time || '' };
+      if (!renderGroupModal()) return;
+      lockBodyScroll();
+      document.getElementById('group-modal').style.display = 'flex';
+    }
+    function closeGroupModal() {
+      if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur();
+      document.getElementById('group-modal').style.display = 'none';
+      currentGroupCtx = null;
+      unlockBodyScroll();
+      refreshDayPanelIfNeeded();
+    }
+    function renderGroupModal() {
+      let ctx = currentGroupCtx;
+      if (!ctx) return false;
+      let g = getGroupById(ctx.groupId);
+      let ms = getGroupLessonMembers(ctx);
+      if (!g || ms.length === 0) {
+        if (document.getElementById('group-modal').style.display === 'flex') closeGroupModal();
+        return false;
+      }
+      let isTemp = ms.every(m => m.temp);
+      let dur = Math.max(...ms.map(m => getDurationForProps(m.props)));
+      let d = new Date(ctx.dateStr + 'T00:00:00');
+      let loc = getItemLocation(ms[0].it);
+      document.getElementById('group-modal-title').innerText = '👥 ' + g.name;
+      document.getElementById('group-modal-date').innerText = ctx.dateStr + '（' + getDayName(String(d.getDay())) + '）' + (ctx.time ? ' ' + ctx.time + '–' + computeEndTime(ctx.time, dur) : '') + (loc ? '・' + loc : '');
+
+      let note = '';
+      if (isTemp) {
+        let from = ms[0].temp.rescheduledFrom;
+        note = '🔀 整團調課' + (from ? '・原本 ' + formatReportDate(from) + ' 的課' : '');
+      } else if (ms.every(m => m.st === 'rescheduled')) {
+        let linked = getLinkedRescheduleLessons(ms[0].s, ctx.dateStr);
+        note = '🔀 這堂已整團調到 ' + (linked.length ? linked.map(t => formatReportDate(t.date) + (t.time ? ' ' + t.time : '')).join('、') : '別天');
+      }
+      let noteEl = document.getElementById('group-modal-note');
+      noteEl.innerText = note;
+      noteEl.style.display = note ? 'block' : 'none';
+
+      const ST_LABEL = { none: '', attended: '✅ 出席', absent: '💸 缺席（照收）', canceled: '❌ 延期', converted: '🔄 已轉補課', rescheduled: '🔀 已調課' };
+      document.getElementById('group-modal-members').innerHTML = ms.map((m, i) => {
+        let name = m.s ? m.s.name : (m.temp ? m.temp.studentName : '');
+        let bal = m.s ? getStudentBalance(m.s.id) : 0;
+        let balTag = bal > 0 ? `<span class="gm-tag gm-owe">欠 ${bal} 堂</span>` : (bal < 0 ? `<span class="gm-tag">預繳剩 ${-bal} 堂</span>` : '');
+        let btns = '';
+        if (m.st === 'none') btns = `<button class="gm-btn gm-ok" onclick="groupMemberStatus(${i}, 'attended')">✅ 出席</button><button class="gm-btn gm-absent" onclick="groupMemberStatus(${i}, 'absent_charged')">💸 缺席</button>`;
+        else if (['attended', 'absent', 'canceled'].includes(m.st)) btns = `<button class="gm-btn gm-undo" onclick="groupMemberStatus(${i}, 'reset')" title="改回未點名">↩️</button>`;
+        btns += `<button class="gm-btn gm-more" onclick="openGroupMemberFull(${i})" title="更多">⋯</button>`;
+        let paid = (m.st === 'none' && m.s && m.s.singleLessonPay) ? `<label class="gm-paid"><input type="checkbox" id="gm-paid-${i}" checked> 單堂繳費：已收費</label>` : '';
+        let st = ST_LABEL[m.st] || '';
+        return `<div class="gm-row"><div class="gm-info"><div class="gm-name">${escHTML(name)}${balTag}</div>${st ? `<div class="gm-st">${st}</div>` : ''}${paid}</div><div class="gm-btns">${btns}</div></div>`;
+      }).join('');
+
+      let none = ms.filter(m => m.st === 'none');
+      let acts = '';
+      if (none.length > 0) acts += modalBtn('✅ 全部出席' + (none.length < ms.length ? '（還沒點名的 ' + none.length + ' 位）' : '（' + ms.length + ' 位）'), "groupApplyAll('attended')", 'background-color:#8C9C8A;');
+      if (none.length === ms.length) {
+        acts += modalBtn(isTemp ? '❌ 整團延期' : '❌ 整團延期（這次不上，不收費）', "groupApplyAll('canceled')", 'background-color:#E2E8DF; color:#333;');
+        if (!isTemp) acts += modalBtn('🔀 整團調課（換到別天）', 'openGroupReschedule()', 'background-color:#8F7FB8;');
+      }
+      if (ms.every(m => m.st === 'canceled')) {
+        acts += modalBtn('↩️ 取消整團延期', "groupApplyAll('reset')", MODAL_UNDO_STYLE);
+        if (!isTemp) acts += modalBtn('🔀 改成整團調課', 'openGroupReschedule()', 'background-color:#8F7FB8;');
+      }
+      if (!isTemp && ms.every(m => m.st === 'rescheduled')) acts += modalBtn('↩️ 取消整團調課，恢復這堂', 'cancelGroupReschedule()', 'background-color:#FFB6B9;');
+      if (isTemp && ms.every(m => m.st === 'none' || m.st === 'canceled')) acts += modalBtn('↩️ 取消整團調課，恢復原本那堂', 'cancelGroupReschedule()', 'background-color:#FFB6B9;');
+      document.getElementById('group-modal-actions').innerHTML = acts;
+      return true;
+    }
+    function afterGroupChange() {
+      saveToMemory(); saveTempToMemory();
+      if (calendar) calendar.refetchEvents();
+      renderGroupModal();
+      refreshDayPanelIfNeeded();
+    }
+    function applyGroupMember(m, status, idx) {
+      let paidEl = document.getElementById('gm-paid-' + idx);
+      let markPaid = !!(paidEl && paidEl.checked);
+      return m.temp ? applyTempLessonStatus(m.temp, status, markPaid) : applyNormalLessonStatus(m.s, currentGroupCtx.dateStr, status, markPaid);
+    }
+    function groupMemberStatus(idx, status) {
+      let ctx = currentGroupCtx; if (!ctx) return;
+      let m = getGroupLessonMembers(ctx)[idx];
+      if (!m) return;
+      if ((status === 'attended' || status === 'absent_charged') && ctx.dateStr > formatDate(new Date())) {
+        if (!confirm('⚠️ ' + ctx.dateStr + ' 這天還沒到，出席狀況應該還未確定，確定要現在標記嗎？')) return;
+      }
+      applyGroupMember(m, status, idx);
+      afterGroupChange();
+    }
+    function groupApplyAll(status) {
+      let ctx = currentGroupCtx; if (!ctx) return;
+      let ms = getGroupLessonMembers(ctx);
+      let targets = status === 'reset' ? ms.filter(m => m.st === 'canceled') : ms.filter(m => m.st === 'none');
+      if (!targets.length) return;
+      if (status === 'attended' && ctx.dateStr > formatDate(new Date())) {
+        if (!confirm('⚠️ ' + ctx.dateStr + ' 這天還沒到，出席狀況應該還未確定，確定要現在標記嗎？')) return;
+      }
+      targets.forEach(m => applyGroupMember(m, status, ms.indexOf(m)));
+      afterGroupChange();
+    }
+    function openGroupMemberFull(idx) {
+      let ctx = currentGroupCtx; if (!ctx) return;
+      let m = getGroupLessonMembers(ctx)[idx];
+      if (!m) return;
+      groupModalReturn = Object.assign({}, ctx);
+      document.getElementById('group-modal').style.display = 'none';
+      currentGroupCtx = null;
+      unlockBodyScroll();
+      openModalForCalendarEvent(m.props, m.it.title, ctx.dateStr, m.it.time, m.it.allDay);
+    }
+
+    // ---- 整團調課 ----
+    function openGroupReschedule() {
+      let ctx = currentGroupCtx; if (!ctx) return;
+      let g = getGroupById(ctx.groupId);
+      let ms = getGroupLessonMembers(ctx).filter(m => !m.temp && (m.st === 'none' || m.st === 'canceled'));
+      if (!ms.length) return;
+      let base = Math.max(...ms.map(m => m.s.duration || 60));
+      document.getElementById('group-modal').style.display = 'none';
+      currentGroupCtx = null;
+      unlockBodyScroll();
+      rescheduleGroupCtx = { groupId: ctx.groupId, dateStr: ctx.dateStr, time: ctx.time, baseDuration: base };
+      document.getElementById('reschedule-student-name').innerText = '👥 ' + g.name + '（' + ms.map(m => m.s.name).join('、') + '）';
+      document.getElementById('reschedule-new-date').value = ctx.dateStr;
+      document.getElementById('reschedule-duration').value = base;
+      document.getElementById('reschedule-amount').value = 1;
+      resetTimeValue('reschedule-new-time');
+      document.getElementById('reschedule-modal').style.display = 'flex';
+    }
+    function submitGroupReschedule() {
+      let ctx = rescheduleGroupCtx;
+      let g = getGroupById(ctx.groupId);
+      let ms = getGroupLessonMembers(ctx).filter(m => !m.temp && (m.st === 'none' || m.st === 'canceled'));
+      if (!g || !ms.length) { closeRescheduleModal(); return; }
+      let newDate = document.getElementById('reschedule-new-date').value;
+      let newTime = getTimeValue('reschedule-new-time');
+      let duration = Number(document.getElementById('reschedule-duration').value) || 60;
+      let amount = Number(document.getElementById('reschedule-amount').value);
+      if (!newDate || !newTime) { alert('請完整選擇新的日期與時間！'); return; }
+      if (!amount || amount <= 0) { alert('請輸入這堂算幾堂！'); return; }
+      if (newDate === ctx.dateStr && newTime === ctx.time) { alert('新的日期和時間跟原本一樣喔！'); return; }
+      let conflictName = findScheduleConflict(newDate, newTime, duration, null, null, null, { groupId: ctx.groupId, date: ctx.dateStr });
+      if (conflictName && !confirm('⚠️ 這個時段（' + newDate + ' ' + newTime + '）已經有 ' + conflictName + ' 排課了，確定還要調課到這裡嗎？')) return;
+      if (!confirmRentalClash(newDate, newTime, duration, ms[0].s.location)) return;
+      let amountNote = amount !== 1 ? '（' + duration + ' 分鐘，算 ' + amount + ' 堂）' : '';
+      if (!confirm('確定要把「👥 ' + g.name + '」這堂課（' + ms.map(m => m.s.name).join('、') + '）整團調到 ' + newDate + ' ' + newTime + amountNote + ' 嗎？')) return;
+      ms.forEach(m => {
+        if (!applyNormalLessonStatus(m.s, ctx.dateStr, 'rescheduled', false)) return;
+        tempLessons.push({ id: generateId(), studentId: m.s.id, studentName: m.s.name, date: newDate, time: newTime, duration: duration, amount: amount, attended: false, canceled: false, kind: 'reschedule', rescheduledFrom: ctx.dateStr, groupId: ctx.groupId });
+      });
+      saveToMemory(); saveTempToMemory();
+      closeRescheduleModal();
+      if (calendar) calendar.refetchEvents();
+      alert('✅ 已整團調課！');
+    }
+    function cancelGroupReschedule() {
+      let ctx = currentGroupCtx; if (!ctx) return;
+      let ms = getGroupLessonMembers(ctx);
+      let isTempCtx = ms.every(m => m.temp);
+      let pairs = isTempCtx
+        ? ms.map(m => ({ origin: findRescheduleOriginStudent(m.temp), temps: [m.temp], from: m.temp.rescheduledFrom }))
+        : ms.filter(m => m.st === 'rescheduled').map(m => ({ origin: m.s, temps: getLinkedRescheduleLessons(m.s, ctx.dateStr), from: ctx.dateStr }));
+      let allTemps = pairs.flatMap(p => p.temps);
+      let locked = allTemps.find(isTempLessonLocked);
+      if (locked) {
+        alert('調過去的 ' + formatReportDate(locked.date) + ' 那堂，' + locked.studentName + ' 已經' + tempLockedWord(locked) + '了，所以不能直接取消整團調課。\n\n請先到那堂把他改回「未點名」，再回來取消。');
+        return;
+      }
+      let from = pairs.map(p => p.from).find(Boolean);
+      let where = allTemps.length ? formatReportDate(allTemps[0].date) + (allTemps[0].time ? ' ' + allTemps[0].time : '') : '';
+      if (!confirm('確定要取消這次整團調課嗎？\n\n' + (where ? '• 調過去的 ' + where + ' 那堂會刪除\n' : '') + (from ? '• 原本 ' + formatReportDate(from) + ' 那堂會恢復成「未點名」' : ''))) return;
+      let ids = allTemps.map(t => t.id);
+      tempLessons = tempLessons.filter(t => !ids.includes(t.id));
+      pairs.forEach(p => { if (p.origin && p.from) p.origin.rescheduledDates = (p.origin.rescheduledDates || []).filter(d => d !== p.from); });
+      saveToMemory(); saveTempToMemory();
+      if (calendar) calendar.refetchEvents();
+      if (isTempCtx) closeGroupModal(); else { renderGroupModal(); refreshDayPanelIfNeeded(); }
+    }
+
+    // ---- 整團停課（共用停課視窗）----
+    function openGroupPauseModal(groupId) {
+      let g = getGroupById(groupId);
+      let mem = getGroupMembers(groupId);
+      if (!g || !mem.length) { alert('這個團體還沒有同學。'); return; }
+      openPauseModal(mem[0].id, null, null);
+      pausingGroupId = groupId;
+      pausingStudentId = null;
+      document.getElementById('pause-modal-title').innerText = '⏸️ 整團停課';
+      document.getElementById('pause-student-name').innerText = '👥 ' + g.name + '（' + mem.map(s => s.name).join('、') + '）';
+    }
+    function submitGroupPause() {
+      let g = getGroupById(pausingGroupId);
+      let mem = getGroupMembers(pausingGroupId);
+      if (!g || !mem.length) { closePauseModal(); return; }
+      let start = document.getElementById('pause-start').value;
+      let openEnded = document.getElementById('pause-open-ended').checked;
+      let resume = document.getElementById('pause-resume').value;
+      if (!start) { alert('請選擇從哪一天開始停課！'); return; }
+      if (!openEnded && !resume) { alert('請選擇哪一天回來上課，或勾選「還不確定」！'); return; }
+      if (!openEnded && resume <= start) { alert('回來上課的日期要在開始停課之後！'); return; }
+      let end = openEnded ? '' : addDaysStr(resume, -1);
+      if (!confirm('確定要讓「' + g.name + '」整團（' + mem.map(s => s.name).join('、') + '）從 ' + start + ' 開始停課' + (end ? '，' + resume + ' 回來上課' : '（回來日期未定）') + ' 嗎？\n\n停課期間的課不會出現在月曆上，每位同學預繳的堂數都不會變。')) return;
+      let note = document.getElementById('pause-note').value.trim();
+      mem.forEach(s => { if (!s.pauses) s.pauses = []; s.pauses.push({ id: generateId(), start: start, end: end, note: note }); });
+      closePauseModal();
+      afterPauseChange();
+      alert('✅ 已設定整團停課！' + (end ? '\n' + resume + ' 起月曆上會自動恢復。' : '\n回來的時候，到每位同學的詳細資料按「▶️ 恢復上課」。'));
+    }
+
+    // ---- 學生名單裡的團體課管理 ----
+    function createGroup(name) {
+      name = String(name == null ? (prompt('團體課名稱（例如：西屯小團）：') || '') : name).trim();
+      if (!name) return null;
+      if (getGroups().some(g => g.name === name)) { alert('已經有一個叫「' + name + '」的團體課了，請換個名稱。'); return null; }
+      let g = { id: generateId(), name: name };
+      appSettings.groups = getGroups().concat([g]);
+      saveSettingsToMemory();
+      return g;
+    }
+    function createGroupPrompt() {
+      let g = createGroup();
+      if (!g) return;
+      renderGroupManage(); renderGroupSelects();
+      if (confirm('✅ 已建立「' + g.name + '」！\n\n要現在新增第一位同學嗎？\n（已經在名單上的學生，可以按他的「編輯」，在「團體課」選這一團）')) startAddGroupMember(g.id);
+    }
+    function renameGroup(groupId) {
+      let g = getGroupById(groupId); if (!g) return;
+      let name = (prompt('新的名稱：', g.name) || '').trim();
+      if (!name || name === g.name) return;
+      if (getGroups().some(x => x.id !== groupId && x.name === name)) { alert('已經有一個叫「' + name + '」的團體課了。'); return; }
+      g.name = name;
+      saveSettingsToMemory();
+      renderManageList();
+      if (calendar) calendar.refetchEvents();
+    }
+    function deleteGroup(groupId) {
+      let g = getGroupById(groupId); if (!g) return;
+      let mem = students.filter(s => s.groupId === groupId);
+      if (!confirm('確定要刪除「' + g.name + '」這個團體嗎？\n\n' + (mem.length ? mem.map(s => s.name).join('、') + ' 會變回一般的個別學生，' : '') + '上課、繳費紀錄都不會刪除。')) return;
+      students.forEach(s => { if (s.groupId === groupId) delete s.groupId; });
+      tempLessons.forEach(t => { if (t.groupId === groupId) delete t.groupId; });
+      appSettings.groups = getGroups().filter(x => x.id !== groupId);
+      saveSettingsToMemory(); saveToMemory(); saveTempToMemory();
+      renderManageList();
+      if (calendar) calendar.refetchEvents();
+    }
+    function studentScheduleLabel(s) {
+      if (s.freq === 'appointment') return '約課';
+      return (s.freq === 'biweekly' ? '隔週' : '每週') + (s.dayIndex !== '' && s.dayIndex !== undefined ? getDayName(s.dayIndex) : '') + (s.timeVal ? ' ' + s.timeVal : '');
+    }
+    function toggleGroupManage() {
+      let body = document.getElementById('group-manage-body');
+      let open = body.style.display === 'none';
+      body.style.display = open ? 'block' : 'none';
+      document.getElementById('group-manage-arrow').innerText = open ? '▾ 收起' : '▸ 展開';
+    }
+    function renderGroupManage() {
+      let box = document.getElementById('group-list');
+      if (!box) return;
+      let groups = getGroups();
+      document.getElementById('group-manage-count').innerText = groups.length ? '（' + groups.length + '）' : '';
+      box.innerHTML = groups.map(g => {
+        let mem = getGroupMembers(g.id);
+        let sched = mem.length ? studentScheduleLabel(mem[0]) + (mem[0].location ? '・' + mem[0].location : '') : '還沒有同學';
+        let mismatch = mem.some(s => s.freq !== mem[0].freq || s.dayIndex !== mem[0].dayIndex || s.timeVal !== mem[0].timeVal);
+        let chips = mem.map(s => {
+          let b = getStudentBalance(s.id);
+          return `<span class="group-chip${b > 0 ? ' owe' : ''}" onclick="openStudentDetail('${s.id}')">${escHTML(s.name)}・$${escHTML(s.fee)}${b > 0 ? '・欠 ' + b + ' 堂' : (b < 0 ? '・預繳 ' + (-b) + ' 堂' : '')}${getPauseLabel(s) ? '・⏸️' : ''}</span>`;
+        }).join('');
+        return `<div class="group-card">
+          <div class="group-card-head"><b>👥 ${escHTML(g.name)}</b><span class="group-card-sched">${escHTML(sched)}</span></div>
+          ${mismatch ? '<div style="font-size:12px; color:#B5651D; margin-top:4px;">⚠️ 同學的上課時間不一樣，月曆上會分成好幾格。到同學的「編輯」把時間改成一樣就會合併。</div>' : ''}
+          <div>${chips || '<span style="font-size:12px; color:#aaa;">還沒有同學</span>'}</div>
+          <div class="group-actions">
+            <button class="small-btn" style="background-color:#5E8C8F; color:white;" onclick="startAddGroupMember('${g.id}')">＋ 新增同學</button>
+            <button class="small-btn" style="background-color:#9AA7B5; color:white;" onclick="openGroupPauseModal('${g.id}')">⏸️ 整團停課</button>
+            <button class="small-btn" style="background-color:#E2E8DF; color:#333;" onclick="renameGroup('${g.id}')">✏️ 改名</button>
+            <button class="small-btn del-btn" onclick="deleteGroup('${g.id}')">刪除團體</button>
+          </div>
+        </div>`;
+      }).join('') || '<p style="font-size:13px; color:#aaa;">還沒有團體課。</p>';
+    }
+    function startAddGroupMember(groupId) {
+      let body = document.getElementById('add-student-form-body');
+      body.style.display = 'block';
+      document.getElementById('add-student-toggle-arrow').innerText = '▾ 收起';
+      renderGroupSelects();
+      document.getElementById('add-group').value = groupId;
+      onStudentGroupChange('add');
+      body.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    }
+    function renderGroupSelects() {
+      ['add', 'edit'].forEach(prefix => {
+        let sel = document.getElementById(prefix + '-group');
+        if (!sel) return;
+        let cur = sel.value;
+        sel.innerHTML = '<option value="">不是團體課（個別上課）</option>' + getGroups().map(g => `<option value="${g.id}">👥 ${escHTML(g.name)}</option>`).join('') + '<option value="__new">＋ 建立新的團體課…</option>';
+        sel.value = getGroupById(cur) ? cur : '';
+      });
+    }
+    function readGroupSelect(prefix) {
+      let v = document.getElementById(prefix + '-group').value;
+      return getGroupById(v) ? v : '';
+    }
+    function onStudentGroupChange(prefix) {
+      let sel = document.getElementById(prefix + '-group');
+      if (sel.value === '__new') {
+        let g = createGroup();
+        renderGroupSelects();
+        sel.value = g ? g.id : '';
+        renderGroupManage();
+        if (!g) return;
+      }
+      let g = getGroupById(sel.value);
+      if (!g) return;
+      let selfId = (prefix === 'edit' && editingIndex !== null && students[editingIndex]) ? students[editingIndex].id : null;
+      let ref = getGroupMembers(g.id).find(s => s.id !== selfId);
+      if (!ref) return;
+      if (prefix === 'edit') {
+        let me = students[editingIndex];
+        let same = me && me.freq === ref.freq && me.dayIndex === ref.dayIndex && me.timeVal === ref.timeVal;
+        if (same || !confirm('要把上課時間、地點改成跟「' + g.name + '」其他同學一樣嗎？\n（' + studentScheduleLabel(ref) + (ref.location ? '・' + ref.location : '') + '）')) return;
+      }
+      fillScheduleFromStudent(prefix, ref);
+    }
+    function fillScheduleFromStudent(prefix, ref) {
+      let freqRadio = document.querySelector('input[name="' + prefix + '-freq"][value="' + (ref.freq || 'weekly') + '"]');
+      if (freqRadio) freqRadio.checked = true;
+      if (prefix === 'add') checkAddFreq(); else checkEditFreq();
+      document.getElementById(prefix + '-day').value = ref.dayIndex || '';
+      setTimeValue(prefix + '-time', ref.timeVal || '00:00');
+      document.getElementById(prefix + '-anchor-date').value = ref.anchorDate || '';
+      document.getElementById(prefix + '-duration').value = ref.duration || 60;
+      setLocationFormFromStudent(prefix, ref.location || '', ref.locationAbbr || '');
+      if (prefix === 'add') {
+        let known = ref.instrument === '鋼琴' || ref.instrument === '小提琴';
+        document.getElementsByName('add-instrument').forEach(r => { r.checked = known ? r.value === ref.instrument : r.value === '其他'; });
+        let other = document.getElementById('other-instrument');
+        other.value = known ? '' : (ref.instrument || '');
+        other.style.display = known ? 'none' : 'block';
+        if (!document.getElementById('add-fee').value) document.getElementById('add-fee').value = ref.fee;
+      }
+    }
+    function groupLineHTML(s) {
+      let g = s.groupId ? getGroupById(s.groupId) : null;
+      if (!g) return '';
+      let others = getGroupMembers(g.id).filter(x => x.id !== s.id).map(x => x.name);
+      return '<div>👥 團體課：' + escHTML(g.name) + (others.length ? '（同團：' + others.map(escHTML).join('、') + '）' : '') + '</div>';
+    }
+    // ============ 團體課結束 ============
+
+    // ============ 學費袋：每一筆繳費對應到哪幾堂課 ============
+    // 規則跟紙本學費袋一樣「先繳的錢先用」：把這位學生所有「會扣堂數」的課（出席、缺席收費、補課出席、臨時課／調課出席或缺席收費）
+    // 照日期排好，從最早那筆繳費開始一堂一堂扣，扣完再換下一筆。總數跟上面「已上課 − 已繳」完全一樣，只是多了「哪筆錢用在哪幾堂」。
+    // 負數的繳費紀錄（退班退款、方案異動帶入的欠繳、手動修正）當成「扣掉堂數」的項目，一樣照日期排進去。
+    // 剩下還沒用完的堂數，再拿月曆上之後排定的課（同一個資料來源 getEventsForDate，延期、停課、隔週都照算）往後推，算出預計上到哪天。
+    const AUTO_PAY_NOTES = ['點名時登記', '缺席收費點名時登記', '補課點名時登記', '臨時課點名時登記', '調課點名時登記'];
+    const ENV_EPS = 1e-6;
+    function envRound(n) { return Math.round(n * 100) / 100; }
+    function envShortDate(dateStr) { let d = new Date(dateStr + 'T00:00:00'); return (d.getMonth() + 1) + '/' + d.getDate(); }
+    function envDateLabel(dateStr) { let d = new Date(dateStr + 'T00:00:00'); return (d.getMonth() + 1) + '/' + d.getDate() + '（' + '日一二三四五六'[d.getDay()] + '）'; }
+    function hasPayAmount(p) { return p && p.amount !== undefined && p.amount !== null && p.amount !== '' && !isNaN(Number(p.amount)); }
+    // 空白＝沒填（undefined）；不是 0 以上的數字＝輸入錯誤（null）
+    function parsePayAmount(raw) {
+      raw = String(raw == null ? '' : raw).trim();
+      if (raw === '') return undefined;
+      let n = Number(raw);
+      if (isNaN(n) || n < 0) return null;
+      return Math.round(n);
+    }
+    function autoPayAmount(stu, lessons) {
+      let f = stu ? (Number(stu.fee) || 0) : 0;
+      return f > 0 ? Math.round(f * (Number(lessons) || 0)) : undefined;
+    }
+    function autoFillPayAmount(studentId, idPrefix) {
+      idPrefix = idPrefix || '';
+      let s = students.find(x => x.id === studentId);
+      let amtEl = document.getElementById(idPrefix + 'payamount_' + studentId);
+      if (!s || !amtEl || amtEl.dataset.manual === '1') return;
+      let n = Number(document.getElementById(idPrefix + 'paylessons_' + studentId).value);
+      let v = (n > 0) ? autoPayAmount(s, n) : undefined;
+      amtEl.value = v === undefined ? '' : v;
+    }
+
+    function getStudentChargedItems(s) {
+      let items = [];
+      (s.attendedDates || []).forEach(d => items.push({ date: d, time: s.timeVal || '', amount: 1, kind: 'normal' }));
+      (s.absentChargedDates || []).forEach(d => items.push({ date: d, time: s.timeVal || '', amount: 1, kind: 'normal', absent: true }));
+      makeupBank.forEach(r => {
+        if (r.studentId !== s.id) return;
+        r.schedules.forEach(sch => { if (sch.attended) items.push({ date: sch.date, time: sch.time || '', amount: Number(sch.amount) || 0, kind: 'makeup' }); });
+      });
+      tempLessons.forEach(t => {
+        if (t.studentId !== s.id || !(t.attended || t.absentCharged)) return;
+        items.push({ date: t.date, time: t.time || '', amount: Number(t.amount) || 1, kind: isRescheduleTemp(t) ? 'reschedule' : 'temp', absent: !!t.absentCharged });
+      });
+      paymentRecords.forEach(p => {
+        if (p.studentId === s.id && Number(p.lessons) < 0) {
+          // 方案異動帶過來的欠繳，其實是「舊方案那幾堂」，排在新方案第一堂前面，也列出是哪幾天
+          let isCarry = p.note === '課程方案異動，帶入原方案結餘';
+          let fromDates = isCarry ? getOldPlanUnpaidDates(s) : [];
+          items.push({ date: p.date, time: isCarry ? '' : '99:99', amount: -Number(p.lessons), kind: 'adjust', note: p.note || '', fromDates: fromDates });
+        }
+      });
+      return items.filter(it => it.amount > ENV_EPS && it.date).sort((a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time));
+    }
+
+    // 還沒點名的課：之後排定的，加上最近 60 天內忘了點名的（標成「還沒點名」）。needAmount 用完就停，不會一直往後算
+    function getStudentPendingLessons(s, needAmount) {
+      let out = [], total = 0;
+      if (!(needAmount > ENV_EPS)) return out;
+      let today = formatDate(new Date());
+      let from = addDaysStr(today, -60);
+      if (s.startDate && s.startDate > from) from = s.startDate;
+      let until = addDaysStr(today, 400);
+      let extraDates = new Set();
+      makeupBank.forEach(r => { if (r.studentId === s.id) r.schedules.forEach(sch => { if (!sch.attended && sch.date) extraDates.add(sch.date); }); });
+      tempLessons.forEach(t => { if (t.studentId === s.id && getTempLessonStatus(t) === 'none' && t.date) extraDates.add(t.date); });
+      let weekly = (s.freq !== 'appointment' && s.dayIndex !== '' && s.dayIndex !== undefined && s.dayIndex !== null) ? String(s.dayIndex) : null;
+      for (let d = from; d <= until && total < needAmount - ENV_EPS; d = addDaysStr(d, 1)) {
+        let wd = String(new Date(d + 'T00:00:00').getDay());
+        if (wd !== weekly && !extraDates.has(d)) continue;
+        getEventsForDate(d).forEach(it => {
+          let p = it.props, amt = 0, kind = '';
+          if (p.type === 'normal') {
+            if (!students[p.stuIdx] || students[p.stuIdx].id !== s.id) return;
+            amt = 1; kind = 'normal';
+          } else if (p.type === 'makeup') {
+            let r = makeupBank.find(x => x.id === p.recordId);
+            if (!r || r.studentId !== s.id || !r.schedules[p.schIdx]) return;
+            amt = Number(r.schedules[p.schIdx].amount) || 0; kind = 'makeup';
+          } else if (p.type === 'temp') {
+            let t = tempLessons.find(x => x.id === p.tempId);
+            if (!t || t.studentId !== s.id) return;
+            amt = Number(t.amount) || 1; kind = isRescheduleTemp(t) ? 'reschedule' : 'temp';
+          } else return;
+          if (!(amt > ENV_EPS) || !isLessonItemUnmarked(it, d)) return;
+          out.push({ date: d, time: it.time || '', amount: amt, kind: kind, overdue: d < today });
+          total += amt;
+        });
+      }
+      return out;
+    }
+
+    function buildTuitionEnvelope(s) {
+      let charged = getStudentChargedItems(s);
+      let periods = paymentRecords.map((p, idx) => ({ p, idx }))
+        .filter(x => x.p.studentId === s.id && Number(x.p.lessons) > 0 && x.p.date)
+        .sort((a, b) => a.p.date.localeCompare(b.p.date) || a.idx - b.idx)
+        .map(x => ({ pay: x.p, total: Number(x.p.lessons), left: Number(x.p.lessons), rest: 0, uses: [], projected: [], sales: [] }));
+      let ci = 0, unpaid = [];
+      charged.forEach(it => {
+        let need = it.amount;
+        while (need > ENV_EPS && ci < periods.length) {
+          let x = periods[ci];
+          let take = Math.min(need, x.left);
+          if (take > ENV_EPS) x.uses.push({ item: it, amount: envRound(take) });
+          x.left -= take; need -= take;
+          if (x.left <= ENV_EPS) { x.left = 0; ci++; }
+        }
+        if (need > ENV_EPS) unpaid.push({ item: it, amount: envRound(need) });
+      });
+      periods.forEach(x => { x.left = envRound(x.left); x.rest = x.left; });
+      let creditLeft = envRound(periods.reduce((t, x) => t + x.left, 0));
+
+      // 用剩下的堂數往後推算
+      let pending = getStudentPendingLessons(s, creditLeft);
+      let pj = ci;
+      pending.forEach(it => {
+        let need = it.amount;
+        while (need > ENV_EPS && pj < periods.length) {
+          let x = periods[pj];
+          let take = Math.min(need, x.rest);
+          if (take > ENV_EPS) x.projected.push({ item: it, amount: envRound(take) });
+          x.rest -= take; need -= take;
+          if (x.rest <= ENV_EPS) { x.rest = 0; pj++; }
+        }
+      });
+      periods.forEach(x => { x.rest = envRound(x.rest); });
+      let projectedEnd = null;
+      periods.forEach(x => { if (x.projected.length) projectedEnd = x.projected[x.projected.length - 1].item.date; });
+
+      // 書籍雜費：歸到「那時候正在用」的那一期（照這一期第一堂課的日期判斷，還沒對應到課的就用繳費日期）
+      periods.forEach(x => { let first = x.uses[0] || x.projected[0]; x.start = first ? first.item.date : x.pay.date; });
+      let byStart = periods.slice().sort((a, b) => a.start.localeCompare(b.start));
+      let looseSales = [];
+      materialSales.filter(m => m.studentId === s.id && m.date).sort((a, b) => a.date.localeCompare(b.date)).forEach(m => {
+        if (!byStart.length) { looseSales.push(m); return; }
+        let target = byStart[0];
+        byStart.forEach(x => { if (x.start <= m.date) target = x; });
+        target.sales.push(m);
+      });
+
+      return {
+        periods, unpaid, creditLeft, projectedEnd, looseSales,
+        unpaidTotal: envRound(unpaid.reduce((t, u) => t + u.amount, 0)),
+        unscheduled: envRound(periods.reduce((t, x) => t + x.rest, 0))
+      };
+    }
+
+    function envKindLabel(it) {
+      let base = { makeup: '補課', temp: '臨時課', reschedule: '調課' }[it.kind] || '';
+      if (it.absent) base = base ? base + '・缺席收費' : '缺席收費';
+      return base;
+    }
+    // 舊方案還沒繳到的那幾堂（方案異動時帶進新方案的欠繳），用舊方案自己的學費袋算出來
+    function getOldPlanUnpaidDates(s) {
+      let old = s.changedFromId ? students.find(x => x.id === s.changedFromId) : null;
+      if (!old) return [];
+      return buildTuitionEnvelope(old).unpaid.filter(u => u.item.kind !== 'adjust').map(u => u.item.date);
+    }
+    function envAdjustLabel(note) {
+      let map = { '學生退班退款': '退班退款', '學生退班未退款': '退班未退款', '課程方案異動，帶入原方案結餘': '原方案欠繳', '期初結餘（清除舊資料時保留）': '期初欠繳' };
+      return map[note] || ('修正' + (note ? '：' + note : ''));
+    }
+    function envChipHTML(u, mode) { // mode: 'used' | 'proj' | 'unpaid'
+      let it = u.item;
+      let partial = Math.abs(u.amount - 1) > ENV_EPS ? ' ×' + u.amount : '';
+      if (it.kind === 'adjust') {
+        if (it.fromDates && it.fromDates.length) return `<span class="env-chip env-chip-adj">${it.fromDates.map(envShortDate).join('、')}（舊方案欠繳）${Math.abs(u.amount - it.fromDates.length) > ENV_EPS ? ' ' + u.amount + ' 堂' : ''}</span>`;
+        return `<span class="env-chip env-chip-adj">➖ ${envShortDate(it.date)} ${escHTML(envAdjustLabel(it.note))} ${u.amount} 堂</span>`;
+      }
+      let label = envKindLabel(it);
+      if (mode === 'proj') {
+        return `<span class="env-chip env-chip-proj${it.overdue ? ' env-chip-overdue' : ''}">${it.overdue ? '❔' : '⏳'} ${envShortDate(it.date)}${label ? ' ' + label : ''}${partial}${it.overdue ? ' 還沒點名' : ''}</span>`;
+      }
+      let icon = it.absent ? '💸' : '✅';
+      return `<span class="env-chip${mode === 'unpaid' ? ' env-chip-unpaid' : ''}">${icon} ${envShortDate(it.date)}${label ? ' ' + label : ''}${partial}</span>`;
+    }
+    function envSalesText(sales) {
+      return sales.map(m => escHTML(m.itemName) + (Number(m.quantity) > 1 ? ' ×' + m.quantity : '') + ' NT$ ' + Math.round(Number(m.salePrice) || 0).toLocaleString() + '（' + envShortDate(m.date) + '）').join('、');
+    }
+    function envSalesTotal(sales) { return Math.round(sales.reduce((t, m) => t + (Number(m.salePrice) || 0), 0)); }
+
+    function envPeriodStatus(x) {
+      if (x.left <= ENV_EPS) {
+        let last = x.uses[x.uses.length - 1];
+        return '已用完' + (last ? '（最後一堂 ' + envDateLabel(last.item.date) + '）' : '');
+      }
+      let used = envRound(x.total - x.left);
+      let txt = (used > ENV_EPS ? '已用 ' + used + ' / ' + x.total + ' 堂，' : '還沒開始用，') + '剩 ' + x.left + ' 堂';
+      if (x.projected.length && x.rest <= ENV_EPS) txt += '・預計上到 ' + envDateLabel(x.projected[x.projected.length - 1].item.date);
+      else if (x.projected.length) txt += '・其中 ' + x.rest + ' 堂之後還沒排到課';
+      else txt += '（之後還沒排到課）';
+      return txt;
+    }
+
+    // 舊版「課程方案異動」會把已經上過的補課一起搬到新方案，造成新方案多扣；這裡找出這種補課，讓老師一鍵搬回舊方案
+    function findPlanOwnerForDate(s, dateStr) {
+      let cur = s, guard = 0;
+      while (cur && cur.changedFromId && cur.startDate && dateStr < cur.startDate && guard++ < 20) {
+        let prev = students.find(x => x.id === cur.changedFromId);
+        if (!prev) break;
+        cur = prev;
+      }
+      return cur;
+    }
+    function getMisplacedPlanMakeups(s) {
+      if (!s.changedFromId || !s.startDate) return [];
+      let out = [];
+      makeupBank.forEach(r => {
+        if (r.studentId !== s.id) return;
+        r.schedules.forEach(sch => { if (sch.attended && sch.date && sch.date < s.startDate) out.push({ record: r, sch }); });
+      });
+      return out;
+    }
+    function repairPlanMakeups(studentId) {
+      let s = students.find(x => x.id === studentId);
+      if (!s) return;
+      let list = getMisplacedPlanMakeups(s);
+      if (!list.length) return;
+      if (!confirm('要把這 ' + list.length + ' 堂「舊方案時就上過」的補課搬回舊方案嗎？\n\n搬完之後，這位學生的「已上課」會少算 ' + list.reduce((t, x) => t + (Number(x.sch.amount) || 0), 0) + ' 堂，欠費／預繳會變正確。')) return;
+      let add = [];
+      makeupBank.forEach(r => {
+        if (r.studentId !== s.id) return;
+        let early = r.schedules.filter(sch => sch.attended && sch.date && sch.date < s.startDate);
+        if (!early.length) return;
+        let rest = r.schedules.filter(sch => !early.includes(sch));
+        // 依日期找出那幾堂當時是哪一個方案（連續異動過好幾次也找得到）
+        let groups = {};
+        early.forEach(sch => { let owner = findPlanOwnerForDate(s, sch.date); let k = owner ? owner.id : s.changedFromId; (groups[k] = groups[k] || []).push(sch); });
+        let earlyAmt = Number(early.reduce((t, sch) => t + (Number(sch.amount) || 0), 0).toFixed(2));
+        Object.keys(groups).forEach(ownerId => {
+          let owner = students.find(x => x.id === ownerId);
+          let amt = Number(groups[ownerId].reduce((t, sch) => t + (Number(sch.amount) || 0), 0).toFixed(2));
+          add.push({ id: generateId(), studentId: ownerId, studentName: owner ? owner.name : r.studentName, dateGen: r.dateGen, totalOwed: amt, remaining: 0, status: 'history', schedules: groups[ownerId] });
+        });
+        r.schedules = rest;
+        r.totalOwed = Number((Number(r.totalOwed) - earlyAmt).toFixed(2));
+        if (r.schedules.length === 0 && !(Number(r.remaining) > 0)) r._remove = true;
+      });
+      makeupBank = makeupBank.filter(r => !r._remove);
+      makeupBank.push(...add);
+      saveMakeupToMemory();
+      if (calendar) calendar.refetchEvents();
+      updateMainMenuBadge();
+      renderStudentDetailPayment();
+      if (typeof renderStudentDetailMakeup === 'function') renderStudentDetailMakeup();
+      alert('✅ 已修正！');
+    }
+
+    function buildTuitionEnvelopeHTML(s, env) {
+      let fee = Number(s.fee) || 0;
+      let html = `<div class="card env-card">
+        <div class="env-head"><div class="student-title" style="margin:0;">📒 學費袋</div><button class="small-btn env-copy-btn" onclick="copyTuitionMessage('${s.id}')">📋 複製給家長</button></div>
+        <div class="env-explain">每一筆繳費照「先繳先用」自動對應到上過的課。⏳ 是之後排定的課，照月曆往後推算（延期、停課會自動跳過）；❔ 是過去還沒點名的課。</div>`;
+
+      let misplaced = getMisplacedPlanMakeups(s);
+      if (misplaced.length) {
+        html += `<div class="env-warn">⚠️ 這位學生做過「課程方案異動」，有 ${misplaced.length} 堂補課是舊方案時就上過的，被重複算進新方案（舊版程式的問題），所以欠費會多算。<br><button class="small-btn" style="margin-top:6px; background-color:#B08A8A; color:white;" onclick="repairPlanMakeups('${s.id}')">🔧 一鍵修正</button></div>`;
+      }
+
+      let summary;
+      if (env.unpaidTotal > ENV_EPS) summary = `<span style="color:#E08E79;">⚠️ 尚未繳費 ${env.unpaidTotal} 堂${fee ? '（約 NT$ ' + Math.round(env.unpaidTotal * fee).toLocaleString() + '）' : ''}</span>`;
+      else if (env.creditLeft > ENV_EPS) {
+        summary = `<span style="color:#5d705b;">✅ 預繳剩 ${env.creditLeft} 堂`;
+        if (env.projectedEnd && env.unscheduled <= ENV_EPS) summary += `，預計上到 ${envDateLabel(env.projectedEnd)}`;
+        else if (env.projectedEnd) summary += `，排到 ${envDateLabel(env.projectedEnd)} 之後還剩 ${env.unscheduled} 堂`;
+        else {
+          let cp = getCurrentPause(s);
+          summary += (cp && !cp.end) ? '（停課中，回來上課後繼續往後算）' : '（之後還沒排到課）';
+        }
+        summary += '</span>';
+      } else summary = '<span style="color:#888;">✅ 已結清</span>';
+      html += `<div class="env-summary">${summary}</div>`;
+
+      if (env.unpaid.length) {
+        html += `<div class="env-period env-unpaid"><div class="env-period-head"><span>⚠️ 還沒有繳費對應的課</span><span class="env-amt" style="color:#B5543F;">${env.unpaidTotal} 堂</span></div><div class="env-chips">${env.unpaid.map(u => envChipHTML(u, 'unpaid')).join('')}</div></div>`;
+      }
+
+      if (!env.periods.length && !env.unpaid.length) html += '<p style="font-size:13px; color:#aaa;">還沒有繳費紀錄，按上面的「💰 登記繳費」開始記。</p>';
+
+      let SHOW = 4;
+      let ordered = env.periods.slice().reverse(); // 最新的放最上面
+      let periodHTML = (x) => {
+        let p = x.pay;
+        let cls = x.left <= ENV_EPS ? 'env-done' : 'env-active';
+        let amt = hasPayAmount(p) ? `<span class="env-amt">NT$ ${Number(p.amount).toLocaleString()}</span>` : `<span class="env-amt-missing" onclick="openPayEditModal('${p.id}')">＋記金額</span>`;
+        let chips = x.uses.map(u => envChipHTML(u, 'used')).join('') + x.projected.map(u => envChipHTML(u, 'proj')).join('');
+        let salesHTML = x.sales.length ? `<div class="env-sub">📚 書籍雜費：${envSalesText(x.sales)}${x.sales.length > 1 ? '，共 NT$ ' + envSalesTotal(x.sales).toLocaleString() : ''}</div>` : '';
+        return `<div class="env-period ${cls}">
+          <div class="env-period-head"><span>💰 ${envDateLabel(p.date)} 繳 ${x.total} 堂</span>${amt}</div>
+          ${p.note ? `<div class="env-sub" style="color:#999;">${escHTML(p.note)}</div>` : ''}
+          ${chips ? `<div class="env-chips">${chips}</div>` : '<div class="env-sub" style="color:#aaa;">還沒對應到任何一堂</div>'}
+          ${salesHTML}
+          <div class="env-status">${envPeriodStatus(x)}</div>
+          <div class="env-actions"><a onclick="copyTuitionMessage('${s.id}', '${p.id}')">📋 複製這期</a><a onclick="openPayEditModal('${p.id}')">✏️ 編輯</a></div>
+        </div>`;
+      };
+      html += ordered.slice(0, SHOW).map(periodHTML).join('');
+      if (ordered.length > SHOW) {
+        html += `<div id="env-older-${s.id}" style="display:none;">${ordered.slice(SHOW).map(periodHTML).join('')}</div>`;
+        html += `<button class="small-btn" style="width:100%; background-color:#E2E8DF; color:#333; padding:8px;" onclick="let el=document.getElementById('env-older-${s.id}'); let open = el.style.display==='none'; el.style.display = open ? 'block' : 'none'; this.innerText = open ? '收起較早的紀錄' : '顯示較早的 ${ordered.length - SHOW} 筆'">顯示較早的 ${ordered.length - SHOW} 筆</button>`;
+      }
+      if (env.looseSales.length) html += `<div class="env-sub" style="margin-top:8px;">📚 書籍雜費：${envSalesText(env.looseSales)}</div>`;
+      html += '</div>';
+      return html;
+    }
+
+    function envMsgDate(u) {
+      let label = envKindLabel(u.item);
+      let partial = Math.abs(u.amount - 1) > ENV_EPS ? u.amount + '堂' : '';
+      let tags = [label, partial].filter(Boolean).join('・');
+      return envShortDate(u.item.date) + (tags ? '（' + tags + '）' : '');
+    }
+    function buildTuitionMessage(s, env, payId) {
+      let fee = Number(s.fee) || 0;
+      let studio = (appSettings.studioName || '').trim();
+      let lines = [(studio ? '【' + studio + '】' : '') + s.name + ' 學費紀錄'];
+      let targets;
+      if (payId) targets = env.periods.filter(x => x.pay.id === payId);
+      else {
+        targets = env.periods.filter(x => x.left > ENV_EPS);
+        if (!targets.length && env.periods.length) targets = [env.periods[env.periods.length - 1]];
+      }
+      targets.forEach(x => {
+        lines.push('');
+        lines.push('💰 ' + envShortDate(x.pay.date) + ' 繳 ' + x.total + ' 堂' + (hasPayAmount(x.pay) ? '（NT$ ' + Number(x.pay.amount).toLocaleString() + '）' : ''));
+        let carry = x.uses.filter(u => u.item.kind === 'adjust' && u.item.fromDates && u.item.fromDates.length);
+        carry.forEach(u => lines.push('舊方案欠繳：' + u.item.fromDates.map(envShortDate).join('、') + '（' + u.amount + ' 堂）'));
+        let done = x.uses.filter(u => u.item.kind !== 'adjust').map(envMsgDate);
+        if (done.length) lines.push('已上課：' + done.join('、'));
+        x.uses.filter(u => u.item.kind === 'adjust' && !carry.includes(u)).forEach(u => lines.push(envAdjustLabel(u.item.note) + '：' + u.amount + ' 堂（' + envShortDate(u.item.date) + '）'));
+        let next = x.projected.filter(u => !u.item.overdue).map(envMsgDate);
+        let overdue = x.projected.filter(u => u.item.overdue).map(envMsgDate);
+        if (overdue.length) next = overdue.concat(next);
+        if (next.length) lines.push('接下來：' + next.join('、'));
+        if (x.rest > ENV_EPS) lines.push('還有 ' + x.rest + ' 堂之後再排');
+        if (x.sales.length) lines.push('📚 書籍雜費：' + x.sales.map(m => m.itemName + (Number(m.quantity) > 1 ? ' ×' + m.quantity : '') + ' NT$ ' + Math.round(Number(m.salePrice) || 0).toLocaleString()).join('、'));
+      });
+      if (!payId && env.unpaid.length) {
+        lines.push('');
+        lines.push('尚未繳費：' + env.unpaid.map(u => u.item.kind === 'adjust' ? envAdjustLabel(u.item.note) + ' ' + u.amount + ' 堂' : envMsgDate(u)).join('、'));
+        lines.push('共 ' + env.unpaidTotal + ' 堂' + (fee ? '，NT$ ' + Math.round(env.unpaidTotal * fee).toLocaleString() : ''));
+      }
+      lines.push('');
+      if (env.unpaidTotal > ENV_EPS) lines.push('目前尚欠 ' + env.unpaidTotal + ' 堂，再麻煩您了，謝謝！');
+      else if (env.creditLeft > ENV_EPS) {
+        if (env.projectedEnd && env.unscheduled <= ENV_EPS) lines.push('目前預繳還剩 ' + env.creditLeft + ' 堂，預計上到 ' + envDateLabel(env.projectedEnd) + '。');
+        else lines.push('目前預繳還剩 ' + env.creditLeft + ' 堂。');
+      } else lines.push('目前學費已結清，謝謝！');
+      return lines.join('\n');
+    }
+    function copyTuitionMessage(studentId, payId) {
+      let s = students.find(x => x.id === studentId);
+      if (!s) return;
+      let msg = buildTuitionMessage(s, buildTuitionEnvelope(s), payId || null);
+      let done = () => alert('✅ 已複製，可以直接貼到 LINE：\n\n' + msg);
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(msg).then(done).catch(() => prompt('複製下面這段訊息：', msg));
+      else prompt('複製下面這段訊息：', msg);
+    }
+
+    // ---------- 編輯單筆繳費紀錄（補記金額、改日期／堂數／備註） ----------
+    let editingPayId = null;
+    function openPayEditModal(payId) {
+      let p = paymentRecords.find(x => x.id === payId);
+      if (!p) return;
+      editingPayId = payId;
+      let locked = AUTO_PAY_NOTES.includes(p.note);
+      document.getElementById('payedit-student').innerText = p.studentName || '';
+      document.getElementById('payedit-date').value = p.date || '';
+      document.getElementById('payedit-lessons').value = p.lessons;
+      document.getElementById('payedit-amount').value = hasPayAmount(p) ? p.amount : '';
+      document.getElementById('payedit-note').value = p.note || '';
+      ['payedit-date', 'payedit-lessons', 'payedit-note'].forEach(id => { document.getElementById(id).disabled = locked; });
+      document.getElementById('payedit-lock-note').style.display = locked ? 'block' : 'none';
+      let stu = students.find(x => x.id === p.studentId);
+      let fee = stu ? Number(stu.fee) || 0 : 0;
+      document.getElementById('payedit-amount').placeholder = fee ? '例如 ' + Math.round(fee * (Math.abs(Number(p.lessons)) || 1)) : '例如 3200';
+      document.getElementById('payedit-modal').style.display = 'flex';
+    }
+    function closePayEditModal() { document.getElementById('payedit-modal').style.display = 'none'; editingPayId = null; }
+    function submitPayEditModal() {
+      let p = paymentRecords.find(x => x.id === editingPayId);
+      if (!p) { closePayEditModal(); return; }
+      let amount = parsePayAmount(document.getElementById('payedit-amount').value);
+      if (amount === null) { alert('實收金額請輸入 0 以上的數字，或是留空！'); return; }
+      if (!AUTO_PAY_NOTES.includes(p.note)) {
+        let date = document.getElementById('payedit-date').value;
+        let lessons = Number(document.getElementById('payedit-lessons').value);
+        if (!date) { alert('請選擇繳費日期！'); return; }
+        if (document.getElementById('payedit-lessons').value === '' || isNaN(lessons) || lessons === 0) { alert('請輸入有效的堂數！'); return; }
+        p.date = date; p.lessons = lessons;
+        p.note = document.getElementById('payedit-note').value.trim();
+      }
+      if (amount === undefined) delete p.amount; else p.amount = amount;
+      savePaymentToMemory();
+      closePayEditModal();
+      renderStudentDetailPayment();
+    }
+    function deletePayFromEditModal() {
+      let id = editingPayId;
+      if (!id) return;
+      if (!confirm('確定要刪除這筆繳費紀錄嗎？')) return;
+      paymentRecords = paymentRecords.filter(p => p.id !== id);
+      savePaymentToMemory();
+      closePayEditModal();
+      renderStudentDetailPayment();
+    }
+    // ============ 學費袋結束 ============
+
     // 單一學生卡片的完整 HTML，篩選/排序完成後每個分組都呼叫這個函式產生卡片，不用重複寫三份
-    function buildPaymentCardHTML(s, debit, credit, balance, fee, idPrefix) {
+    function buildPaymentCardHTML(s, debit, credit, balance, fee, idPrefix, env) {
       idPrefix = idPrefix || '';
       let cardClass = 'card payment-card';
       let statusHTML = '';
@@ -4895,7 +5862,8 @@
         statusHTML = `<div style="color:#E08E79; font-weight:bold;">⚠️ 尚未繳費：${balance} 堂（約 NT$ ${Math.round(balance * fee).toLocaleString()}）</div>`;
       } else if (balance < 0) {
         cardClass += ' payment-settled';
-        statusHTML = `<div style="color:#8C9C8A; font-weight:bold;">✅ 預繳剩餘 ${Math.abs(balance)} 堂</div>`;
+        let projNote = (env && env.projectedEnd && env.unscheduled <= ENV_EPS) ? `<div style="color:#5d705b; font-size:13px; margin-top:2px;">📅 預計上到 ${envDateLabel(env.projectedEnd)}</div>` : '';
+        statusHTML = `<div style="color:#8C9C8A; font-weight:bold;">✅ 預繳剩餘 ${Math.abs(balance)} 堂</div>${projNote}`;
       } else {
         cardClass += ' payment-settled';
         statusHTML = `<div style="color:#888;">✅ 已結清</div>`;
@@ -4904,7 +5872,7 @@
       let historyRows = paymentRecords
         .filter(p => p.studentId === s.id)
         .sort((a, b) => b.date.localeCompare(a.date))
-        .map(p => `<div class="pay-history-row"><span>${p.date} ・ ${p.lessons} 堂${p.note ? '（' + p.note + '）' : ''}</span><button class="small-btn del-btn" style="padding:2px 8px; font-size:11px; margin-left:8px;" onclick="deletePaymentRecord('${p.id}', '${idPrefix}')">刪除</button></div>`)
+        .map(p => `<div class="pay-history-row"><span>${p.date} ・ ${p.lessons} 堂${hasPayAmount(p) ? ' ・ NT$ ' + Number(p.amount).toLocaleString() : ''}${p.note ? '（' + escHTML(p.note) + '）' : ''}</span><span style="white-space:nowrap;"><button class="small-btn" style="padding:2px 8px; font-size:11px; margin-left:8px; background-color:#E2E8DF; color:#333;" onclick="openPayEditModal('${p.id}')">編輯</button><button class="small-btn del-btn" style="padding:2px 8px; font-size:11px; margin-left:4px;" onclick="deletePaymentRecord('${p.id}', '${idPrefix}')">刪除</button></span></div>`)
         .join('');
 
       return `
@@ -4919,8 +5887,10 @@
           <div id="${idPrefix}payform_${s.id}" style="display:none; background-color:#f9f9f9; padding:10px; border-radius:5px; margin-top:10px;">
             <div style="display:flex; gap:8px; margin-bottom:8px;">
               <input type="date" id="${idPrefix}paydate_${s.id}" class="form-control" style="padding:5px;">
-              <input type="number" id="${idPrefix}paylessons_${s.id}" class="form-control" style="padding:5px;" placeholder="堂數 (可小數)" step="0.5">
+              <input type="number" id="${idPrefix}paylessons_${s.id}" class="form-control" style="padding:5px;" placeholder="堂數 (可小數)" step="0.5" oninput="autoFillPayAmount('${s.id}', '${idPrefix}')">
             </div>
+            <input type="number" id="${idPrefix}payamount_${s.id}" class="form-control" style="padding:5px; margin-bottom:4px;" placeholder="實收金額 NT$（選填）" min="0" oninput="this.dataset.manual = this.value === '' ? '' : '1'">
+            <div style="font-size:11px; color:#999; margin-bottom:8px;">輸入堂數會自動帶入「堂數 × 單堂學費」，有折扣或多收可以直接改</div>
             <input type="text" id="${idPrefix}paynote_${s.id}" class="form-control" style="padding:5px; margin-bottom:8px;" placeholder="備註（選填，例如：繳4堂、9月份月費）">
             <div style="display:flex; gap:5px; flex-wrap:wrap; margin-bottom:8px;">
               <button class="small-btn" style="background-color:#E2E8DF; color:#333; font-size:12px;" onclick="fillMonthCount('${s.id}', 0, '${idPrefix}')">帶入本月堂數</button>
@@ -4957,6 +5927,7 @@
         let t = tempLessons.find(x => x.id === p.tempId);
         return !!t && getTempLessonStatus(t) === 'none';
       }
+      if (p.type === 'group') return (p.members || []).some(m => isLessonItemUnmarked({ props: m }, dateStr));
       return false;
     }
 
@@ -4983,6 +5954,9 @@
         }
         return (Number(t.manualFee) || 0) * amt;
       }
+      if (p.type === 'group') {
+        return (p.members || []).filter(m => isLessonItemUnmarked({ props: m }, p.dateStr)).reduce((sum, m) => sum + estimateUnmarkedFee({ props: m }), 0);
+      }
       return 0;
     }
 
@@ -4998,7 +5972,7 @@
       for (let d = 1; d <= lastDay; d++) {
         let dateStr = monthStr + '-' + String(d).padStart(2, '0');
         if (dateStr > today) break;
-        getEventsForDate(dateStr).forEach(it => {
+        getDisplayItemsForDate(dateStr).forEach(it => {
           if (!isLessonItemUnmarked(it, dateStr)) return;
           if (dateStr === today) {
             if (it.allDay) return;
@@ -5102,7 +6076,7 @@
       let gEl = document.getElementById('dashboard-greeting');
       if (gEl) {
         let now = new Date();
-        let todayCount = getEventsForDate(formatDate(now)).filter(it => !isInactiveEventItem(it) && it.props.type !== 'rental').length;
+        let todayCount = getDisplayItemsForDate(formatDate(now)).filter(it => !isInactiveEventItem(it) && it.props.type !== 'rental').length;
         gEl.innerText = (now.getMonth() + 1) + ' 月 ' + now.getDate() + ' 日（' + getDayName(now.getDay().toString()) + '）・今天有 ' + todayCount + ' 堂課';
       }
       renderDashboardCounts();
@@ -5121,7 +6095,7 @@
     // 今日課程直接重用月曆算事件的同一套邏輯（getEventsForDate），確保跟月曆、學生詳細頁看到的資料永遠一致
     function renderDashboardToday() {
       let today = formatDate(new Date());
-      let items = getEventsForDate(today);
+      let items = getDisplayItemsForDate(today);
       currentDashboardTodayItems = items;
       let content = document.getElementById('dashboard-today-content');
       if (items.length === 0) {
@@ -5233,6 +6207,8 @@
 
     function renderManageList() {
       renderManageLocationFilterRow();
+      renderGroupManage();
+      renderGroupSelects();
       let query = (document.getElementById('manage-search').value || '').trim().toLowerCase();
       let withdrawnHTML = '';
       let withdrawnCount = 0;
@@ -5277,6 +6253,8 @@
         let hasUnscheduledMakeup = makeupBank.some(r => r.studentId === s.id && r.status === 'active' && r.remaining > 0);
         let statusBadges = (hasOwed ? '⚠️ ' : '') + (hasUnscheduledMakeup ? '🔄 ' : '');
         let pauseNote = getPauseLabel(s) ? `<div style="font-size:12px; color:#5E6B7A; background:#EEF1F5; border-radius:4px; padding:3px 8px; margin:2px 0 6px 0; display:inline-block;">${getPauseLabel(s)}</div>` : '';
+        let grp = s.groupId ? getGroupById(s.groupId) : null;
+        if (grp) pauseNote = `<div style="font-size:12px; color:#3F6A6D; background:#E6F0F0; border-radius:4px; padding:3px 8px; margin:2px 6px 6px 0; display:inline-block;">👥 ${escHTML(grp.name)}</div>` + pauseNote;
         return `<div class="card"><div class="student-title" style="font-size: 16px;">${statusBadges}${s.name} (${s.instrument})</div>${pauseNote}<div class="student-detail">🕒 ${displayTime}${locationNote}${startNote} <br> 💰 ${s.fee}元 / 堂 <br> 📞 ${s.phone}</div><div style="display:flex; flex-wrap:wrap; gap:6px;"><button class="small-btn" style="background-color:#5d705b; color:white;" onclick="openStudentDetail('${s.id}')">📋 詳細資料</button><button class="small-btn" style="background-color:#E2E8DF; color:#333;" onclick="openEditModal(${i})">編輯</button><button class="small-btn" style="background-color:#7C93B3; color:white;" onclick="openPlanChangeModal('${s.id}')">🔁 課程方案異動</button><button class="small-btn" style="background-color:#9AA7B5; color:white;" onclick="openPauseModal('${s.id}')">⏸️ 停課</button><button class="small-btn" style="background-color:#B08A8A; color:white;" onclick="openWithdrawModal('${s.id}')">退班</button><button class="small-btn del-btn" onclick="deleteStudent(${i})">刪除</button></div></div>`;
       }).join('');
 
@@ -5428,13 +6406,14 @@
       let t = tempLessons.find(x => x.id === convertingTempId);
       if (t) {
         let wasPaid = !!t.paid;
+        let trialFee = Number(t.manualFee) || 0;
         t.studentId = newId;
         t.studentName = name;
         delete t.manualFee;
         delete t.paid;
         saveTempToMemory();
         if (wasPaid) {
-          paymentRecords.push({ id: generateId(), studentId: newId, studentName: name, date: t.date, lessons: 1, note: '體驗課轉正時登記' });
+          paymentRecords.push({ id: generateId(), studentId: newId, studentName: name, date: t.date, lessons: 1, note: '體驗課轉正時登記', amount: trialFee > 0 ? Math.round(trialFee * (Number(t.amount) || 1)) : undefined });
           savePaymentToMemory();
         }
       }
@@ -5681,7 +6660,7 @@
       }
 
       if (!checkDuplicateNameWarning(oldS.name, instrument, oldS.id)) return;
-      if (!checkScheduleConflictWarning(freq, dayIndex, timeVal, anchorDate, duration, oldS.id)) return;
+      if (!checkScheduleConflictWarning(freq, dayIndex, timeVal, anchorDate, duration, oldS.id, oldS.groupId)) return;
       if (!confirmRecurringRentalClash(freq, dayIndex, timeVal, duration, anchorDate, effectiveDate, location, null)) return; // 新方案的固定時段撞到已經租出去的琴房，先提醒
 
       if (!confirm('確定要幫「' + oldS.name + '」異動課程方案嗎？' + effectiveDate + ' 開始會套用新設定，' + effectiveDate + ' 以前的紀錄完全不會變動。')) return;
@@ -5701,7 +6680,7 @@
       students.push({
         id: newId, name: oldS.name, instrument: instrument, freq: freq, startDate: effectiveDate,
         dayIndex: dayIndex, timeVal: timeVal, duration: duration, singleLessonPay: singleLessonPay, location: location, locationAbbr: locationAbbr, fee: fee, phone: oldS.phone, anchorDate: anchorDate,
-        changedFromId: oldS.id,
+        changedFromId: oldS.id, groupId: oldS.groupId || undefined,
         attendedDates: [], canceledDates: [], makeupConvertedDates: []
       });
 
@@ -5711,7 +6690,22 @@
       }
 
       // 還沒排課完成的補課、生效日期之後已排定的臨時課、待辦事項，都跟著轉移到新方案底下，不會憑空消失
-      makeupBank.forEach(r => { if (r.studentId === oldS.id) { r.studentId = newId; r.studentName = oldS.name; } });
+      // 補課存摺：已經上過的補課是舊方案用掉的堂數（已經算進上面帶過去的結餘），要留在舊方案；
+      // 只有還沒上的部分（還沒排的、排了還沒上的）搬到新方案，不然新方案會被重複多扣一次
+      let splitMakeups = [];
+      makeupBank.forEach(r => {
+        if (r.studentId !== oldS.id) return;
+        let done = r.schedules.filter(sch => sch.attended);
+        if (done.length === 0) { r.studentId = newId; r.studentName = oldS.name; return; }
+        let todo = r.schedules.filter(sch => !sch.attended);
+        if (todo.length === 0 && !(Number(r.remaining) > 0)) return; // 整筆都上完了，留在舊方案
+        let doneAmt = Number(done.reduce((t, sch) => t + (Number(sch.amount) || 0), 0).toFixed(2));
+        let moved = { id: generateId(), studentId: newId, studentName: oldS.name, dateGen: r.dateGen, totalOwed: Number((Number(r.totalOwed) - doneAmt).toFixed(2)), remaining: r.remaining, status: 'active', schedules: todo };
+        if (r.fromTempId) moved.fromTempId = r.fromTempId;
+        splitMakeups.push(moved);
+        r.schedules = done; r.totalOwed = doneAmt; r.remaining = 0; r.status = 'history';
+      });
+      makeupBank.push(...splitMakeups);
       saveMakeupToMemory();
       tempLessons.forEach(t => { if (t.studentId === oldS.id && t.date >= effectiveDate) { t.studentId = newId; t.studentName = oldS.name; } });
       saveTempToMemory();
@@ -5732,6 +6726,7 @@
     // 兩個動作合併成一次操作，不會產生補課存摺那種需要另外追蹤的欠課關係。
 
     function openRescheduleModalFromEvent() {
+      rescheduleGroupCtx = null;
       if (!currentModalEvent || currentModalEvent.type !== 'normal') return;
       let s = students[currentModalEvent.stuIdx];
       if (!s) return;
@@ -5755,7 +6750,7 @@
     // 調課的「堂數」跟「時長」互相換算：以這位學生自己的一堂課時長為基準，例如 60 分鐘的學生調成 45 分鐘 = 0.75 堂
     function syncRescheduleAmountDuration(source) {
       let s = currentModalEvent && currentModalEvent.type === 'normal' ? students[currentModalEvent.stuIdx] : null;
-      let base = (s && s.duration) || 60;
+      let base = rescheduleGroupCtx ? (rescheduleGroupCtx.baseDuration || 60) : ((s && s.duration) || 60);
       let amtEl = document.getElementById('reschedule-amount');
       let durEl = document.getElementById('reschedule-duration');
       if (source === 'duration') {
@@ -5765,9 +6760,10 @@
       }
     }
 
-    function closeRescheduleModal() { document.getElementById('reschedule-modal').style.display = 'none'; refreshDayPanelIfNeeded(); }
+    function closeRescheduleModal() { document.getElementById('reschedule-modal').style.display = 'none'; rescheduleGroupCtx = null; refreshDayPanelIfNeeded(); }
 
     function submitReschedule() {
+      if (rescheduleGroupCtx) { submitGroupReschedule(); return; }
       if (!currentModalEvent || currentModalEvent.type !== 'normal') { closeRescheduleModal(); return; }
       let s = students[currentModalEvent.stuIdx];
       if (!s) { closeRescheduleModal(); return; }
@@ -6526,7 +7522,8 @@
       let credit = getStudentCredit(s.id);
       let balance = Number((debit - credit).toFixed(2));
       let fee = Number(s.fee) || 0;
-      document.getElementById('student-detail-tab-payment').innerHTML = buildPaymentCardHTML(s, debit, credit, balance, fee, 'detail_');
+      let env = buildTuitionEnvelope(s);
+      document.getElementById('student-detail-tab-payment').innerHTML = buildPaymentCardHTML(s, debit, credit, balance, fee, 'detail_', env) + buildTuitionEnvelopeHTML(s, env);
     }
 
     function showStudentDetailTab(tab) {
@@ -6563,6 +7560,7 @@
             <div>🎵 樂器：${s.instrument}</div>
             <div>🕐 上課時間：${scheduleLabel}（${s.duration || 60} 分鐘）</div>
             <div>📍 上課地點：${s.location || '（尚未填寫）'}</div>
+            ${groupLineHTML(s)}
             <div>💰 單堂學費：NT$ ${s.fee || 0}${s.singleLessonPay ? '（單堂繳費）' : ''}</div>
             <div>📞 聯絡電話：${s.phone || '（尚未填寫）'}</div>
             <div>📅 開始上課日期：${s.startDate || '（尚未填寫）'}</div>
@@ -6598,6 +7596,8 @@
 
       document.getElementById('edit-fee').value = s.fee;
       document.getElementById('edit-phone').value = s.phone;
+      renderGroupSelects();
+      document.getElementById('edit-group').value = (s.groupId && getGroupById(s.groupId)) ? s.groupId : '';
 
       document.getElementById('edit-modal').style.display = 'flex';
     }
@@ -6635,12 +7635,14 @@
       }
 
       let editId = students[editingIndex].id;
+      let editGroupId = readGroupSelect('edit');
       if (!checkDuplicateNameWarning(name, instrument, editId)) return;
-      if (!checkScheduleConflictWarning(freq, dayIndex, timeVal, anchorDate, duration, editId)) return;
+      if (!checkScheduleConflictWarning(freq, dayIndex, timeVal, anchorDate, duration, editId, editGroupId)) return;
       if (!confirmRecurringRentalClash(freq, dayIndex, timeVal, duration, anchorDate, startDate, location, editId)) return; // 改過的固定時段撞到已經租出去的琴房，先提醒
 
       let s = students[editingIndex];
       s.name = name; s.instrument = instrument; s.freq = freq; s.startDate = startDate; s.duration = duration; s.singleLessonPay = singleLessonPay; s.location = location; s.locationAbbr = locationAbbr; s.dayIndex = dayIndex; s.timeVal = timeVal; s.fee = fee; s.phone = phone; s.anchorDate = anchorDate;
+      if (editGroupId) s.groupId = editGroupId; else delete s.groupId;
 
       // 若學生姓名有異動，同步更新補課存摺、繳費紀錄、臨時課、待辦事項上顯示的姓名
       makeupBank.forEach(r => { if (r.studentId === s.id) r.studentName = s.name; });
@@ -6686,12 +7688,16 @@
         }
       }
       
+      let addGroupId = readGroupSelect('add');
       if (!checkDuplicateNameWarning(name, instrument, null)) return;
-      if (!checkScheduleConflictWarning(freq, dayIndex, timeVal, anchorDate, duration, null)) return;
+      if (!checkScheduleConflictWarning(freq, dayIndex, timeVal, anchorDate, duration, null, addGroupId)) return;
       if (!confirmRecurringRentalClash(freq, dayIndex, timeVal, duration, anchorDate, startDate, location, null)) return; // 固定時段撞到已經租出去的琴房，先提醒
 
-      students.push({ id: generateId(), name: name, instrument: instrument, freq: freq, startDate: startDate, duration: duration, singleLessonPay: singleLessonPay, location: location, locationAbbr: locationAbbr, dayIndex: dayIndex, timeVal: timeVal, fee: fee, phone: phone, anchorDate: anchorDate, attendedDates: [], canceledDates: [], makeupConvertedDates: [] });
-      saveToMemory(); 
+      let newStu = { id: generateId(), name: name, instrument: instrument, freq: freq, startDate: startDate, duration: duration, singleLessonPay: singleLessonPay, location: location, locationAbbr: locationAbbr, dayIndex: dayIndex, timeVal: timeVal, fee: fee, phone: phone, anchorDate: anchorDate, attendedDates: [], canceledDates: [], makeupConvertedDates: [] };
+      if (addGroupId) newStu.groupId = addGroupId;
+      students.push(newStu);
+      saveToMemory();
+      document.getElementById('add-group').value = '';
       
       document.getElementById('add-name').value = ''; document.getElementById('add-fee').value = ''; document.getElementById('add-phone').value = ''; document.getElementById('add-day').value = ''; document.getElementById('add-duration').value = 60; document.getElementById('add-single-pay').checked = false; document.getElementById('add-location').value = ''; document.getElementById('add-location-abbr').value = ''; document.querySelector('input[name="add-location-preset"][value="其他"]').checked = true;
       document.getElementById('add-start-date').value = '';
@@ -6948,6 +7954,7 @@
       if (pr.type === 'makeup') { let rec = makeupBank.find(r => r.id === pr.recordId); return rec ? getStudentLocationById(rec.studentId) : ''; }
       if (pr.type === 'temp') { let t = tempLessons.find(x => x.id === pr.tempId); return t ? getTempLessonLocation(t).location : ''; }
       if (pr.type === 'rental') { let r = rentalData.rentals.find(x => x.id === pr.rentalId); return r ? r.location : ''; }
+      if (pr.type === 'group') { let m0 = (pr.members || [])[0]; return m0 ? getItemLocation({ props: m0 }) : ''; }
       return '';
     }
     function findLocationOccupants(dateStr, timeStr, duration, location, exclude) {
@@ -7389,7 +8396,7 @@
       rentalData.rentals.forEach(r => { if (r.date === dateStr && r.location && !cols.includes(r.location)) cols.push(r.location); });
       let box = document.getElementById('usage-table');
       if (cols.length === 0) { box.innerHTML = '<p style="color:#aaa; font-size:13px;">還沒有設定可出租的地點。</p>'; document.getElementById('usage-note').innerText = ''; return; }
-      let items = getEventsForDate(dateStr).filter(it => !it.allDay && !isInactiveEventItem(it));
+      let items = getDisplayItemsForDate(dateStr).filter(it => !it.allDay && !isInactiveEventItem(it));
       let startMin = 8 * 60, endMin = 22 * 60;
       items.forEach(it => {
         let s0 = timeToMinutes(it.time), e0 = s0 + getDurationForProps(it.props);
@@ -7440,7 +8447,7 @@
         (unlocated.length > 0 ? '<br>⚠️ 這天有沒填地點的課（' + unlocated.map(escHTML).join('、') + '），沒有畫在表上。' : '');
     }
     function openUsageItem(dateStr, idx) {
-      let it = getEventsForDate(dateStr).filter(x => !x.allDay && !isInactiveEventItem(x))[idx];
+      let it = getDisplayItemsForDate(dateStr).filter(x => !x.allDay && !isInactiveEventItem(x))[idx];
       if (!it) return;
       openModalForCalendarEvent(it.props, it.title, dateStr, it.time, it.allDay);
     }
@@ -7470,7 +8477,7 @@
 
     // ============ 版本更新檢查 ============
     // 每次修改程式、上傳新檔案時，要把這個版本號改掉（任何不一樣的字都可以），手機才會知道有新版本。
-    const APP_VERSION = 'sm-2026.10.15-6';
+    const APP_VERSION = 'sm-2026.10.15-8';
 
     // 加入主畫面的 App 常常直接拿手機裡存的舊檔案，而且沒有重新整理按鈕。
     // 做法：去網路上抓一份「現在的這個網頁」（網址加上時間，強迫不能用舊的），比對裡面寫的版本號，不一樣就提示更新。
