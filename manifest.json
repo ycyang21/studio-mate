@@ -1,0 +1,17 @@
+{
+  "name": "Studio Mate 工作室管理",
+  "short_name": "Studio Mate",
+  "description": "給跑課老師的工作室管理工具：排課、點名、補課、學費結算",
+  "start_url": "studio-mate.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FDFBF7",
+  "theme_color": "#8C9C8A",
+  "lang": "zh-TW",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
