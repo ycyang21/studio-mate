@@ -1549,9 +1549,9 @@
   <div id="quickpay-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 10001; align-items: center; justify-content: center;">
     <div class="modal-content modal-with-head" style="text-align: left;">
       <div class="modal-head">
-        <button class="modal-back-x" id="qp-back" style="display:none;" onclick="quickPayShow('pick'); renderQuickPayPicker();" aria-label="回上一頁" title="回到學生清單">‹</button>
+        <button class="modal-back-x" id="qp-back" style="display:none;" onclick="quickPayBack()" aria-label="回上一頁" title="回上一頁">‹</button>
         <h3>💰 登記繳費</h3>
-        <button class="modal-close-x" onclick="closeQuickPay()" aria-label="關閉" title="關閉">✕</button>
+        <button class="modal-close-x" onclick="closeAllModals()" aria-label="關閉" title="關閉">✕</button>
       </div>
       <div id="qp-searchbar" style="padding:10px 20px 0; flex-shrink:0;">
         <input type="text" id="qp-search" class="form-control" style="margin:0;" placeholder="🔍 搜尋學生姓名" oninput="renderQuickPayPicker()">
@@ -5368,9 +5368,11 @@
         content.classList.add('modal-with-head');
         modalCloseFns[modal.id] = closeFn;
         if (modal.id !== 'attendance-modal') {
-          // 視窗關掉時，「回上一頁」也跟著清掉，下次正常打開不會殘留
+          // 打開時：如果是疊在別的視窗上面（例如當天課表上面），左上角出現 ‹，按了就回到下面那個視窗
+          // 關掉時：「回上一頁」也跟著清掉，下次正常打開不會殘留
           new MutationObserver(() => {
             if (modal.style.display === 'none') { delete modalBackFns[modal.id]; back.style.display = 'none'; }
+            else if (modal.id !== 'day-modal' && (modalBackFns[modal.id] || otherModalOpenBeneath(modal.id))) back.style.display = 'block';
           }).observe(modal, { attributes: true, attributeFilter: ['style'] });
         }
       });
@@ -5380,9 +5382,23 @@
       let b = document.querySelector('#' + modalId + ' .modal-back-x');
       if (b) b.style.display = 'block';
     }
-    function modalCloseX(modalId) {
-      if (modalId === 'attendance-modal') { groupModalReturn = null; closeModal(); return; }
-      if (modalCloseFns[modalId]) modalCloseFns[modalId]();
+    // ✕：整疊視窗全部關掉，回到原本的頁面；‹ 才是只回上一個視窗
+    function modalCloseX(modalId) { closeAllModals(); }
+    function visibleModals() {
+      return Array.from(document.querySelectorAll('[id$="-modal"]')).filter(el => el.style.display === 'flex' || el.style.display === 'block');
+    }
+    function otherModalOpenBeneath(modalId) { return visibleModals().some(el => el.id !== modalId); }
+    function closeAllModals() {
+      groupModalReturn = null;
+      let z = el => Number(getComputedStyle(el).zIndex) || 0;
+      visibleModals().sort((a, b) => z(b) - z(a)).forEach(m => {
+        if (m.style.display === 'none') return;
+        if (m.id === 'quickpay-modal') closeQuickPay();
+        else if (m.id === 'attendance-modal') { groupModalReturn = null; closeModal(); }
+        else if (modalCloseFns[m.id]) modalCloseFns[m.id]();
+        else m.style.display = 'none';
+      });
+      unlockBodyScroll();
     }
     function modalGoBack(modalId) {
       if (modalId === 'attendance-modal') { attendanceBack(); return; }
@@ -5397,7 +5413,7 @@
     }
     function updateAttendanceBack() {
       let b = document.querySelector('#attendance-modal .modal-back-x');
-      if (b) b.style.display = (attendanceInSubView() || groupModalReturn) ? 'block' : 'none';
+      if (b) b.style.display = (attendanceInSubView() || groupModalReturn || otherModalOpenBeneath('attendance-modal')) ? 'block' : 'none';
     }
     function attendanceBack() { if (attendanceInSubView()) showModalSubView('main'); else closeModal(); }
     // ============ 視窗統一結束 ============
@@ -5407,6 +5423,10 @@
     let qpStudentId = null, qpDoneStudentId = null, qpLastPayId = null, qpLocked = false, qpFromPicker = false;
     function isAnyOtherModalOpen() {
       return Array.from(document.querySelectorAll('[id$="-modal"]')).some(el => el.id !== 'quickpay-modal' && (el.style.display === 'flex' || el.style.display === 'block'));
+    }
+    function quickPayBack() {
+      if (document.getElementById('qp-form').style.display === 'block' && qpFromPicker) { quickPayShow('pick'); renderQuickPayPicker(); return; }
+      closeQuickPay(); // 疊在點名視窗／團體課視窗上面的：回到下面那個視窗
     }
     function openQuickPay(studentId) {
       qpLocked = false;
@@ -5429,7 +5449,7 @@
     function quickPayShow(view) {
       ['pick', 'form', 'done'].forEach(v => { document.getElementById('qp-' + v).style.display = (v === view) ? 'block' : 'none'; });
       document.getElementById('qp-searchbar').style.display = (view === 'pick') ? 'block' : 'none';
-      document.getElementById('qp-back').style.display = (view === 'form' && qpFromPicker) ? 'block' : 'none';
+      document.getElementById('qp-back').style.display = ((view === 'form' && qpFromPicker) || otherModalOpenBeneath('quickpay-modal')) ? 'block' : 'none';
     }
     function renderQuickPayPicker() {
       let q = document.getElementById('qp-search').value.trim().toLowerCase();
@@ -9031,7 +9051,7 @@
 
     // ============ 版本更新檢查 ============
     // 每次修改程式、上傳新檔案時，要把這個版本號改掉（任何不一樣的字都可以），手機才會知道有新版本。
-    const APP_VERSION = 'sm-2026.10.16-5';
+    const APP_VERSION = 'sm-2026.10.16-6';
 
     // 加入主畫面的 App 常常直接拿手機裡存的舊檔案，而且沒有重新整理按鈕。
     // 做法：去網路上抓一份「現在的這個網頁」（網址加上時間，強迫不能用舊的），比對裡面寫的版本號，不一樣就提示更新。
