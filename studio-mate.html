@@ -109,7 +109,14 @@
     .gm-paid input { width: auto; margin: 0; }
     .gm-btns { display: flex; gap: 4px; flex-shrink: 0; }
     .gm-btn { border: none; border-radius: 6px; padding: 8px 10px; font-size: 13px; cursor: pointer; color: white; white-space: nowrap; }
-    .gm-ok { background: #8C9C8A; } .gm-absent { background: #C1666B; } .gm-undo { background: #fff; color: #888; border: 1px solid #ddd; } .gm-more { background: #E2E8DF; color: #333; }
+    .gm-ok { background: #8C9C8A; } .gm-absent { background: #C1666B; } .gm-undo { background: #fff; color: #888; border: 1px solid #ddd; } .gm-more { background: #E2E8DF; color: #333; } .gm-pay { background: #F1EEE6; color: #333; }
+    .qp-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 10px 4px; border-bottom: 1px solid #eee; cursor: pointer; font-size: 15px; }
+    .qp-row:active, .qp-row:hover { background: #F6F8F5; }
+    .qp-sec { font-size: 12px; color: #888; margin: 12px 0 2px; font-weight: bold; }
+    .qp-fill { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 10px; }
+    .qp-fill .small-btn { font-size: 12px; background-color: #E2E8DF; color: #333; }
+    .qp-fill .qp-owe { background-color: #F6E1D9; color: #B5543F; }
+    .qp-status { font-size: 13px; border-radius: 6px; padding: 8px 10px; margin: 6px 0 12px; line-height: 1.5; }
     .group-card { background: #fff; border: 1px solid #DCE6E6; border-radius: 8px; padding: 10px; margin-bottom: 10px; text-align: left; }
     .group-card-head { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; align-items: baseline; }
     .group-card-sched { font-size: 12px; color: #888; }
@@ -388,9 +395,9 @@
     <p class="desktop-only dash-greeting" id="dashboard-greeting"></p>
 
     <div style="width:90%; margin:0 auto 12px auto; display:flex; gap:10px;">
-      <div class="card dashboard-count-card" style="flex:1; margin:0; cursor:pointer;" onclick="goToManageFiltered('owed')">
+      <div class="card dashboard-count-card" style="flex:1; margin:0; cursor:pointer;" onclick="openQuickPay()">
         <div style="font-size:22px; font-weight:bold; color:#E08E79;" id="dashboard-owed-count">0</div>
-        <div style="font-size:12px; color:#888;">⚠️ 尚未繳費</div>
+        <div style="font-size:12px; color:#888;">⚠️ 尚未繳費・💰 登記</div>
       </div>
       <div class="card dashboard-count-card" style="flex:1; margin:0; cursor:pointer;" onclick="goToManageFiltered('makeup')">
         <div style="font-size:22px; font-weight:bold; color:#7C93B3;" id="dashboard-makeup-count">0</div>
@@ -591,7 +598,7 @@
       <button class="small-btn" style="flex:1; padding:10px; background-color:#7C93B3; color:white;" onclick="openTempLessonModal()">➕ 新增臨時課</button>
       <button class="small-btn" style="flex:1; padding:10px; background-color:#E08E79; color:white;" onclick="openNewMakeupModal()">🔄 新增補課</button>
       <button class="small-btn rental-feature" style="flex:1; padding:10px; background-color:#C99A3B; color:white;" onclick="openRentalModal()">🔑 新增租借</button>
-      <button class="small-btn" style="flex:1; padding:10px; background-color:#E2E8DF; color:#333;" onclick="goHome()">返回首頁</button>
+      <button class="small-btn" style="flex:1; padding:10px; background-color:#8C9C8A; color:white;" onclick="openQuickPay()">💰 登記繳費</button>
     </div>
     <div id="calendar-layout">
     <div id="calendar"></div>
@@ -1468,6 +1475,37 @@
       <button class="button" style="width:100%; margin:10px 0 0 0; background-color:#7C8A9A;" onclick="submitPauseModal()">💾 儲存</button>
       <button id="pause-delete-btn" class="button" style="display:none; width:100%; margin:10px 0 0 0; background-color:#FFB6B9;" onclick="deletePause()">🗑️ 刪除這次停課</button>
       <button class="button btn-secondary" style="width:100%; margin:10px 0 0 0;" onclick="closePauseModal()">取消</button>
+    </div>
+  </div>
+
+  <div id="quickpay-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 10001; align-items: center; justify-content: center;">
+    <div class="modal-content" style="text-align: left;">
+      <h3 style="margin-top: 0; font-size: 18px; color: #333; text-align:center;">💰 登記繳費</h3>
+      <div id="qp-pick">
+        <input type="text" id="qp-search" class="form-control" placeholder="🔍 搜尋學生姓名" oninput="renderQuickPayPicker()">
+        <div id="qp-list"></div>
+      </div>
+      <div id="qp-form" style="display:none;">
+        <div style="display:flex; justify-content:space-between; align-items:baseline; gap:8px;">
+          <span id="qp-name" style="font-size:17px; font-weight:bold; color:#333;"></span>
+          <a id="qp-change" style="font-size:13px; color:#7C93B3; cursor:pointer;" onclick="quickPayShow('pick'); renderQuickPayPicker();">換學生</a>
+        </div>
+        <div id="qp-status" class="qp-status"></div>
+        <div style="display:flex; gap:8px; margin-bottom:8px;">
+          <input type="date" id="qp-date" class="form-control" style="padding:5px;">
+          <input type="number" id="qp-lessons" class="form-control" style="padding:5px;" placeholder="堂數 (可小數)" step="0.5" oninput="qpAutoAmount()">
+        </div>
+        <input type="number" id="qp-amount" class="form-control" style="padding:5px; margin-bottom:4px;" placeholder="實收金額 NT$（選填）" min="0" oninput="this.dataset.manual = this.value === '' ? '' : '1'">
+        <div style="font-size:11px; color:#999; margin-bottom:8px;">輸入堂數會自動帶入「堂數 × 單堂學費」，有折扣或多收可以直接改</div>
+        <input type="text" id="qp-note" class="form-control" style="padding:5px; margin-bottom:8px;" placeholder="備註（選填，例如：繳4堂、9月份月費）">
+        <div id="qp-fill" class="qp-fill"></div>
+        <button class="small-btn" style="background-color:#8C9C8A; color:white; width:100%; padding:10px; font-size:15px; margin:0;" onclick="submitQuickPay()">確定登記</button>
+      </div>
+      <div id="qp-done" style="display:none;">
+        <div id="qp-done-text" style="font-size:15px; line-height:1.7; color:#333; margin:6px 0 12px;"></div>
+        <button class="button" style="width:100%; margin:0;" onclick="copyTuitionMessage(qpDoneStudentId, qpLastPayId)">📋 複製給家長</button>
+      </div>
+      <button class="button btn-secondary" style="width:100%; margin:10px 0 0 0;" onclick="closeQuickPay()">關閉</button>
     </div>
   </div>
 
@@ -3291,23 +3329,28 @@
       return false;
     }
 
+    let modalBalanceStudentId = null; // 點名視窗目前顯示的是哪位學生的繳費狀況（💰 登記繳費用）
     function showBalanceInfo(studentId) {
       let el = document.getElementById('modal-balance-info');
+      modalBalanceStudentId = studentId || null;
       if (!studentId) { el.style.display = 'none'; return; }
       let balance = getStudentBalance(studentId);
+      let text;
       if (balance < 0) {
-        el.innerText = '🟢 目前預繳剩餘 ' + Math.abs(balance) + ' 堂，這堂通常已包含在內，不需要再勾選下方的「已收費」';
+        text = '🟢 目前預繳剩餘 ' + Math.abs(balance) + ' 堂，這堂通常已包含在內，不需要再勾選下方的「已收費」';
         el.style.color = '#4A6741';
         el.style.backgroundColor = '#F4F6F3';
       } else if (balance > 0) {
-        el.innerText = '🟠 目前還欠 ' + balance + ' 堂，如果這堂是現場繳費才需要勾選下方的「已收費」';
+        text = '🟠 目前還欠 ' + balance + ' 堂，如果這堂是現場繳費才需要勾選下方的「已收費」';
         el.style.color = '#B5651D';
         el.style.backgroundColor = '#FFF9F5';
       } else {
-        el.innerText = '目前已結清，如果這堂是現場繳費才需要勾選下方的「已收費」';
+        text = '目前已結清，如果這堂是現場繳費才需要勾選下方的「已收費」';
         el.style.color = '#888';
         el.style.backgroundColor = '#F5F5F5';
       }
+      el.innerHTML = '<div style="display:flex; gap:8px; align-items:center; justify-content:space-between;"><span>' + escHTML(text) + '</span>' +
+        '<button class="small-btn" style="flex-shrink:0; padding:6px 10px; font-size:12px; background-color:#8C9C8A; color:white;" onclick="openQuickPay(modalBalanceStudentId)">💰 登記繳費</button></div>';
       el.style.display = 'block';
     }
 
@@ -4919,20 +4962,25 @@
       return Number((getStudentDebit(studentId) - getStudentCredit(studentId)).toFixed(2));
     }
 
-    // 計算某年某月裡，這位學生實際會上到幾堂：每週生＝這個月「上課星期」出現的次數；
-    // 隔週生則要再逐一比對基準日期的單雙週，只算「有課的那一週」。
+    // 計算某年某月裡，這位學生實際會上到幾堂：直接用月曆的資料來源（getEventsForDate）數他的固定課，
+    // 所以隔週、開始上課日、退班、停課都照算；已經按「延期」的那幾堂不算（調課、轉補課的還是算一堂，只是換時間上）。
     function countScheduledInMonth(student, year, monthIndex) {
-      let weekday = Number(student.dayIndex);
       let count = 0;
       let d = new Date(year, monthIndex, 1);
       while (d.getMonth() === monthIndex) {
-        if (d.getDay() === weekday) {
-          if (student.freq !== 'biweekly' || isBiweeklyOnWeek(student.anchorDate, formatDate(d))) count++;
+        let ds = formatDate(d);
+        if (String(d.getDay()) === String(student.dayIndex)) {
+          getEventsForDate(ds).forEach(it => {
+            if (it.props.type !== 'normal' || !students[it.props.stuIdx] || students[it.props.stuIdx].id !== student.id) return;
+            if (getNormalLessonStatus(student, ds) === 'canceled') return;
+            count++;
+          });
         }
         d.setDate(d.getDate() + 1);
       }
       return count;
     }
+    function hasWeeklySchedule(s) { return !!s && s.freq !== 'appointment' && s.dayIndex !== '' && s.dayIndex !== undefined && s.dayIndex !== null; }
 
     // offset: 0=本月, 1=下月。把算好的堂數直接帶入輸入框
     function fillMonthCount(studentId, offset, idPrefix) {
@@ -4943,6 +4991,12 @@
       let target = new Date(now.getFullYear(), now.getMonth() + offset, 1);
       let count = countScheduledInMonth(s, target.getFullYear(), target.getMonth());
       document.getElementById(idPrefix + 'paylessons_' + studentId).value = count;
+      autoFillPayAmount(studentId, idPrefix);
+    }
+
+    function fillPayLessons(studentId, n, idPrefix) {
+      idPrefix = idPrefix || '';
+      document.getElementById(idPrefix + 'paylessons_' + studentId).value = n;
       autoFillPayAmount(studentId, idPrefix);
     }
 
@@ -5006,6 +5060,135 @@
     }
 
 
+
+
+    // ============ 快速登記繳費（月曆、點名視窗、團體課、首頁都能直接打開）============
+    // 表單跟學生詳細資料裡的「💰 登記繳費」完全一樣，只是不用先繞到學生名單找人。
+    let qpStudentId = null, qpDoneStudentId = null, qpLastPayId = null, qpLocked = false;
+    function isAnyOtherModalOpen() {
+      return Array.from(document.querySelectorAll('[id$="-modal"]')).some(el => el.id !== 'quickpay-modal' && (el.style.display === 'flex' || el.style.display === 'block'));
+    }
+    function openQuickPay(studentId) {
+      qpLocked = false;
+      if (!isAnyOtherModalOpen()) { lockBodyScroll(); qpLocked = true; }
+      document.getElementById('qp-search').value = '';
+      if (studentId && students.some(s => s.id === studentId)) {
+        quickPaySelect(studentId, false);
+      } else {
+        quickPayShow('pick');
+        renderQuickPayPicker();
+      }
+      document.getElementById('quickpay-modal').style.display = 'flex';
+    }
+    function closeQuickPay() {
+      if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur();
+      document.getElementById('quickpay-modal').style.display = 'none';
+      if (qpLocked) { unlockBodyScroll(); qpLocked = false; }
+      qpStudentId = null;
+    }
+    function quickPayShow(view) {
+      ['pick', 'form', 'done'].forEach(v => { document.getElementById('qp-' + v).style.display = (v === view) ? 'block' : 'none'; });
+    }
+    function renderQuickPayPicker() {
+      let q = document.getElementById('qp-search').value.trim().toLowerCase();
+      let rows = students.filter(s => !s.endDate && (!q || s.name.toLowerCase().includes(q))).map(s => ({ s, b: getStudentBalance(s.id) }));
+      let owed = rows.filter(r => r.b > 0).sort((a, b) => b.b - a.b);
+      let rest = rows.filter(r => !(r.b > 0)).sort((a, b) => a.s.name.localeCompare(b.s.name, 'zh-Hant'));
+      let row = r => {
+        let g = r.s.groupId ? getGroupById(r.s.groupId) : null;
+        let tag = r.b > 0 ? `<span class="gm-tag gm-owe">欠 ${r.b} 堂</span>` : (r.b < 0 ? `<span class="gm-tag">預繳剩 ${-r.b} 堂</span>` : '<span class="gm-tag" style="color:#888; background:#F2F2F2;">已結清</span>');
+        return `<div class="qp-row" onclick="quickPaySelect('${r.s.id}', true)"><span>${escHTML(r.s.name)}${g ? ' <span style="font-size:11px; color:#3F6A6D;">👥' + escHTML(g.name) + '</span>' : ''}</span>${tag}</div>`;
+      };
+      let html = '';
+      if (owed.length) html += `<div class="qp-sec">⚠️ 尚未繳費（${owed.length} 位）</div>` + owed.map(row).join('');
+      if (rest.length) html += `<div class="qp-sec">${owed.length ? '其他學生' : '學生'}</div>` + rest.map(row).join('');
+      document.getElementById('qp-list').innerHTML = html || '<p style="font-size:13px; color:#aaa; margin-top:10px;">找不到符合的在學學生。</p>';
+    }
+    function quickPaySelect(studentId, fromPicker) {
+      let s = students.find(x => x.id === studentId);
+      if (!s) return;
+      qpStudentId = studentId;
+      document.getElementById('qp-name').innerText = s.name;
+      document.getElementById('qp-change').style.display = fromPicker ? 'inline' : 'none';
+      renderQuickPayStatus(s);
+      document.getElementById('qp-date').value = formatDate(new Date());
+      document.getElementById('qp-lessons').value = '';
+      let amt = document.getElementById('qp-amount'); amt.value = ''; amt.dataset.manual = '';
+      document.getElementById('qp-note').value = '';
+      let bal = getStudentBalance(s.id);
+      let fill = '';
+      if (bal > 0) fill += `<button class="small-btn qp-owe" onclick="qpFill(${bal})">補齊欠的 ${bal} 堂</button>`;
+      if (hasWeeklySchedule(s)) {
+        let now = new Date();
+        let next = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+        let a = countScheduledInMonth(s, now.getFullYear(), now.getMonth());
+        let b = countScheduledInMonth(s, next.getFullYear(), next.getMonth());
+        fill += `<button class="small-btn" onclick="qpFill(${a})">本月（${now.getMonth() + 1}月）${a} 堂</button><button class="small-btn" onclick="qpFill(${b})">下月（${next.getMonth() + 1}月）${b} 堂</button>`;
+      }
+      document.getElementById('qp-fill').innerHTML = fill;
+      quickPayShow('form');
+    }
+    function renderQuickPayStatus(s) {
+      let el = document.getElementById('qp-status');
+      let env = buildTuitionEnvelope(s);
+      let fee = Number(s.fee) || 0;
+      if (env.unpaidTotal > ENV_EPS) {
+        let dates = env.unpaid.filter(u => u.item.kind !== 'adjust').map(u => envShortDate(u.item.date));
+        el.innerHTML = '⚠️ 目前欠 <b>' + env.unpaidTotal + '</b> 堂' + (fee ? '（約 NT$ ' + Math.round(env.unpaidTotal * fee).toLocaleString() + '）' : '') +
+          (dates.length ? '<br><span style="font-size:12px;">還沒繳的課：' + (dates.length > 8 ? dates.slice(0, 8).join('、') + ' 等 ' + dates.length + ' 堂' : dates.join('、')) + '</span>' : '');
+        el.style.color = '#B5543F'; el.style.backgroundColor = '#FDF3F0';
+      } else if (env.creditLeft > ENV_EPS) {
+        el.innerHTML = '✅ 預繳剩 <b>' + env.creditLeft + '</b> 堂' + (env.projectedEnd && env.unscheduled <= ENV_EPS ? '，預計上到 ' + envDateLabel(env.projectedEnd) : '');
+        el.style.color = '#4A6741'; el.style.backgroundColor = '#F4F6F3';
+      } else {
+        el.innerHTML = '✅ 目前已結清';
+        el.style.color = '#666'; el.style.backgroundColor = '#F5F5F5';
+      }
+    }
+    function qpFill(n) { document.getElementById('qp-lessons').value = n; qpAutoAmount(); }
+    function qpAutoAmount() {
+      let s = students.find(x => x.id === qpStudentId);
+      let amtEl = document.getElementById('qp-amount');
+      if (!s || amtEl.dataset.manual === '1') return;
+      let n = Number(document.getElementById('qp-lessons').value);
+      let v = (n > 0) ? autoPayAmount(s, n) : undefined;
+      amtEl.value = v === undefined ? '' : v;
+    }
+    function submitQuickPay() {
+      let s = students.find(x => x.id === qpStudentId);
+      if (!s) return;
+      let date = document.getElementById('qp-date').value;
+      let lessonsRaw = document.getElementById('qp-lessons').value;
+      let lessons = Number(lessonsRaw);
+      if (!date) { alert('請選擇繳費日期！'); return; }
+      if (lessonsRaw === '' || isNaN(lessons) || lessons === 0) { alert('請輸入有效的堂數（可以是小數，例如 0.5；修正錯誤時也可以輸入負數）！'); return; }
+      let amount = parsePayAmount(document.getElementById('qp-amount').value);
+      if (amount === null) { alert('實收金額請輸入 0 以上的數字，或是留空！'); return; }
+      let rec = { id: generateId(), studentId: s.id, studentName: s.name, date: date, lessons: lessons, note: document.getElementById('qp-note').value.trim() };
+      if (amount !== undefined) rec.amount = amount;
+      paymentRecords.push(rec);
+      savePaymentToMemory();
+      qpLastPayId = rec.id;
+      qpDoneStudentId = s.id;
+      let env = buildTuitionEnvelope(s);
+      let after = env.unpaidTotal > ENV_EPS ? '⚠️ 還欠 ' + env.unpaidTotal + ' 堂'
+        : env.creditLeft > ENV_EPS ? '目前預繳剩 ' + env.creditLeft + ' 堂' + (env.projectedEnd && env.unscheduled <= ENV_EPS ? '，預計上到 <b>' + envDateLabel(env.projectedEnd) + '</b>' : '')
+        : '目前已結清';
+      document.getElementById('qp-done-text').innerHTML = '✅ 已登記「' + escHTML(s.name) + '」' + lessons + ' 堂' + (amount !== undefined ? '・NT$ ' + amount.toLocaleString() : '') + '<br>' + after;
+      quickPayShow('done');
+      refreshAfterPayment();
+    }
+    // 登記完，把畫面上跟繳費有關的地方都更新（月曆上的 💰、點名視窗的結餘、團體課的欠費標籤、學生頁…）
+    function refreshAfterPayment() {
+      updateMainMenuBadge();
+      if (calendar) calendar.refetchEvents();
+      refreshDayPanelIfNeeded();
+      if (document.getElementById('attendance-modal').style.display === 'flex' && modalBalanceStudentId) showBalanceInfo(modalBalanceStudentId);
+      if (document.getElementById('group-modal').style.display === 'flex') renderGroupModal();
+      if (document.getElementById('student-detail-page').style.display === 'block' && currentDetailStudentId) renderStudentDetailPayment();
+      if (document.getElementById('manage-page').style.display === 'block') renderManageList();
+    }
+    // ============ 快速登記繳費結束 ============
 
     // ============ 團體課 ============
     // 團體課的每位同學都是一般學生（各自的學費、繳費、學費袋、停課、退班），只多一個 groupId。
@@ -5136,6 +5319,7 @@
         let btns = '';
         if (m.st === 'none') btns = `<button class="gm-btn gm-ok" onclick="groupMemberStatus(${i}, 'attended')">✅ 出席</button><button class="gm-btn gm-absent" onclick="groupMemberStatus(${i}, 'absent_charged')">💸 缺席</button>`;
         else if (['attended', 'absent', 'canceled'].includes(m.st)) btns = `<button class="gm-btn gm-undo" onclick="groupMemberStatus(${i}, 'reset')" title="改回未點名">↩️</button>`;
+        if (m.s) btns += `<button class="gm-btn gm-pay" onclick="openQuickPay('${m.s.id}')" title="登記繳費">💰</button>`;
         btns += `<button class="gm-btn gm-more" onclick="openGroupMemberFull(${i})" title="更多">⋯</button>`;
         let paid = (m.st === 'none' && m.s && m.s.singleLessonPay) ? `<label class="gm-paid"><input type="checkbox" id="gm-paid-${i}" checked> 單堂繳費：已收費</label>` : '';
         let st = ST_LABEL[m.st] || '';
@@ -5893,6 +6077,7 @@
             <div style="font-size:11px; color:#999; margin-bottom:8px;">輸入堂數會自動帶入「堂數 × 單堂學費」，有折扣或多收可以直接改</div>
             <input type="text" id="${idPrefix}paynote_${s.id}" class="form-control" style="padding:5px; margin-bottom:8px;" placeholder="備註（選填，例如：繳4堂、9月份月費）">
             <div style="display:flex; gap:5px; flex-wrap:wrap; margin-bottom:8px;">
+              ${balance > 0 ? `<button class="small-btn" style="background-color:#F6E1D9; color:#B5543F; font-size:12px;" onclick="fillPayLessons('${s.id}', ${balance}, '${idPrefix}')">補齊欠的 ${balance} 堂</button>` : ''}
               <button class="small-btn" style="background-color:#E2E8DF; color:#333; font-size:12px;" onclick="fillMonthCount('${s.id}', 0, '${idPrefix}')">帶入本月堂數</button>
               <button class="small-btn" style="background-color:#E2E8DF; color:#333; font-size:12px;" onclick="fillMonthCount('${s.id}', 1, '${idPrefix}')">帶入下月堂數</button>
               <button class="small-btn" style="background-color:#E2E8DF; color:#333; font-size:12px;" onclick="fillCurrentDebit('${s.id}', '${idPrefix}')">帶入目前已上課堂數</button>
@@ -8477,7 +8662,7 @@
 
     // ============ 版本更新檢查 ============
     // 每次修改程式、上傳新檔案時，要把這個版本號改掉（任何不一樣的字都可以），手機才會知道有新版本。
-    const APP_VERSION = 'sm-2026.10.15-8';
+    const APP_VERSION = 'sm-2026.10.15-9';
 
     // 加入主畫面的 App 常常直接拿手機裡存的舊檔案，而且沒有重新整理按鈕。
     // 做法：去網路上抓一份「現在的這個網頁」（網址加上時間，強迫不能用舊的），比對裡面寫的版本號，不一樣就提示更新。
