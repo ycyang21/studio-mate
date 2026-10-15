@@ -24,6 +24,10 @@
     .button { display: block; width: 90%; padding: 15px; margin: 15px auto; background-color: #8C9C8A; color: white; text-decoration: none; border-radius: 8px; font-size: 16px; border: none; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; }
     .btn-secondary { background-color: #D3D3D3; color: #333; }
     .small-btn { padding: 5px 10px; border: none; border-radius: 5px; font-size: 14px; margin-left: 5px; cursor: pointer; }
+    /* 輸入框下面「點一下就填好」的名字按鈕（iPhone 不支援 datalist 下拉選單，所以自己做） */
+    .name-chips { display: none; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .name-chip { border: 1px solid #C9D3C6; background: #F4F6F3; color: #333; border-radius: 14px; padding: 6px 12px; font-size: 14px; cursor: pointer; }
+    .name-chip:active { background: #E2E8DF; }
     .del-btn { background-color: #FFB6B9; color: white; }
     .reset-btn { background-color: #E2E8DF; color: #333; width: 100%; padding: 10px; margin-top: 15px; border-radius: 5px; border: none; cursor: pointer; }
     
@@ -111,9 +115,18 @@
     .gm-btn { border: none; border-radius: 6px; padding: 8px 10px; font-size: 13px; cursor: pointer; color: white; white-space: nowrap; }
     .gm-ok { background: #8C9C8A; } .gm-absent { background: #C1666B; } .gm-undo { background: #fff; color: #888; border: 1px solid #ddd; } .gm-more { background: #E2E8DF; color: #333; } .gm-pay { background: #F1EEE6; color: #333; }
     /* 有固定標題列的視窗：標題＋右上角 ✕ 固定在上面，只有內容在捲動 */
-    .modal-content.modal-with-head { display: flex; flex-direction: column; overflow: hidden; padding: 0; }
-    .modal-head { display: flex; align-items: center; gap: 10px; padding: 14px 14px 12px 20px; border-bottom: 1px solid #eee; flex-shrink: 0; }
-    .modal-head h3 { margin: 0; flex: 1; font-size: 18px; color: #333; text-align: left; }
+    .modal-content.modal-with-head { display: flex; flex-direction: column; overflow: hidden !important; padding: 0 !important; }
+    .modal-head { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 1px solid #eee; flex-shrink: 0; }
+    .modal-head h3:first-child, .modal-back-x[style*="none"] + h3 { padding-left: 6px; }
+    .modal-head h3 { margin: 0 !important; flex: 1; min-width: 0; font-size: 18px !important; color: #333; text-align: left !important; }
+    .modal-back-x { width: 36px; height: 36px; flex-shrink: 0; border: none; border-radius: 50%; background: #F2F2F2; color: #555; font-size: 26px; line-height: 32px; padding: 0 2px 4px 0; cursor: pointer; }
+    .modal-back-x:active { background: #E2E2E2; }
+    .day-nav { display: flex; gap: 8px; margin-bottom: 12px; }
+    .day-nav .small-btn { flex: 1; margin: 0; padding: 8px; font-size: 13px; background-color: #F2F2F2; color: #555; }
+    #day-modal .modal-body { padding-top: 12px; }
+    .who-box { font-size: 13px; border-radius: 6px; padding: 8px 10px; margin-top: 8px; line-height: 1.6; }
+    .who-existing { color: #4A6741; background: #EEF3EC; }
+    .who-new { color: #8A5A1E; background: #FBF1E3; }
     .modal-close-x { width: 36px; height: 36px; flex-shrink: 0; border: none; border-radius: 50%; background: #F2F2F2; color: #666; font-size: 17px; line-height: 36px; padding: 0; cursor: pointer; }
     .modal-close-x:active { background: #E2E2E2; }
     .modal-body { overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; padding: 14px 20px 20px; flex: 1; min-height: 0; }
@@ -511,9 +524,10 @@
         <input type="number" id="rental-duration" class="form-control" value="60" min="1" step="1" oninput="updateRentalPayInfo()">
       </div>
       <div class="form-group">
-        <label>租借人（打過的名字可以直接選）</label>
-        <input type="text" id="rental-renter" class="form-control" list="renter-datalist" placeholder="例如：王小姐" autocomplete="off" oninput="updateRentalPayInfo()">
-        <datalist id="renter-datalist"></datalist>
+        <label>租借人（點下面的名字就能選）</label>
+        <input type="text" id="rental-renter" class="form-control" placeholder="例如：王小姐" autocomplete="off" oninput="updateRentalPayInfo(); renderSuggestChips('rental-renter-chips'); updateRenterNewHint()">
+        <div id="rental-renter-chips" class="name-chips" data-input="rental-renter"></div>
+        <div id="rental-renter-new" class="who-box who-new" style="display:none;">🆕 新的租借人，按確定後會自動加進租借人名單</div>
       </div>
       <div class="form-group"><label>付款方式</label><div class="radio-group">
         <label><input type="radio" name="rental-paymode" value="single" checked onclick="updateRentalPayInfo()"> 單次付款</label>
@@ -628,19 +642,12 @@
     <div class="modal-content" style="text-align: left;">
       <h3 style="margin-top: 0; font-size: 18px; color: #333; text-align:center;">➕ 新增臨時課</h3>
       <p style="font-size:12px; color:#888; line-height:1.5;">用於約課學生的單次上課、幫一般學生加課，或是安排體驗課。這堂課只會出現這一次，不會變成固定課表。</p>
-      <div class="form-group"><div class="radio-group">
-        <label><input type="radio" name="temp-mode" value="existing" checked onclick="checkTempMode()"> 選擇已有學生</label>
-        <label><input type="radio" name="temp-mode" value="manual" onclick="checkTempMode()"> 直接輸入新的人</label>
-      </div></div>
-      <div class="form-group searchable-select" id="temp-existing-group">
-        <label>學生</label>
-        <input type="text" id="temp-student-input" class="form-control" placeholder="點一下搜尋 / 選擇學生" autocomplete="off" oninput="filterStudentPicker('temp-student', true)" onfocus="filterStudentPicker('temp-student', true)">
+      <div class="form-group">
+        <label>學生（打名字搜尋；名單裡沒有的人直接打名字）</label>
+        <input type="text" id="temp-name" class="form-control" placeholder="例如：王小明" autocomplete="off" oninput="onTempNameInput()">
         <input type="hidden" id="temp-student-value">
-        <div id="temp-student-dropdown" class="searchable-dropdown" style="display:none;"></div>
-      </div>
-      <div class="form-group" id="temp-manual-group" style="display:none;">
-        <label>姓名</label>
-        <input type="text" id="temp-manual-name" class="form-control" placeholder="這個人的名字">
+        <div id="temp-name-chips" class="name-chips"></div>
+        <div id="temp-who" class="who-box" style="display:none;"></div>
       </div>
       <div class="form-group" id="temp-manual-fee-group" style="display:none;">
         <label>單堂學費 (元)</label>
@@ -983,7 +990,6 @@
         </div>
 
         <div id="modal-normal-lesson-actions" style="display:none;">
-          <button class="modal-btn" style="background-color: #fff; color: #666; border: 1px solid #ddd;" onclick="showModalSubView('main')">‹ 返回</button>
           <button class="modal-btn" style="background-color: #E2E8DF; color: #333;" onclick="markStatus('canceled')">❌ 延期 (不收費/留存紀錄)</button>
           <button class="modal-btn" style="background-color: #C1666B;" onclick="markStatus('absent_charged')">💸 缺席收費 (人沒來但仍計費)</button>
           <button class="modal-btn" style="background-color: #E08E79;" onclick="markStatus('makeup')">🔄 轉為補課 (存入存摺)</button>
@@ -991,7 +997,6 @@
         </div>
 
         <div id="modal-normal-student-actions" style="display:none;">
-          <button class="modal-btn" style="background-color: #fff; color: #666; border: 1px solid #ddd;" onclick="showModalSubView('main')">‹ 返回</button>
           <button class="modal-btn" style="background-color: #7C93B3;" onclick="openPlanChangeModalFromEvent()">🔁 課程方案異動</button>
           <button class="modal-btn" style="background-color: #9AA7B5;" onclick="openPauseModalFromEvent()">⏸️ 暫停上課（停課一段時間）</button>
           <button class="modal-btn" style="background-color: #B08A8A;" onclick="openWithdrawModalFromEvent()">🚪 學生退班</button>
@@ -1344,11 +1349,11 @@
       <button class="small-btn inventory-subtab-btn" data-subtab="sale" onclick="showInventorySubtab('sale')" style="flex:1; padding:8px; background-color:#E2E8DF; color:#333;">💰 銷售</button>
     </div>
 
-    <datalist id="inventory-item-names"></datalist>
 
     <div id="inventory-subtab-purchase" style="width:90%; margin:0 auto;">
       <div class="card" style="text-align:left;">
-        <div class="form-group"><input type="text" id="purchase-item" class="form-control" list="inventory-item-names" placeholder="品項名稱（例如：拜爾鋼琴教本）"></div>
+        <div class="form-group"><input type="text" id="purchase-item" class="form-control" autocomplete="off" placeholder="品項名稱（例如：拜爾鋼琴教本）" oninput="renderSuggestChips('purchase-item-chips')">
+          <div id="purchase-item-chips" class="name-chips" data-input="purchase-item"></div></div>
         <div class="form-group"><label>日期</label><input type="date" id="purchase-date" class="form-control"></div>
         <div class="form-group"><label>數量</label><input type="number" id="purchase-quantity" class="form-control" value="1" min="1" step="1"></div>
         <div class="form-group"><label>每件成本（元，確切金額）</label><input type="number" id="purchase-cost" class="form-control" min="0" step="1"></div>
@@ -1529,9 +1534,22 @@
     </div>
   </div>
 
+  <div id="day-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9990; align-items: center; justify-content: center;">
+    <div class="modal-content" style="text-align: left;">
+      <h3 id="day-modal-title"></h3>
+      <div class="day-nav">
+        <button type="button" class="small-btn" onclick="shiftDayModal(-1)">◀ 前一天</button>
+        <button type="button" class="small-btn" onclick="shiftDayModal(1)">後一天 ▶</button>
+      </div>
+      <div id="day-modal-list"></div>
+      <button class="button btn-secondary" style="width:100%; margin:10px 0 0 0;" onclick="closeDayModal()">關閉</button>
+    </div>
+  </div>
+
   <div id="quickpay-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 10001; align-items: center; justify-content: center;">
     <div class="modal-content modal-with-head" style="text-align: left;">
       <div class="modal-head">
+        <button class="modal-back-x" id="qp-back" style="display:none;" onclick="quickPayShow('pick'); renderQuickPayPicker();" aria-label="回上一頁" title="回到學生清單">‹</button>
         <h3>💰 登記繳費</h3>
         <button class="modal-close-x" onclick="closeQuickPay()" aria-label="關閉" title="關閉">✕</button>
       </div>
@@ -1543,10 +1561,7 @@
         <div id="qp-list"></div>
       </div>
       <div id="qp-form" style="display:none;">
-        <div style="display:flex; justify-content:space-between; align-items:baseline; gap:8px;">
-          <span id="qp-name" style="font-size:17px; font-weight:bold; color:#333;"></span>
-          <a id="qp-change" style="font-size:13px; color:#7C93B3; cursor:pointer;" onclick="quickPayShow('pick'); renderQuickPayPicker();">換學生</a>
-        </div>
+        <div id="qp-name" style="font-size:17px; font-weight:bold; color:#333;"></div>
         <div id="qp-status" class="qp-status"></div>
         <div id="qp-suggest"></div>
         <div style="display:flex; gap:8px; margin-bottom:8px;">
@@ -1561,7 +1576,6 @@
       <div id="qp-done" style="display:none;">
         <div id="qp-done-text" style="font-size:15px; line-height:1.7; color:#333; margin:6px 0 12px;"></div>
         <button class="button" style="width:100%; margin:0;" onclick="copyTuitionMessage(qpDoneStudentId, qpLastPayId)">📋 複製給家長</button>
-        <button class="button btn-secondary" style="width:100%; margin:10px 0 0 0;" onclick="closeQuickPay()">完成</button>
       </div>
       </div>
     </div>
@@ -3010,9 +3024,12 @@
       if (cell) cell.classList.add('calendar-day-selected');
 
       let d = new Date(dateStr + 'T00:00:00');
-      document.getElementById('calendar-day-panel-title').innerText = dateStr + '（' + getDayName(d.getDay().toString()) + '）';
+      let titleText = dateStr + '（' + getDayName(d.getDay().toString()) + '）';
+      // 手機版：這一天的課改成在畫面中間跳出一個視窗（不用再往下捲找課表，點名完關掉也還在原地）；電腦版維持右邊的欄位
+      let useModal = isMobileCalendarMode;
+      document.getElementById(useModal ? 'day-modal-title' : 'calendar-day-panel-title').innerText = useModal ? '📅 ' + titleText : titleText;
 
-      let list = document.getElementById('calendar-day-panel-list');
+      let list = document.getElementById(useModal ? 'day-modal-list' : 'calendar-day-panel-list');
       if (items.length === 0) {
         list.innerHTML = '<p style="color:#aaa; font-size:13px;">這天沒有排課。</p>';
       } else {
@@ -3021,8 +3038,23 @@
           return `<div class="day-panel-item ${it.className}" onclick="openDayPanelItem(${idx})">${timeCol}<div class="day-panel-title">${it.shortTitle || it.title}</div></div>`;
         }, '這天沒有要上的課。');
       }
+      if (useModal) {
+        let m = document.getElementById('day-modal');
+        if (m.style.display !== 'flex') { lockBodyScroll(); m.style.display = 'flex'; }
+        return;
+      }
       document.getElementById('calendar-day-panel').style.display = 'block';
-      if (isMobileCalendarMode) document.getElementById('calendar-day-panel').scrollIntoView({ block: 'nearest' }); // 手機版：點日期後直接把下方課表捲進畫面（電腦版行程就在右邊，不用捲）
+    }
+    function closeDayModal() {
+      document.getElementById('day-modal').style.display = 'none';
+      unlockBodyScroll();
+    }
+    // 視窗裡直接換到前一天／後一天，不用關掉再點月曆
+    function shiftDayModal(n) {
+      if (!selectedCalendarDate) return;
+      let next = addDaysStr(selectedCalendarDate, n);
+      if (calendar && typeof calendar.gotoDate === 'function' && !document.querySelector('#calendar .fc-daygrid-day[data-date="' + next + '"]')) calendar.gotoDate(next); // 換到別的月份，月曆也跟著翻過去
+      selectCalendarDay(next);
     }
 
     // 「原本時段其實沒上課」的幾種狀態：延期、轉補課、已調課（原本那堂）、取消。手機月曆只畫細條、清單收到下面、電腦版排到最後
@@ -3065,6 +3097,7 @@
     // 比較可靠的做法是：開視窗的當下，直接把整個 body 釘死在目前這個捲動位置（用 position:fixed + 負的 top 位移模擬），
     // 讓背景畫面在視窗開著的期間根本不會被瀏覽器誤判成「可以滑動、可以跳位置」；關視窗時再放開、還原回原本的位置。
     function lockBodyScroll() {
+      if (document.body.style.position === 'fixed') return; // 已經有視窗釘住畫面了（例如當天課表視窗上面再開點名視窗），維持原本的位置
       savedScrollY = window.scrollY || window.pageYOffset || 0;
       document.body.style.position = 'fixed';
       document.body.style.top = '-' + savedScrollY + 'px';
@@ -3074,6 +3107,9 @@
     }
 
     function unlockBodyScroll() {
+      // 下面還有別的視窗開著（例如點名完回到當天課表視窗），畫面要繼續釘住
+      if (Array.from(document.querySelectorAll('[id$="-modal"]')).some(el => el.style.display === 'flex' || el.style.display === 'block')) return;
+      if (document.body.style.position !== 'fixed') return;
       document.body.style.position = '';
       document.body.style.top = '';
       document.body.style.left = '';
@@ -3085,6 +3121,7 @@
     function openModalForCalendarEvent(props, title, dateStr, timeStr, allDay) {
       if (props && props.type === 'rental') { openRentalDetail(props.rentalId); return; } // 琴房租借不是課，打開租借自己的視窗
       if (props && props.type === 'group') { openGroupModal(props.groupId, props.dateStr, props.time || timeStr || ''); return; } // 團體課：開一起點名的視窗
+      lastAttendanceArgs = [props, title, dateStr, timeStr, allDay];
       currentModalEvent = props;
 
       let cleanTitle = title.replace(/💰 |✅ |❌ |🔄 |📌 |💸 |🔀 |\[補課\] |\[補\] /g, '').replace(/\s*\(延期\)|\s*\(轉補\)|\s*\(取消\)|\s*\(缺席收費\)|\s*\(已調課\)|\s*\([\d.]+堂\)/g, '').replace(/・.*$/, '').replace(/（原[\d/]+）/g, '');
@@ -3208,6 +3245,7 @@
       document.getElementById('modal-notes-toggle-arrow').innerText = '▸ 展開';
       lockBodyScroll();
       document.getElementById('attendance-modal').style.display = 'flex';
+      updateAttendanceBack();
     }
 
     // ---- 點名視窗：依「這堂課目前的狀態」只顯示合理的下一步 ----
@@ -3328,14 +3366,16 @@
 
     // 手機版：如果下方目前正展開著某一天的清單，資料異動後順便刷新，不用手動重新點一次日期就能看到最新狀態
     function refreshDayPanelIfNeeded() {
-      if (selectedCalendarDate && document.getElementById('calendar-day-panel').style.display === 'block') selectCalendarDay(selectedCalendarDate);
+      if (selectedCalendarDate && (document.getElementById('calendar-day-panel').style.display === 'block' || document.getElementById('day-modal').style.display === 'flex')) selectCalendarDay(selectedCalendarDate);
       // 從首頁「今日課程」點進來點名／調課的話，首頁清單也要跟著更新，不然會一直顯示舊狀態
       if (document.getElementById('dashboard-page').style.display === 'block') renderDashboard();
       // 從未點名檢查清單點進去處理完，清單要馬上更新，處理好的那堂就會消失
       if (document.getElementById('unmarked-page').style.display === 'block') renderUnmarkedPage();
     }
 
+    let lastAttendanceArgs = null; // 點名視窗最後一次是怎麼打開的（給下一個視窗的 ‹ 用）
     function closeModal() {
+      let wasOpen = document.getElementById('attendance-modal').style.display === 'flex';
       // 關視窗前先主動放開焦點：如果剛剛點的按鈕（或任何輸入框）還拿著焦點，視窗一被隱藏，
       // 那個拿著焦點的東西就整個消失了，手機瀏覽器常常會因此亂跳捲動位置。先手動 blur 讓瀏覽器自己乾淨地放手。
       if (document.activeElement && typeof document.activeElement.blur === 'function') {
@@ -3344,15 +3384,20 @@
       document.getElementById('attendance-modal').style.display = 'none';
       unlockBodyScroll();
       refreshDayPanelIfNeeded();
-      // 從團體課視窗點「⋯」進來的：關掉之後回到團體課視窗（如果接著開了別的視窗，例如調課，就不回去）
-      if (groupModalReturn) {
-        let back = groupModalReturn;
-        groupModalReturn = null;
-        setTimeout(() => {
-          let anyOpen = Array.from(document.querySelectorAll('[id$="-modal"]')).some(el => el.style.display === 'flex' || el.style.display === 'block');
-          if (!anyOpen) openGroupModal(back.groupId, back.dateStr, back.time);
-        }, 0);
-      }
+      // 1) 從點名視窗接著打開了別的視窗（調課、停課、方案異動、退班…）：那個視窗左上角的 ‹ 可以回到這堂課
+      // 2) 從團體課視窗點「⋯」進來的：關掉之後回到團體課視窗
+      let back = groupModalReturn;
+      groupModalReturn = null;
+      let reopenArgs = wasOpen ? lastAttendanceArgs : null;
+      setTimeout(() => {
+        let open = Array.from(document.querySelectorAll('[id$="-modal"]')).filter(el => el.id !== 'day-modal' && (el.style.display === 'flex' || el.style.display === 'block'));
+        if (open.length) {
+          let top = open[open.length - 1];
+          if (reopenArgs && top.id !== 'attendance-modal') setModalBack(top.id, () => { groupModalReturn = back; openModalForCalendarEvent.apply(null, reopenArgs); });
+          return;
+        }
+        if (back) openGroupModal(back.groupId, back.dateStr, back.time);
+      }, 0);
     }
 
     // 一般課點名視窗的三層選單：main（出席/課堂異動/學生異動入口）、lesson（延期/轉補課/調課/恢復未點名）、student（課程方案異動/退班）
@@ -3361,6 +3406,7 @@
       document.getElementById('modal-normal-main').style.display = (view === 'main') ? 'block' : 'none';
       document.getElementById('modal-normal-lesson-actions').style.display = (view === 'lesson') ? 'block' : 'none';
       document.getElementById('modal-normal-student-actions').style.display = (view === 'student') ? 'block' : 'none';
+      updateAttendanceBack();
     }
 
     // 點名視窗開啟時，即時顯示這位學生目前的繳費結餘（預繳剩餘 / 已結清 / 還欠幾堂），
@@ -3833,7 +3879,7 @@
 
     function renderInventoryStockOverview() {
       let names = getAllItemNames();
-      document.getElementById('inventory-item-names').innerHTML = names.map(n => `<option value="${n}">`).join(''); // 給品項名稱欄位的輸入建議，減少打錯字變成新品項的風險
+      renderSuggestChips('purchase-item-chips'); // 品項名稱欄位下面列出已經有的品項，點一下就填好，減少打錯字變成新品項的風險
       let html = names.length === 0
         ? '<p style="color:#aaa; font-size:13px;">尚無任何進貨或銷售紀錄。</p>'
         : names.map(name => {
@@ -4150,16 +4196,15 @@
     }
 
     function openTempLessonModal() {
-      resetStudentPicker('temp-student');
+      document.getElementById('temp-name').value = '';
+      document.getElementById('temp-student-value').value = '';
       document.getElementById('temp-date').value = '';
-      document.getElementById('temp-manual-name').value = '';
       document.getElementById('temp-manual-fee').value = '';
       document.getElementById('temp-duration').value = 60;
       document.getElementById('temp-amount').value = 1;
       resetTimeValue('temp-time');
-      document.querySelector('input[name="temp-mode"][value="existing"]').checked = true;
       setLocationFormFromStudent('temp', '', '');
-      checkTempMode();
+      updateTempWho();
       document.getElementById('temp-lesson-modal').style.display = 'flex';
     }
 
@@ -4280,18 +4325,64 @@
     }
 
     // 切換「選擇已有學生」／「直接輸入新的人」：後者用於還沒想正式建檔的體驗課學生
-    function checkTempMode() {
-      let mode = document.querySelector('input[name="temp-mode"]:checked').value;
-      document.getElementById('temp-existing-group').style.display = (mode === 'existing') ? 'block' : 'none';
-      document.getElementById('temp-manual-group').style.display = (mode === 'manual') ? 'block' : 'none';
-      document.getElementById('temp-manual-fee-group').style.display = (mode === 'manual') ? 'block' : 'none';
+    // 臨時課只有一個名字欄位：點了名單裡的學生＝已有學生；名單裡沒有的名字＝新的人（要填學費，之後可以「轉為正式學生」）
+    function getTempMode() { return document.getElementById('temp-student-value').value ? 'existing' : 'manual'; }
+    function tempStudentTag(s) {
+      let g = s.groupId ? getGroupById(s.groupId) : null;
+      return [s.instrument, g ? '👥' + g.name : '', hasWeeklySchedule(s) ? (s.freq === 'biweekly' ? '隔' : '每') + getDayName(s.dayIndex) + (s.timeVal ? ' ' + s.timeVal : '') : '約課'].filter(Boolean).join('・');
+    }
+    function onTempNameInput() {
+      let name = document.getElementById('temp-name').value.trim();
+      let sel = students.find(s => s.id === document.getElementById('temp-student-value').value);
+      if (sel && sel.name !== name) document.getElementById('temp-student-value').value = ''; // 改了名字就不算剛剛選的那位
+      if (!document.getElementById('temp-student-value').value && name) {
+        let exact = students.filter(s => !s.endDate && s.name === name);
+        if (exact.length === 1) { pickTempStudent(exact[0].id); return; } // 打的名字剛好就是名單裡的某一位
+      }
+      updateTempWho();
+    }
+    function pickTempStudent(studentId) {
+      let s = students.find(x => x.id === studentId);
+      if (!s) return;
+      document.getElementById('temp-name').value = s.name;
+      document.getElementById('temp-student-value').value = s.id;
+      document.getElementById('temp-duration').value = s.duration || 60; // 時長、地點先帶入他自己的，這堂不一樣再改
+      setLocationFormFromStudent('temp', s.location || '', s.locationAbbr || '');
+      updateTempWho();
+    }
+    function updateTempWho() {
+      let name = document.getElementById('temp-name').value.trim();
+      let sel = students.find(s => s.id === document.getElementById('temp-student-value').value);
+      let who = document.getElementById('temp-who');
+      let chipsBox = document.getElementById('temp-name-chips');
+      let q = name.toLowerCase();
+      let matches = (!sel && q) ? students.filter(s => !s.endDate && s.name.toLowerCase().includes(q)).slice(0, 8) : [];
+      chipsBox.innerHTML = matches.map(s => `<button type="button" class="name-chip" onclick="pickTempStudent('${s.id}')">${escHTML(s.name)} <span style="font-size:11px; color:#888;">${escHTML(tempStudentTag(s))}</span></button>`).join('');
+      chipsBox.style.display = matches.length ? 'flex' : 'none';
+      if (sel) {
+        who.className = 'who-box who-existing';
+        who.innerHTML = '✅ 已選：<b>' + escHTML(sel.name) + '</b>（' + escHTML(tempStudentTag(sel)) + '）<br><span style="font-size:12px;">用他的單堂學費 NT$ ' + escHTML(sel.fee) + '，上完會算進他的學費</span>';
+        who.style.display = 'block';
+      } else if (name) {
+        let same = students.filter(s => !s.endDate && s.name === name);
+        who.className = 'who-box who-new';
+        who.innerHTML = same.length > 1
+          ? '有 ' + same.length + ' 位叫「' + escHTML(name) + '」，請點上面選一位；都不是的話，就是新的人。'
+          : matches.length
+            ? '👆 是名單上的學生就點上面的名字；都不是的話，就當作 🆕 新的人「' + escHTML(name) + '」，請填下面的學費。'
+            : '🆕 新的人：<b>' + escHTML(name) + '</b>（不在學生名單）<br><span style="font-size:12px;">請填下面的學費。之後要報名的話，點這堂課按「🎓 轉為正式學生」。</span>';
+        who.style.display = 'block';
+      } else {
+        who.style.display = 'none';
+      }
+      document.getElementById('temp-manual-fee-group').style.display = (!sel && name) ? 'block' : 'none';
       syncTempAmountDuration('duration');
     }
 
     // 新增臨時課時，「上課時長」跟「這堂算幾堂」互相換算的基準：選了既有學生就用他自己的時長，
     // 手動輸入新的人（沒有資料可以參考）就用 60 分鐘當基準。
     function getTempBaseDuration() {
-      let mode = document.querySelector('input[name="temp-mode"]:checked').value;
+      let mode = getTempMode();
       if (mode === 'existing') {
         let studentId = document.getElementById('temp-student-value').value;
         let s = students.find(x => x.id === studentId);
@@ -4313,7 +4404,8 @@
     }
 
     function submitTempLesson() {
-      let mode = document.querySelector('input[name="temp-mode"]:checked').value;
+      let mode = getTempMode();
+      if (mode === 'manual' && !document.getElementById('temp-name').value.trim()) { alert('請輸入學生名字！'); return; }
       let dateStr = document.getElementById('temp-date').value;
       let timeStr = getTimeValue('temp-time');
       let duration = Number(document.getElementById('temp-duration').value) || 60;
@@ -4340,7 +4432,7 @@
         if (location !== (stu.location || '') || locationAbbr !== (stu.locationAbbr || '')) { newTemp.location = location; newTemp.locationAbbr = locationAbbr; }
         tempLessons.push(newTemp);
       } else {
-        let manualName = document.getElementById('temp-manual-name').value.trim();
+        let manualName = document.getElementById('temp-name').value.trim();
         let manualFee = document.getElementById('temp-manual-fee').value.trim();
         if (manualName === '') { alert('請輸入姓名！'); return; }
         if (manualFee === '' || isNaN(Number(manualFee)) || Number(manualFee) <= 0) { alert('請填入大於 0 的單堂學費！'); return; }
@@ -5244,9 +5336,75 @@
     }
     // ============ 繳費方式結束 ============
 
+
+    // ============ 視窗統一：右上角 ✕ 關閉、左上角 ‹ 回上一個視窗 ============
+    // 每個視窗開頭自動變成固定的標題列：[‹] 標題 [✕]。✕ 就是原本最下面那顆「取消／關閉」（所以關閉的行為完全不變），
+    // ‹ 只有在「這個視窗是從上一個視窗點進來的」時候才出現，點了會回到上一個視窗。
+    const modalCloseFns = {}, modalBackFns = {};
+    function enhanceModals() {
+      document.querySelectorAll('[id$="-modal"]').forEach(modal => {
+        let content = modal.querySelector(':scope > .modal-content');
+        if (!content || content.querySelector(':scope > .modal-head')) return;
+        let closeBtn = Array.from(content.querySelectorAll('button')).find(b => ['取消', '關閉', '取消關閉'].includes(b.textContent.trim()));
+        let closeFn = (closeBtn && closeBtn.onclick) ? closeBtn.onclick.bind(closeBtn) : () => { modal.style.display = 'none'; };
+        if (closeBtn) closeBtn.remove();
+        let h3 = content.querySelector(':scope > h3') || document.createElement('h3');
+        let head = document.createElement('div'); head.className = 'modal-head';
+        let body = document.createElement('div'); body.className = 'modal-body';
+        while (content.firstChild) {
+          let n = content.firstChild;
+          if (n === h3) { content.removeChild(n); continue; }
+          body.appendChild(n);
+        }
+        let back = document.createElement('button');
+        back.type = 'button'; back.className = 'modal-back-x'; back.textContent = '‹'; back.title = '回上一頁'; back.setAttribute('aria-label', '回上一頁');
+        back.style.display = 'none';
+        back.onclick = () => modalGoBack(modal.id);
+        let x = document.createElement('button');
+        x.type = 'button'; x.className = 'modal-close-x'; x.textContent = '✕'; x.title = '關閉'; x.setAttribute('aria-label', '關閉');
+        x.onclick = () => modalCloseX(modal.id);
+        head.append(back, h3, x);
+        content.append(head, body);
+        content.classList.add('modal-with-head');
+        modalCloseFns[modal.id] = closeFn;
+        if (modal.id !== 'attendance-modal') {
+          // 視窗關掉時，「回上一頁」也跟著清掉，下次正常打開不會殘留
+          new MutationObserver(() => {
+            if (modal.style.display === 'none') { delete modalBackFns[modal.id]; back.style.display = 'none'; }
+          }).observe(modal, { attributes: true, attributeFilter: ['style'] });
+        }
+      });
+    }
+    function setModalBack(modalId, fn) {
+      modalBackFns[modalId] = fn;
+      let b = document.querySelector('#' + modalId + ' .modal-back-x');
+      if (b) b.style.display = 'block';
+    }
+    function modalCloseX(modalId) {
+      if (modalId === 'attendance-modal') { groupModalReturn = null; closeModal(); return; }
+      if (modalCloseFns[modalId]) modalCloseFns[modalId]();
+    }
+    function modalGoBack(modalId) {
+      if (modalId === 'attendance-modal') { attendanceBack(); return; }
+      let fn = modalBackFns[modalId];
+      if (modalCloseFns[modalId]) modalCloseFns[modalId]();
+      if (fn) setTimeout(fn, 0);
+    }
+    // 點名視窗的 ‹：在「課堂異動／學生異動」裡面就回到第一層；從團體課點進來的就回團體課
+    function attendanceInSubView() {
+      return document.getElementById('modal-normal-actions').style.display !== 'none' &&
+        ['modal-normal-lesson-actions', 'modal-normal-student-actions'].some(id => document.getElementById(id).style.display === 'block');
+    }
+    function updateAttendanceBack() {
+      let b = document.querySelector('#attendance-modal .modal-back-x');
+      if (b) b.style.display = (attendanceInSubView() || groupModalReturn) ? 'block' : 'none';
+    }
+    function attendanceBack() { if (attendanceInSubView()) showModalSubView('main'); else closeModal(); }
+    // ============ 視窗統一結束 ============
+
     // ============ 快速登記繳費（月曆、點名視窗、團體課、首頁都能直接打開）============
     // 表單跟學生詳細資料裡的「💰 登記繳費」完全一樣，只是不用先繞到學生名單找人。
-    let qpStudentId = null, qpDoneStudentId = null, qpLastPayId = null, qpLocked = false;
+    let qpStudentId = null, qpDoneStudentId = null, qpLastPayId = null, qpLocked = false, qpFromPicker = false;
     function isAnyOtherModalOpen() {
       return Array.from(document.querySelectorAll('[id$="-modal"]')).some(el => el.id !== 'quickpay-modal' && (el.style.display === 'flex' || el.style.display === 'block'));
     }
@@ -5271,6 +5429,7 @@
     function quickPayShow(view) {
       ['pick', 'form', 'done'].forEach(v => { document.getElementById('qp-' + v).style.display = (v === view) ? 'block' : 'none'; });
       document.getElementById('qp-searchbar').style.display = (view === 'pick') ? 'block' : 'none';
+      document.getElementById('qp-back').style.display = (view === 'form' && qpFromPicker) ? 'block' : 'none';
     }
     function renderQuickPayPicker() {
       let q = document.getElementById('qp-search').value.trim().toLowerCase();
@@ -5292,7 +5451,7 @@
       if (!s) return;
       qpStudentId = studentId;
       document.getElementById('qp-name').innerText = s.name;
-      document.getElementById('qp-change').style.display = fromPicker ? 'inline' : 'none';
+      qpFromPicker = !!fromPicker;
       renderQuickPayStatus(s);
       document.getElementById('qp-date').value = formatDate(new Date());
       document.getElementById('qp-lessons').value = '';
@@ -5575,6 +5734,7 @@
       document.getElementById('reschedule-amount').value = 1;
       resetTimeValue('reschedule-new-time');
       document.getElementById('reschedule-modal').style.display = 'flex';
+      setModalBack('reschedule-modal', () => openGroupModal(ctx.groupId, ctx.dateStr, ctx.time));
     }
     function submitGroupReschedule() {
       let ctx = rescheduleGroupCtx;
@@ -8386,7 +8546,6 @@
       editingRentalId = rentalId || null;
       let r = rentalId ? rentalData.rentals.find(x => x.id === rentalId) : null;
       renderRentalLocationRadios();
-      document.getElementById('renter-datalist').innerHTML = rentalData.renters.map(x => '<option value="' + escHTML(x.name) + '"></option>').join('');
       document.getElementById('rental-modal-title').innerText = r ? '✏️ 編輯租借' : '🔑 新增租借';
       if (r) {
         let radio = document.querySelector('input[name="rental-location"][value="' + CSS.escape(r.location) + '"]');
@@ -8400,6 +8559,8 @@
       if (r && r.time) setTimeValue('rental-time', r.time); else resetTimeValue('rental-time');
       document.getElementById('rental-duration').value = r ? r.duration : 60;
       document.getElementById('rental-renter').value = r ? (r.renterName || '') : '';
+      renderSuggestChips('rental-renter-chips');
+      updateRenterNewHint();
       document.querySelector('input[name="rental-paymode"][value="' + (r ? r.payMode : 'single') + '"]').checked = true;
       document.getElementById('rental-amount').value = (r && r.payMode === 'single') ? (r.amount || '') : '';
       document.getElementById('rental-paid').checked = !!(r && r.paid);
@@ -8411,6 +8572,37 @@
       document.getElementById('rental-modal').style.display = 'flex';
     }
     function closeRentalModal() { document.getElementById('rental-modal').style.display = 'none'; editingRentalId = null; }
+    // ---- 輸入框下面的建議按鈕：iPhone（尤其加到主畫面的 App）不會跳出 <datalist> 的選單，改成直接列出可以點的名字 ----
+    const suggestChipSources = {
+      'rental-renter-chips': () => {
+        let last = {};
+        rentalData.rentals.forEach(r => { if (r.renterId && (!last[r.renterId] || r.date > last[r.renterId])) last[r.renterId] = r.date; });
+        return rentalData.renters.slice().sort((a, b) => (last[b.id] || '').localeCompare(last[a.id] || '') || a.name.localeCompare(b.name, 'zh-Hant')).map(x => x.name); // 最近租過的排前面
+      },
+      'purchase-item-chips': () => getAllItemNames()
+    };
+    function renderSuggestChips(boxId) {
+      let box = document.getElementById(boxId);
+      if (!box) return;
+      let input = document.getElementById(box.dataset.input);
+      let q = (input.value || '').trim().toLowerCase();
+      let names = (suggestChipSources[boxId] ? suggestChipSources[boxId]() : []).filter(Boolean);
+      let list = names.filter(n => n.toLowerCase() !== q && (!q || n.toLowerCase().includes(q))).slice(0, 8);
+      box.innerHTML = list.map(n => '<button type="button" class="name-chip" data-v="' + escHTML(n) + '" onclick="pickSuggestChip(this)">' + escHTML(n) + '</button>').join('');
+      box.style.display = list.length ? 'flex' : 'none';
+    }
+    function updateRenterNewHint() {
+      let name = document.getElementById('rental-renter').value.trim();
+      document.getElementById('rental-renter-new').style.display = (name && !rentalData.renters.some(x => x.name === name)) ? 'block' : 'none';
+    }
+    function pickSuggestChip(btn) {
+      let box = btn.parentElement;
+      let input = document.getElementById(box.dataset.input);
+      input.value = btn.dataset.v;
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      renderSuggestChips(box.id);
+    }
+
     function updateRentalPayInfo() {
       let mode = (document.querySelector('input[name="rental-paymode"]:checked') || {}).value;
       document.getElementById('rental-single-group').style.display = mode === 'single' ? 'block' : 'none';
@@ -8575,7 +8767,7 @@
       if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(msg).then(done).catch(() => prompt('複製下面這段訊息：', msg));
       else prompt('複製下面這段訊息：', msg);
     }
-    function editRentalFromDetail() { let id = viewingRentalId; closeRentalDetail(); openRentalModal(id); }
+    function editRentalFromDetail() { let id = viewingRentalId; closeRentalDetail(); openRentalModal(id); setModalBack('rental-modal', () => openRentalDetail(id)); }
     function deleteRentalFromDetail() {
       let r = rentalData.rentals.find(x => x.id === viewingRentalId); if (!r) return;
       let extra = r.payMode === 'prepaid' ? '\n\n扣掉的 ' + rentalHours(r) + ' 小時會退回預繳時數。' : (r.paid ? '\n\n這筆已經收款 NT$ ' + r.amount + '，取消後也會從收入裡拿掉（如果有退錢給對方的話）。' : '');
@@ -8839,7 +9031,7 @@
 
     // ============ 版本更新檢查 ============
     // 每次修改程式、上傳新檔案時，要把這個版本號改掉（任何不一樣的字都可以），手機才會知道有新版本。
-    const APP_VERSION = 'sm-2026.10.16-2';
+    const APP_VERSION = 'sm-2026.10.16-5';
 
     // 加入主畫面的 App 常常直接拿手機裡存的舊檔案，而且沒有重新整理按鈕。
     // 做法：去網路上抓一份「現在的這個網頁」（網址加上時間，強迫不能用舊的），比對裡面寫的版本號，不一樣就提示更新。
@@ -8876,6 +9068,7 @@
     // 底部分頁列只在手機寬度才啟用，只判斷這一次（跟月曆的精簡模式用同一個門檻）；手機版的首頁改成真正的 Dashboard，
     // 桌面版完全不動、還是原本的主選單。這段特意放在整份 <script> 的最後面，確保前面所有 let 變數都已經跑過初始化，
     // 避免呼叫 showPage() 觸發的畫面渲染，去讀到還沒被賦值、卡在 TDZ（暫時性死區）的變數而整個中斷執行。
+    enhanceModals();
     applySettingsToUI();
     // 一打開先顯示登入畫面（載入中），等確認登入狀態後才顯示內容，避免看到上一個帳號的資料
     showLoginScreen('loading');
