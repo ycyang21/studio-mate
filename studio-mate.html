@@ -154,6 +154,10 @@
     .pm-why { font-size: 13px; color: #4A6741; background: #F4F6F3; border-radius: 6px; padding: 6px 8px; margin-bottom: 8px; line-height: 1.5; }
     .pm-why-empty { color: #888; background: #F5F5F5; }
     .pm-warn { font-size: 12px; color: #B5651D; margin: -4px 0 8px; }
+    .pm-timing { margin-top: 8px; }
+    .pm-timing label { display: inline-flex; align-items: center; gap: 4px; font-weight: normal; margin: 0; font-size: 14px; }
+    .pay-pair-hint { font-size: 11px; color: #999; margin-bottom: 8px; line-height: 1.5; }
+    .pay-pair-hint.warn { font-size: 12px; color: #B5651D; }
     .group-card { background: #fff; border: 1px solid #DCE6E6; border-radius: 8px; padding: 10px; margin-bottom: 10px; text-align: left; }
     .group-card-head { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; align-items: baseline; }
     .group-card-sched { font-size: 12px; color: #888; }
@@ -789,12 +793,15 @@
       <div class="form-group"><label>繳費方式</label>
         <select id="convert-paymode" class="form-control" onchange="onPayModeFormChange('convert')">
           <option value="">之後再設定</option>
-          <option value="package">每期固定堂數（例如一期 4 堂）</option>
-          <option value="monthStart">月初繳當月（照當月會上的堂數）</option>
-          <option value="monthEnd">月底繳（上幾次繳幾次）</option>
           <option value="single">單堂繳費（上一堂繳一堂）</option>
+          <option value="package">固定堂數（例如一期 4 堂）</option>
+          <option value="flex">彈性堂數（每次繳幾堂當下決定）</option>
         </select>
         <div id="convert-paypackage-wrap" style="display:none; margin-top:6px; font-size:14px;">一期 <input type="number" id="convert-paypackage" class="form-control" style="display:inline-block; width:80px; padding:5px; margin:0 4px;" value="4" min="0.5" step="0.5"> 堂</div>
+        <div id="convert-paytiming-wrap" class="radio-group pm-timing" style="display:none;">
+          <label><input type="radio" name="convert-paytiming" value="before" checked> 先繳（上課前繳）</label>
+          <label><input type="radio" name="convert-paytiming" value="after"> 後繳（上完再繳）</label>
+        </div>
       </div>
       <div class="form-group">
         <label>上課地點</label>
@@ -873,12 +880,15 @@
       <div class="form-group"><label>繳費方式</label>
         <select id="plan-change-paymode" class="form-control" onchange="onPayModeFormChange('plan-change')">
           <option value="">之後再設定</option>
-          <option value="package">每期固定堂數（例如一期 4 堂）</option>
-          <option value="monthStart">月初繳當月（照當月會上的堂數）</option>
-          <option value="monthEnd">月底繳（上幾次繳幾次）</option>
           <option value="single">單堂繳費（上一堂繳一堂）</option>
+          <option value="package">固定堂數（例如一期 4 堂）</option>
+          <option value="flex">彈性堂數（每次繳幾堂當下決定）</option>
         </select>
         <div id="plan-change-paypackage-wrap" style="display:none; margin-top:6px; font-size:14px;">一期 <input type="number" id="plan-change-paypackage" class="form-control" style="display:inline-block; width:80px; padding:5px; margin:0 4px;" value="4" min="0.5" step="0.5"> 堂</div>
+        <div id="plan-change-paytiming-wrap" class="radio-group pm-timing" style="display:none;">
+          <label><input type="radio" name="plan-change-paytiming" value="before" checked> 先繳（上課前繳）</label>
+          <label><input type="radio" name="plan-change-paytiming" value="after"> 後繳（上完再繳）</label>
+        </div>
       </div>
       <div class="form-group">
         <label>上課地點</label>
@@ -1102,12 +1112,15 @@
       <div class="form-group"><label>繳費方式</label>
         <select id="edit-paymode" class="form-control" onchange="onPayModeFormChange('edit')">
           <option value="">之後再設定</option>
-          <option value="package">每期固定堂數（例如一期 4 堂）</option>
-          <option value="monthStart">月初繳當月（照當月會上的堂數）</option>
-          <option value="monthEnd">月底繳（上幾次繳幾次）</option>
           <option value="single">單堂繳費（上一堂繳一堂）</option>
+          <option value="package">固定堂數（例如一期 4 堂）</option>
+          <option value="flex">彈性堂數（每次繳幾堂當下決定）</option>
         </select>
         <div id="edit-paypackage-wrap" style="display:none; margin-top:6px; font-size:14px;">一期 <input type="number" id="edit-paypackage" class="form-control" style="display:inline-block; width:80px; padding:5px; margin:0 4px;" value="4" min="0.5" step="0.5"> 堂</div>
+        <div id="edit-paytiming-wrap" class="radio-group pm-timing" style="display:none;">
+          <label><input type="radio" name="edit-paytiming" value="before" checked> 先繳（上課前繳）</label>
+          <label><input type="radio" name="edit-paytiming" value="after"> 後繳（上完再繳）</label>
+        </div>
       </div>
       <div class="form-group">
         <label>上課地點</label>
@@ -1189,12 +1202,15 @@
       <div class="form-group"><label>繳費方式</label>
         <select id="add-paymode" class="form-control" onchange="onPayModeFormChange('add')">
           <option value="">之後再設定</option>
-          <option value="package">每期固定堂數（例如一期 4 堂）</option>
-          <option value="monthStart">月初繳當月（照當月會上的堂數）</option>
-          <option value="monthEnd">月底繳（上幾次繳幾次）</option>
           <option value="single">單堂繳費（上一堂繳一堂）</option>
+          <option value="package">固定堂數（例如一期 4 堂）</option>
+          <option value="flex">彈性堂數（每次繳幾堂當下決定）</option>
         </select>
         <div id="add-paypackage-wrap" style="display:none; margin-top:6px; font-size:14px;">一期 <input type="number" id="add-paypackage" class="form-control" style="display:inline-block; width:80px; padding:5px; margin:0 4px;" value="4" min="0.5" step="0.5"> 堂</div>
+        <div id="add-paytiming-wrap" class="radio-group pm-timing" style="display:none;">
+          <label><input type="radio" name="add-paytiming" value="before" checked> 先繳（上課前繳）</label>
+          <label><input type="radio" name="add-paytiming" value="after"> 後繳（上完再繳）</label>
+        </div>
       </div>
       <div class="form-group">
         <label>上課地點</label>
@@ -1619,10 +1635,10 @@
         <div id="qp-suggest"></div>
         <div style="display:flex; gap:8px; margin-bottom:8px;">
           <input type="date" id="qp-date" class="form-control" style="padding:5px;">
-          <input type="number" id="qp-lessons" class="form-control" style="padding:5px;" placeholder="堂數 (可小數)" step="0.5" oninput="qpAutoAmount()">
+          <input type="number" id="qp-lessons" class="form-control" style="padding:5px;" placeholder="堂數 (可小數)" step="0.5" oninput="payPairInput('lessons', 'qp-lessons', 'qp-amount', qpStudentId)">
         </div>
-        <input type="number" id="qp-amount" class="form-control" style="padding:5px; margin-bottom:4px;" placeholder="實收金額 NT$（選填）" min="0" oninput="this.dataset.manual = this.value === '' ? '' : '1'">
-        <div style="font-size:11px; color:#999; margin-bottom:8px;">輸入堂數會自動帶入「堂數 × 單堂學費」，有折扣或多收可以直接改</div>
+        <input type="number" id="qp-amount" class="form-control" style="padding:5px; margin-bottom:4px;" placeholder="實收金額 NT$（選填）" min="0" oninput="payPairInput('amount', 'qp-lessons', 'qp-amount', qpStudentId)">
+        <div id="qp-amount-hint" class="pay-pair-hint"></div>
         <input type="text" id="qp-note" class="form-control" style="padding:5px; margin-bottom:8px;" placeholder="備註（選填，例如：繳4堂、9月份月費）">
         <button class="small-btn" style="background-color:#8C9C8A; color:white; width:100%; padding:10px; font-size:15px; margin:0;" onclick="submitQuickPay()">確定登記</button>
       </div>
@@ -1652,8 +1668,8 @@
       <p id="payedit-student" style="font-size:15px; font-weight:bold; color:#333; margin-bottom:6px;"></p>
       <p id="payedit-lock-note" style="display:none; font-size:12px; color:#888; line-height:1.6; margin-top:0;">這筆是點名時勾選「已收費」自動產生的，日期和堂數會跟著點名一起變動，所以這裡只能補記實收金額。要改堂數請回到那堂課的點名視窗。</p>
       <div class="form-group"><label>繳費日期</label><input type="date" id="payedit-date" class="form-control"></div>
-      <div class="form-group"><label>堂數</label><input type="number" id="payedit-lessons" class="form-control" step="0.5"></div>
-      <div class="form-group"><label>實收金額 NT$（選填）</label><input type="number" id="payedit-amount" class="form-control" min="0"></div>
+      <div class="form-group"><label>堂數</label><input type="number" id="payedit-lessons" class="form-control" step="0.5" oninput="payPairInput('lessons', 'payedit-lessons', 'payedit-amount', payEditStudentId())"></div>
+      <div class="form-group"><label>實收金額 NT$（選填）</label><input type="number" id="payedit-amount" class="form-control" min="0" oninput="payPairInput('amount', 'payedit-lessons', 'payedit-amount', payEditStudentId())"><div id="payedit-amount-hint" class="pay-pair-hint" style="margin:4px 0 0;"></div></div>
       <div class="form-group"><label>備註（選填）</label><input type="text" id="payedit-note" class="form-control"></div>
       <button class="button" style="width:100%; margin:10px 0 0 0;" onclick="submitPayEditModal()">💾 儲存</button>
       <button class="button" style="width:100%; margin:10px 0 0 0; background-color:#FFB6B9;" onclick="deletePayFromEditModal()">🗑️ 刪除這筆</button>
@@ -5386,49 +5402,7 @@
       return Number((getStudentDebit(studentId) - getStudentCredit(studentId)).toFixed(2));
     }
 
-    // 計算某年某月裡，這位學生實際會上到幾堂：直接用月曆的資料來源（getEventsForDate）數他的固定課，
-    // 所以隔週、開始上課日、退班、停課都照算；已經按「延期」的那幾堂不算（調課、轉補課的還是算一堂，只是換時間上）。
-    function countScheduledInMonth(student, year, monthIndex) {
-      let count = 0;
-      let d = new Date(year, monthIndex, 1);
-      while (d.getMonth() === monthIndex) {
-        let ds = formatDate(d);
-        if (String(d.getDay()) === String(student.dayIndex)) {
-          getEventsForDate(ds).forEach(it => {
-            if (it.props.type !== 'normal' || !students[it.props.stuIdx] || students[it.props.stuIdx].id !== student.id) return;
-            if (getNormalLessonStatus(student, ds) === 'canceled') return;
-            count++;
-          });
-        }
-        d.setDate(d.getDate() + 1);
-      }
-      return count;
-    }
     function hasWeeklySchedule(s) { return !!s && s.freq !== 'appointment' && s.dayIndex !== '' && s.dayIndex !== undefined && s.dayIndex !== null; }
-
-    // offset: 0=本月, 1=下月。把算好的堂數直接帶入輸入框
-    function fillMonthCount(studentId, offset, idPrefix) {
-      idPrefix = idPrefix || '';
-      let s = students.find(x => x.id === studentId);
-      if (!s || s.freq === 'appointment' || s.dayIndex === '' || s.dayIndex === undefined) { alert('這位學生是約課、或尚未設定完整的上課星期，請改用「帶入目前已上課堂數」或自行輸入堂數！'); return; }
-      let now = new Date();
-      let target = new Date(now.getFullYear(), now.getMonth() + offset, 1);
-      let count = countScheduledInMonth(s, target.getFullYear(), target.getMonth());
-      document.getElementById(idPrefix + 'paylessons_' + studentId).value = count;
-      autoFillPayAmount(studentId, idPrefix);
-    }
-
-    function fillPayLessons(studentId, n, idPrefix) {
-      idPrefix = idPrefix || '';
-      document.getElementById(idPrefix + 'paylessons_' + studentId).value = n;
-      autoFillPayAmount(studentId, idPrefix);
-    }
-
-    // 把目前系統算出來的「已上課堂數」直接帶入輸入框，方便設定起始餘額時參考／快速對齊
-    function fillCurrentDebit(studentId, idPrefix) {
-      idPrefix = idPrefix || '';
-      document.getElementById(idPrefix + 'paylessons_' + studentId).value = getStudentDebit(studentId);
-    }
 
     function togglePayForm(studentId, idPrefix) {
       idPrefix = idPrefix || '';
@@ -5468,9 +5442,8 @@
       paymentRecords.push(rec);
       savePaymentToMemory();
 
-      document.getElementById(idPrefix + 'paylessons_' + studentId).value = '';
+      resetPayPair(idPrefix + 'paylessons_' + studentId, idPrefix + 'payamount_' + studentId);
       document.getElementById(idPrefix + 'paynote_' + studentId).value = '';
-      if (amountEl) { amountEl.value = ''; amountEl.dataset.manual = ''; }
       renderStudentDetailPayment();
       alert('✅ 已登記繳費！');
     }
@@ -5489,12 +5462,22 @@
 
 
     // ============ 繳費方式：打開登記繳費時自動帶入堂數 ============
-    // 每位學生記一種繳費方式，登記繳費時照他的方式算好堂數（還是可以手動改）：
-    //   package    每期固定 N 堂 → 帶 N
-    //   monthStart 月初繳當月   → 從「第一堂還沒繳的課」那個月（最早到這個月）算起，到那個月底還沒繳的課有幾堂
-    //   monthEnd   月底繳       → 已經上了（出席、缺席收費、補課…）但還沒繳的堂數
-    //   single     單堂繳費     → 1
-    const PAY_MODE_LABELS = { package: '每期固定堂數', monthStart: '月初繳當月', monthEnd: '月底繳（上幾次繳幾次）', single: '單堂繳費' };
+    // 分三類，固定堂數和彈性堂數再分先繳／後繳。學生身上存的值（payMode）沿用舊的名字，舊資料不用轉換：
+    //   single       單堂繳費        → 帶 1 堂
+    //   package      固定堂數・先繳  → 帶「一期 N 堂」
+    //   packageAfter 固定堂數・後繳  → 帶「一期 N 堂」，並列出已上還沒繳的課給你核對
+    //   monthStart   彈性堂數・先繳  → 不帶（繳幾堂當下決定，填堂數或金額都可以）
+    //   monthEnd     彈性堂數・後繳  → 帶「已經上了但還沒繳」的堂數
+    const PAY_MODE_LABELS = { single: '單堂繳費', package: '固定堂數・先繳', packageAfter: '固定堂數・後繳', monthStart: '彈性堂數・先繳', monthEnd: '彈性堂數・後繳' };
+    function isPackageMode(m) { return m === 'package' || m === 'packageAfter'; }
+    function payModeCategory(m) { return m === 'single' ? 'single' : isPackageMode(m) ? 'package' : (m === 'monthStart' || m === 'monthEnd') ? 'flex' : ''; }
+    function payModeTiming(m) { return (m === 'packageAfter' || m === 'monthEnd') ? 'after' : 'before'; }
+    function composePayMode(cat, timing) {
+      if (cat === 'single') return 'single';
+      if (cat === 'package') return timing === 'after' ? 'packageAfter' : 'package';
+      if (cat === 'flex') return timing === 'after' ? 'monthEnd' : 'monthStart';
+      return '';
+    }
     function getPayMode(s) {
       if (s && s.payMode && PAY_MODE_LABELS[s.payMode]) return s.payMode;
       return (s && s.singleLessonPay) ? 'single' : ''; // 以前勾「單堂繳費」的學生，自動當成單堂繳費
@@ -5503,81 +5486,69 @@
     function getPayModeLabel(s) {
       let m = getPayMode(s);
       if (!m) return '';
-      return m === 'package' ? '每期 ' + getPayPackage(s) + ' 堂' : PAY_MODE_LABELS[m];
+      return PAY_MODE_LABELS[m] + (isPackageMode(m) ? '（一期 ' + getPayPackage(s) + ' 堂）' : '');
     }
     function setStudentPayMode(s, mode, pkg) {
       if (mode && PAY_MODE_LABELS[mode]) s.payMode = mode; else delete s.payMode;
-      if (mode === 'package') s.payPackage = Number(pkg) > 0 ? Number(pkg) : 4; else delete s.payPackage;
+      if (isPackageMode(mode)) s.payPackage = Number(pkg) > 0 ? Number(pkg) : 4; else delete s.payPackage;
       s.singleLessonPay = (mode === 'single');
     }
-    // 學生表單（新增／編輯／方案異動／轉正）裡的繳費方式欄位
+    // 學生表單（新增／編輯／方案異動／轉正）裡的繳費方式欄位：先選類別，再選一期幾堂／先繳後繳
     function setPayModeForm(prefix, s) {
-      document.getElementById(prefix + '-paymode').value = getPayMode(s || {});
+      let m = getPayMode(s || {});
+      document.getElementById(prefix + '-paymode').value = payModeCategory(m);
       document.getElementById(prefix + '-paypackage').value = getPayPackage(s || {});
+      let r = document.querySelector('input[name="' + prefix + '-paytiming"][value="' + payModeTiming(m) + '"]');
+      if (r) r.checked = true;
       onPayModeFormChange(prefix);
     }
     function readPayModeForm(prefix) {
-      let mode = document.getElementById(prefix + '-paymode').value;
+      let cat = document.getElementById(prefix + '-paymode').value;
+      let t = document.querySelector('input[name="' + prefix + '-paytiming"]:checked');
       let pkg = Number(document.getElementById(prefix + '-paypackage').value);
-      return { mode: PAY_MODE_LABELS[mode] ? mode : '', pkg: pkg > 0 ? pkg : 4 };
+      return { mode: composePayMode(cat, t ? t.value : 'before'), pkg: pkg > 0 ? pkg : 4 };
     }
     function onPayModeFormChange(prefix) {
-      document.getElementById(prefix + '-paypackage-wrap').style.display = document.getElementById(prefix + '-paymode').value === 'package' ? 'block' : 'none';
+      let cat = document.getElementById(prefix + '-paymode').value;
+      document.getElementById(prefix + '-paypackage-wrap').style.display = cat === 'package' ? 'block' : 'none';
+      document.getElementById(prefix + '-paytiming-wrap').style.display = (cat === 'package' || cat === 'flex') ? 'flex' : 'none';
     }
 
     function monthOf(dateStr) { return dateStr.slice(0, 7); }
-    function monthEndDate(monthStr) { let p = monthStr.split('-').map(Number); return formatDate(new Date(p[0], p[1], 0)); }
     function monthLabel(monthStr) { return Number(monthStr.slice(5, 7)) + '月'; }
-    // 把一串課（{date, amount}）寫成好核對的文字：同一個月就列日期，跨好幾個月就列每個月幾堂
+    // 把一串課（{date, amount}）寫成好核對的文字：堂數不多（或同一個月）就列日期，很多堂又跨好幾個月就列每個月幾堂
     function describeLessonDates(list) {
       if (!list.length) return '';
       let months = [];
       list.forEach(x => { let m = monthOf(x.date); let g = months.find(y => y.m === m); if (!g) { g = { m, items: [] }; months.push(g); } g.items.push(x); });
       let amt = arr => envRound(arr.reduce((t, x) => t + x.amount, 0));
-      if (months.length === 1) return list.map(x => envShortDate(x.date) + (Math.abs(x.amount - 1) > ENV_EPS ? '（' + x.amount + '堂）' : '')).join('、');
+      if (months.length === 1 || list.length <= 8) return list.map(x => envShortDate(x.date) + (Math.abs(x.amount - 1) > ENV_EPS ? '（' + x.amount + '堂）' : '')).join('、');
       return months.map(g => monthLabel(g.m) + ' ' + amt(g.items) + ' 堂').join('、');
     }
 
     function suggestPayLessons(s) {
       let mode = getPayMode(s);
-      if (!mode) return { n: null, why: '還沒設定繳費方式，選好之後就會自動帶入堂數。' };
-      if (mode === 'package') { let n = getPayPackage(s); return { n, why: '照「每期固定 ' + n + ' 堂」' }; }
+      if (!mode) return { n: null, why: '還沒設定繳費方式。設定成單堂或固定堂數，之後打開就會自動帶入堂數。' };
       if (mode === 'single') return { n: 1, why: '單堂繳費，一次一堂' };
+      if (mode === 'package') { let n = getPayPackage(s); return { n, why: '固定堂數・先繳，一期 ' + n + ' 堂' }; }
+      if (mode === 'monthStart') return { n: null, why: '彈性堂數・先繳：這次繳幾堂由你決定，填堂數或金額都可以，另一格會自動算。' };
+      // 後繳的兩種：都要對照「已經上了但還沒繳」的課
       let env = buildTuitionEnvelope(s);
       let today = formatDate(new Date());
       let owedList = env.unpaid.map(u => ({ date: u.item.kind === 'adjust' && u.item.fromDates && u.item.fromDates.length ? u.item.fromDates[0] : u.item.date, amount: u.amount }));
-      if (mode === 'monthEnd') {
-        let n = env.unpaidTotal;
-        let unmarked = getStudentPendingLessons(s, Infinity, { from: addDaysStr(today, -60), until: today });
-        let warn = unmarked.length ? '⚠️ 還沒點名、沒算進去：' + unmarked.map(x => envShortDate(x.date)).join('、') : '';
-        if (!(n > ENV_EPS)) return { n: null, why: '目前沒有已上課但還沒繳的堂數。', warn };
-        return { n, why: '已上課還沒繳：' + describeLessonDates(owedList), warn };
+      let owed = env.unpaidTotal > ENV_EPS ? env.unpaidTotal : 0;
+      let unmarked = getStudentPendingLessons(s, Infinity, { from: addDaysStr(today, -60), until: today });
+      let warns = [];
+      if (unmarked.length) warns.push('⚠️ 還沒點名、沒算進去：' + unmarked.map(x => envShortDate(x.date)).join('、'));
+      if (mode === 'packageAfter') {
+        let n = getPayPackage(s);
+        let why = '固定堂數・後繳，一期 ' + n + ' 堂\n' + (owed ? '已上課還沒繳：' + describeLessonDates(owedList) : '目前沒有已上課還沒繳的課');
+        if (Math.abs(owed - n) > ENV_EPS) warns.unshift('⚠️ 目前已上還沒繳的是 ' + owed + ' 堂，跟一期 ' + n + ' 堂不一樣，請確認');
+        return { n, why, warn: warns.join('\n') };
       }
-      // monthStart：先繳的先用，所以從第一堂還沒繳的課算起
-      let credit = env.creditLeft;
-      let firstUncovered = owedList.length ? owedList[0].date : null;
-      if (!firstUncovered) {
-        let probe = getStudentPendingLessons(s, credit + 1);
-        let acc = 0;
-        for (let x of probe) { acc += x.amount; if (acc > credit + ENV_EPS) { firstUncovered = x.date; break; } }
-      }
-      if (!firstUncovered) return { n: null, why: '之後還沒有排到需要繳費的課。' };
-      let targetMonth = monthOf(firstUncovered) > monthOf(today) ? monthOf(firstUncovered) : monthOf(today);
-      let pending = getStudentPendingLessons(s, Infinity, { until: monthEndDate(targetMonth) });
-      // 前面幾堂已經用之前多繳的（例如上個月延期留下來的）抵掉
-      let skip = credit, covered = [], uncovered = [];
-      pending.forEach(x => {
-        if (skip > ENV_EPS) { let t = Math.min(skip, x.amount); skip -= t; covered.push(x); if (x.amount - t > ENV_EPS) uncovered.push({ date: x.date, amount: envRound(x.amount - t) }); }
-        else uncovered.push({ date: x.date, amount: x.amount });
-      });
-      let all = owedList.concat(uncovered);
-      let n = envRound(all.reduce((t, x) => t + x.amount, 0));
-      if (!(n > ENV_EPS)) return { n: null, why: monthLabel(targetMonth) + '的課都已經繳了。' };
-      let span = monthOf(all[0].date) === targetMonth ? monthLabel(targetMonth) : monthLabel(monthOf(all[0].date)) + '～' + monthLabel(targetMonth);
-      let why = span + '還沒繳：' + describeLessonDates(all);
-      let coveredHere = covered.filter(x => monthOf(x.date) === targetMonth);
-      if (coveredHere.length) why += '（' + coveredHere.map(x => envShortDate(x.date)).join('、') + ' 已經用之前多繳的抵掉）';
-      return { n, why };
+      // monthEnd 彈性堂數・後繳
+      if (!owed) return { n: null, why: '彈性堂數・後繳：目前沒有已上課但還沒繳的堂數。', warn: warns.join('\n') };
+      return { n: owed, why: '彈性堂數・後繳，已上課還沒繳：' + describeLessonDates(owedList), warn: warns.join('\n') };
     }
 
     // 登記繳費表單上方：繳費方式（可以當場設定）＋ 帶入的堂數和依據
@@ -5586,16 +5557,21 @@
       let s = students.find(x => x.id === studentId);
       if (!box || !s) return;
       let mode = getPayMode(s);
-      let opts = '<option value="">（還沒設定）</option>' + Object.keys(PAY_MODE_LABELS).map(k => `<option value="${k}"${k === mode ? ' selected' : ''}>${PAY_MODE_LABELS[k]}</option>`).join('');
+      let opt = k => `<option value="${k}"${k === mode ? ' selected' : ''}>${PAY_MODE_LABELS[k]}</option>`;
+      let opts = '<option value="">（還沒設定）</option>' + opt('single') +
+        '<optgroup label="固定堂數">' + opt('package') + opt('packageAfter') + '</optgroup>' +
+        '<optgroup label="彈性堂數">' + opt('monthStart') + opt('monthEnd') + '</optgroup>';
       let sug = suggestPayLessons(s);
       let args = `'${boxId}', '${studentId}', '${lessonsId}', '${amountId}'`;
       box.innerHTML = `<div class="pm-row"><span class="pm-label">繳費方式</span><select class="form-control pm-select" onchange="onPaySuggestChange(${args})">${opts}</select>` +
-        (mode === 'package' ? `<span class="pm-pkg">一期 <input type="number" class="form-control pm-pkg-input" value="${getPayPackage(s)}" min="0.5" step="0.5" onchange="onPaySuggestChange(${args})"> 堂</span>` : '') + `</div>` +
-        `<div class="pm-why${sug.n ? '' : ' pm-why-empty'}">${sug.n ? '<b>📌 帶入 ' + sug.n + ' 堂</b><br>' : ''}${escHTML(sug.why)}</div>` +
-        (sug.warn ? `<div class="pm-warn">${escHTML(sug.warn)}</div>` : '');
+        (isPackageMode(mode) ? `<span class="pm-pkg">一期 <input type="number" class="form-control pm-pkg-input" value="${getPayPackage(s)}" min="0.5" step="0.5" onchange="onPaySuggestChange(${args})"> 堂</span>` : '') + `</div>` +
+        `<div class="pm-why${sug.n ? '' : ' pm-why-empty'}">${sug.n ? '<b>📌 帶入 ' + sug.n + ' 堂</b><br>' : ''}${escHTML(sug.why).replace(/\n/g, '<br>')}</div>` +
+        (sug.warn ? `<div class="pm-warn">${escHTML(sug.warn).replace(/\n/g, '<br>')}</div>` : '');
       let lessonsEl = document.getElementById(lessonsId), amtEl = document.getElementById(amountId);
+      resetPayPair(lessonsId, amountId);
       lessonsEl.value = sug.n ? sug.n : '';
-      if (amtEl) { amtEl.dataset.manual = ''; let v = sug.n ? autoPayAmount(s, sug.n) : undefined; amtEl.value = v === undefined ? '' : v; }
+      if (amtEl && sug.n) { let v = autoPayAmount(s, sug.n); amtEl.value = v === undefined ? '' : v; }
+      updatePayPairHint(lessonsId, amountId, studentId);
     }
     function onPaySuggestChange(boxId, studentId, lessonsId, amountId) {
       let s = students.find(x => x.id === studentId);
@@ -5607,6 +5583,49 @@
       setStudentPayMode(s, mode, pkg);
       saveToMemory();
       renderPaySuggest(boxId, studentId, lessonsId, amountId);
+    }
+    // ---------- 堂數 ⇄ 金額 互算 ----------
+    // 填一格，另一格照單堂學費自動算。自己打過的那格不會再被蓋掉（兩格都自己打過就都照打的，例如偶爾少收一點）；
+    // 把自己打的那格清空，它就恢復成跟著另一格算。
+    function lessonsFromAmount(s, amount) { let f = s ? (Number(s.fee) || 0) : 0; return f > 0 ? Math.round(amount / f * 100) / 100 : undefined; }
+    function resetPayPair(lessonsId, amountId) {
+      [lessonsId, amountId].forEach(id => { let el = document.getElementById(id); if (el) { el.value = ''; el.dataset.manual = ''; el.dataset.derived = ''; } });
+    }
+    function payPairInput(which, lessonsId, amountId, studentId) {
+      let s = students.find(x => x.id === studentId);
+      let lEl = document.getElementById(lessonsId), aEl = document.getElementById(amountId);
+      if (!lEl || !aEl) return;
+      let srcEl = which === 'lessons' ? lEl : aEl, other = which === 'lessons' ? aEl : lEl;
+      srcEl.dataset.manual = srcEl.value === '' ? '' : '1';
+      srcEl.dataset.derived = '';
+      if (other.dataset.manual !== '1' && !other.disabled) {
+        let v;
+        if (which === 'lessons') { let n = Number(lEl.value); v = (lEl.value !== '' && n > 0) ? autoPayAmount(s, n) : undefined; }
+        else { let a = Number(aEl.value); v = (aEl.value !== '' && a > 0) ? lessonsFromAmount(s, a) : undefined; }
+        other.value = v === undefined ? '' : v;
+        other.dataset.derived = v === undefined ? '' : '1';
+      }
+      updatePayPairHint(lessonsId, amountId, studentId);
+    }
+    // 金額下面那行小字：平常說明怎麼用；算出來不是整數、或兩格對不起來時提醒一下
+    function updatePayPairHint(lessonsId, amountId, studentId) {
+      let hint = document.getElementById(amountId + '-hint');
+      if (!hint) return;
+      let s = students.find(x => x.id === studentId);
+      let fee = s ? (Number(s.fee) || 0) : 0;
+      let lEl = document.getElementById(lessonsId), aEl = document.getElementById(amountId);
+      let n = Number(lEl.value), a = Number(aEl.value);
+      let hasN = lEl.value !== '' && !isNaN(n) && n > 0, hasA = aEl.value !== '' && !isNaN(a);
+      let msg, warn = false;
+      if (!fee) msg = '這位學生還沒設定單堂學費，堂數和金額要各自填。';
+      else if (hasN && hasA && lEl.dataset.derived === '1' && Math.abs(n - Math.round(n)) > 0.001) {
+        msg = '⚠️ NT$ ' + a.toLocaleString() + ' ÷ 單堂 NT$ ' + fee.toLocaleString() + ' ＝ ' + n + ' 堂，不是整數，請確認堂數（書錢請在進銷存的「銷售」記）'; warn = true;
+      } else if (hasN && hasA && Math.round(n * fee) !== Math.round(a)) {
+        let d = Math.round(a - n * fee);
+        msg = '⚠️ ' + n + ' 堂 × NT$ ' + fee.toLocaleString() + ' ＝ NT$ ' + Math.round(n * fee).toLocaleString() + '，實收' + (d < 0 ? '少' : '多') + ' NT$ ' + Math.abs(d).toLocaleString() + '，請確認'; warn = true;
+      } else msg = '堂數和金額填一格，另一格會自動算（單堂 NT$ ' + fee.toLocaleString() + '）';
+      hint.textContent = msg;
+      hint.className = 'pay-pair-hint' + (warn ? ' warn' : '');
     }
     // ============ 繳費方式結束 ============
 
@@ -5748,8 +5767,7 @@
       qpFromPicker = !!fromPicker;
       renderQuickPayStatus(s);
       document.getElementById('qp-date').value = formatDate(new Date());
-      document.getElementById('qp-lessons').value = '';
-      let amt = document.getElementById('qp-amount'); amt.value = ''; amt.dataset.manual = '';
+      resetPayPair('qp-lessons', 'qp-amount');
       document.getElementById('qp-note').value = '';
       renderPaySuggest('qp-suggest', s.id, 'qp-lessons', 'qp-amount');
       quickPayShow('form');
@@ -5770,15 +5788,6 @@
         el.innerHTML = '✅ 目前已結清';
         el.style.color = '#666'; el.style.backgroundColor = '#F5F5F5';
       }
-    }
-    function qpFill(n) { document.getElementById('qp-lessons').value = n; qpAutoAmount(); }
-    function qpAutoAmount() {
-      let s = students.find(x => x.id === qpStudentId);
-      let amtEl = document.getElementById('qp-amount');
-      if (!s || amtEl.dataset.manual === '1') return;
-      let n = Number(document.getElementById('qp-lessons').value);
-      let v = (n > 0) ? autoPayAmount(s, n) : undefined;
-      amtEl.value = v === undefined ? '' : v;
     }
     function submitQuickPay() {
       let s = students.find(x => x.id === qpStudentId);
@@ -6276,15 +6285,6 @@
       let f = stu ? (Number(stu.fee) || 0) : 0;
       return f > 0 ? Math.round(f * (Number(lessons) || 0)) : undefined;
     }
-    function autoFillPayAmount(studentId, idPrefix) {
-      idPrefix = idPrefix || '';
-      let s = students.find(x => x.id === studentId);
-      let amtEl = document.getElementById(idPrefix + 'payamount_' + studentId);
-      if (!s || !amtEl || amtEl.dataset.manual === '1') return;
-      let n = Number(document.getElementById(idPrefix + 'paylessons_' + studentId).value);
-      let v = (n > 0) ? autoPayAmount(s, n) : undefined;
-      amtEl.value = v === undefined ? '' : v;
-    }
 
     function getStudentChargedItems(s) {
       let items = [];
@@ -6623,6 +6623,7 @@
       let locked = AUTO_PAY_NOTES.includes(p.note);
       document.getElementById('payedit-student').innerText = p.studentName || '';
       document.getElementById('payedit-date').value = p.date || '';
+      resetPayPair('payedit-lessons', 'payedit-amount');
       document.getElementById('payedit-lessons').value = p.lessons;
       document.getElementById('payedit-amount').value = hasPayAmount(p) ? p.amount : '';
       document.getElementById('payedit-note').value = p.note || '';
@@ -6631,9 +6632,15 @@
       let stu = students.find(x => x.id === p.studentId);
       let fee = stu ? Number(stu.fee) || 0 : 0;
       document.getElementById('payedit-amount').placeholder = fee ? '例如 ' + Math.round(fee * (Math.abs(Number(p.lessons)) || 1)) : '例如 3200';
+      let linked = !hasPayAmount(p) || (fee > 0 && Math.round(Number(p.lessons) * fee) === Math.round(Number(p.amount)));
+      // 還沒記金額的舊紀錄：補記金額時不要動到堂數；金額空著的話改堂數會順便帶入金額
+      document.getElementById('payedit-lessons').dataset.manual = (hasPayAmount(p) && linked && !locked) ? '' : '1';
+      document.getElementById('payedit-amount').dataset.manual = (hasPayAmount(p) && !linked) ? '1' : '';
+      updatePayPairHint('payedit-lessons', 'payedit-amount', p.studentId);
       document.getElementById('payedit-modal').style.display = 'flex';
     }
     function closePayEditModal() { document.getElementById('payedit-modal').style.display = 'none'; editingPayId = null; }
+    function payEditStudentId() { let p = paymentRecords.find(x => x.id === editingPayId); return p ? p.studentId : ''; }
     function submitPayEditModal() {
       let p = paymentRecords.find(x => x.id === editingPayId);
       if (!p) { closePayEditModal(); return; }
@@ -6700,10 +6707,10 @@
             <div id="${idPrefix}paysuggest_${s.id}"></div>
             <div style="display:flex; gap:8px; margin-bottom:8px;">
               <input type="date" id="${idPrefix}paydate_${s.id}" class="form-control" style="padding:5px;">
-              <input type="number" id="${idPrefix}paylessons_${s.id}" class="form-control" style="padding:5px;" placeholder="堂數 (可小數)" step="0.5" oninput="autoFillPayAmount('${s.id}', '${idPrefix}')">
+              <input type="number" id="${idPrefix}paylessons_${s.id}" class="form-control" style="padding:5px;" placeholder="堂數 (可小數)" step="0.5" oninput="payPairInput('lessons', '${idPrefix}paylessons_${s.id}', '${idPrefix}payamount_${s.id}', '${s.id}')">
             </div>
-            <input type="number" id="${idPrefix}payamount_${s.id}" class="form-control" style="padding:5px; margin-bottom:4px;" placeholder="實收金額 NT$（選填）" min="0" oninput="this.dataset.manual = this.value === '' ? '' : '1'">
-            <div style="font-size:11px; color:#999; margin-bottom:8px;">輸入堂數會自動帶入「堂數 × 單堂學費」，有折扣或多收可以直接改</div>
+            <input type="number" id="${idPrefix}payamount_${s.id}" class="form-control" style="padding:5px; margin-bottom:4px;" placeholder="實收金額 NT$（選填）" min="0" oninput="payPairInput('amount', '${idPrefix}paylessons_${s.id}', '${idPrefix}payamount_${s.id}', '${s.id}')">
+            <div id="${idPrefix}payamount_${s.id}-hint" class="pay-pair-hint"></div>
             <input type="text" id="${idPrefix}paynote_${s.id}" class="form-control" style="padding:5px; margin-bottom:8px;" placeholder="備註（選填，例如：繳4堂、9月份月費）">
 
             <button class="small-btn" style="background-color:#8C9C8A; color:white; width:100%; padding:8px;" onclick="addPaymentRecord('${s.id}', '${idPrefix}')">確定登記</button>
@@ -7209,7 +7216,7 @@
       if (!confirmRecurringRentalClash(freq, dayIndex, timeVal, duration, anchorDate, startDate, location, null)) return; // 固定時段撞到已經租出去的琴房，先提醒
 
       let newId = generateId();
-      students.push({ id: newId, name: name, instrument: instrument, freq: freq, startDate: startDate, duration: duration, singleLessonPay: singleLessonPay, payMode: payForm.mode || undefined, payPackage: payForm.mode === 'package' ? payForm.pkg : undefined, location: location, locationAbbr: locationAbbr, dayIndex: dayIndex, timeVal: timeVal, fee: fee, phone: phone, anchorDate: anchorDate, attendedDates: [], canceledDates: [], makeupConvertedDates: [] });
+      students.push({ id: newId, name: name, instrument: instrument, freq: freq, startDate: startDate, duration: duration, singleLessonPay: singleLessonPay, payMode: payForm.mode || undefined, payPackage: isPackageMode(payForm.mode) ? payForm.pkg : undefined, location: location, locationAbbr: locationAbbr, dayIndex: dayIndex, timeVal: timeVal, fee: fee, phone: phone, anchorDate: anchorDate, attendedDates: [], canceledDates: [], makeupConvertedDates: [] });
       saveToMemory();
 
       // 把原本那筆臨時課接到新學生身上，變成他的第一堂課紀錄；如果當初有標記已收費，補登記一筆繳費
@@ -7490,7 +7497,7 @@
 
       students.push({
         id: newId, name: oldS.name, instrument: instrument, freq: freq, startDate: effectiveDate,
-        dayIndex: dayIndex, timeVal: timeVal, duration: duration, singleLessonPay: singleLessonPay, payMode: payForm.mode || undefined, payPackage: payForm.mode === 'package' ? payForm.pkg : undefined, location: location, locationAbbr: locationAbbr, fee: fee, phone: oldS.phone, anchorDate: anchorDate,
+        dayIndex: dayIndex, timeVal: timeVal, duration: duration, singleLessonPay: singleLessonPay, payMode: payForm.mode || undefined, payPackage: isPackageMode(payForm.mode) ? payForm.pkg : undefined, location: location, locationAbbr: locationAbbr, fee: fee, phone: oldS.phone, anchorDate: anchorDate,
         changedFromId: oldS.id, groupId: oldS.groupId || undefined,
         attendedDates: [], canceledDates: [], makeupConvertedDates: []
       });
@@ -9346,7 +9353,7 @@
 
     // ============ 版本更新檢查 ============
     // 每次修改程式、上傳新檔案時，要把這個版本號改掉（任何不一樣的字都可以），手機才會知道有新版本。
-    const APP_VERSION = 'sm-2026.10.16-10';
+    const APP_VERSION = 'sm-2026.10.16-11';
 
     // 加入主畫面的 App 常常直接拿手機裡存的舊檔案，而且沒有重新整理按鈕。
     // 做法：去網路上抓一份「現在的這個網頁」（網址加上時間，強迫不能用舊的），比對裡面寫的版本號，不一樣就提示更新。
