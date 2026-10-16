@@ -18,6 +18,12 @@
   
   <style>
     body { font-family: "Helvetica Neue", Arial, sans-serif; text-align: center; padding: 15px; background-color: #FDFBF7; color: #4A4A4A; }
+    /* 像 App 一樣操作：關掉「點兩下放大」（兩隻手指縮放還是可以用）。拖曳把手自己有設定，不受影響 */
+    html, body, * { touch-action: manipulation; }
+    /* iPhone 點到字比 16px 小的輸入框會自動放大畫面；手機版把所有輸入框統一成 16px，就不會一點就放大 */
+    @media (max-width: 700px) {
+      input:not([type="checkbox"]):not([type="radio"]), select, textarea { font-size: 16px !important; }
+    }
     h1 { font-weight: 300; letter-spacing: 2px; margin-bottom: 5px; }
     p { font-size: 14px; color: #888; margin-bottom: 30px; }
     
@@ -124,6 +130,9 @@
     .day-nav { display: flex; gap: 8px; margin-bottom: 12px; }
     .day-nav .small-btn { flex: 1; margin: 0; padding: 8px; font-size: 13px; background-color: #F2F2F2; color: #555; }
     #day-modal .modal-body { padding-top: 12px; }
+    .inv-add-card { background-color: #F4F6F3; border: 1px solid #8C9C8A; }
+    .inv-add-head { margin: 0; font-size: 16px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+    .inv-add-arrow { font-size: 13px; color: #8C9C8A; font-weight: normal; }
     .who-box { font-size: 13px; border-radius: 6px; padding: 8px 10px; margin-top: 8px; line-height: 1.6; }
     .who-existing { color: #4A6741; background: #EEF3EC; }
     .who-new { color: #8A5A1E; background: #FBF1E3; }
@@ -1345,13 +1354,15 @@
     <div id="inventory-stock-overview" style="width:90%; margin:0 auto;"></div>
 
     <div style="display:flex; gap:6px; width:90%; margin:20px auto 12px auto;">
-      <button class="small-btn inventory-subtab-btn" data-subtab="purchase" onclick="showInventorySubtab('purchase')" style="flex:1; padding:8px; background-color:#8C9C8A; color:white;">📦 進貨</button>
-      <button class="small-btn inventory-subtab-btn" data-subtab="sale" onclick="showInventorySubtab('sale')" style="flex:1; padding:8px; background-color:#E2E8DF; color:#333;">💰 銷售</button>
+      <button class="small-btn inventory-subtab-btn" data-subtab="sale" onclick="showInventorySubtab('sale')" style="flex:1; padding:8px; background-color:#8C9C8A; color:white;">💰 銷售</button>
+      <button class="small-btn inventory-subtab-btn" data-subtab="purchase" onclick="showInventorySubtab('purchase')" style="flex:1; padding:8px; background-color:#E2E8DF; color:#333;">📦 進貨</button>
     </div>
 
 
-    <div id="inventory-subtab-purchase" style="width:90%; margin:0 auto;">
-      <div class="card" style="text-align:left;">
+    <div id="inventory-subtab-purchase" style="width:90%; margin:0 auto; display:none;">
+      <div class="card inv-add-card" style="text-align:left;">
+        <h3 class="inv-add-head" onclick="toggleInvForm('purchase')">➕ 新增進貨 <span id="inv-purchase-arrow" class="inv-add-arrow">▸ 展開</span></h3>
+        <div id="inv-purchase-form" style="display:none; margin-top:12px;">
         <div class="form-group"><input type="text" id="purchase-item" class="form-control" autocomplete="off" placeholder="品項名稱（例如：拜爾鋼琴教本）" oninput="renderSuggestChips('purchase-item-chips')">
           <div id="purchase-item-chips" class="name-chips" data-input="purchase-item"></div></div>
         <div class="form-group"><label>日期</label><input type="date" id="purchase-date" class="form-control"></div>
@@ -1359,13 +1370,16 @@
         <div class="form-group"><label>每件成本（元，確切金額）</label><input type="number" id="purchase-cost" class="form-control" min="0" step="1"></div>
         <div class="form-group"><input type="text" id="purchase-note" class="form-control" placeholder="備註（選填）"></div>
         <button class="button" style="width:100%; margin:0; background-color:#8C9C8A;" onclick="submitPurchase()">➕ 新增進貨</button>
+        </div>
       </div>
       <h4 style="font-size: 14px; text-align: left; padding-left: 5px; color:#888;">進貨紀錄</h4>
       <div id="purchase-list"></div>
     </div>
 
-    <div id="inventory-subtab-sale" style="width:90%; margin:0 auto; display:none;">
-      <div class="card" style="text-align:left;">
+    <div id="inventory-subtab-sale" style="width:90%; margin:0 auto;">
+      <div class="card inv-add-card" style="text-align:left;">
+        <h3 class="inv-add-head" onclick="toggleInvForm('sale')">➕ 新增銷售 <span id="inv-sale-arrow" class="inv-add-arrow">▸ 展開</span></h3>
+        <div id="inv-sale-form" style="display:none; margin-top:12px;">
         <div class="form-group"><label style="display:flex; gap:16px; font-weight:normal;">
           <label style="font-weight:normal; display:flex; align-items:center; gap:4px;"><input type="radio" name="sale-mode" value="inventory" checked onchange="checkSaleMode()" style="width:auto;"> 庫存品項</label>
           <label style="font-weight:normal; display:flex; align-items:center; gap:4px;"><input type="radio" name="sale-mode" value="other" onchange="checkSaleMode()" style="width:auto;"> 其他（不連動庫存）</label>
@@ -1396,8 +1410,9 @@
         <div class="form-group"><label>這筆總售價（元）</label><input type="number" id="sale-price" class="form-control" min="0" step="1"></div>
         <div class="form-group"><input type="text" id="sale-note" class="form-control" placeholder="備註（選填）"></div>
         <button class="button" style="width:100%; margin:0; background-color:#E08E79;" onclick="submitSale()">➕ 新增銷售</button>
+        <p style="font-size:12px; color:#888; text-align:left; margin:10px 0 0 0;">💡 庫存品項的成本會自動從最早一批還有剩的進貨紀錄抓，利潤（售價−成本）會自動記一筆額外收入。</p>
+        </div>
       </div>
-      <p style="font-size:12px; color:#888; text-align:left; margin:0 0 10px 0;">💡 庫存品項的成本會自動從最早一批還有剩的進貨紀錄抓，利潤（售價−成本）會自動記一筆額外收入。</p>
       <h4 style="font-size: 14px; text-align: left; padding-left: 5px; color:#888;">銷售紀錄</h4>
       <div id="sale-list"></div>
     </div>
@@ -1531,6 +1546,44 @@
       <button class="button" style="width:100%; margin:10px 0 0 0; background-color:#7C8A9A;" onclick="submitPauseModal()">💾 儲存</button>
       <button id="pause-delete-btn" class="button" style="display:none; width:100%; margin:10px 0 0 0; background-color:#FFB6B9;" onclick="deletePause()">🗑️ 刪除這次停課</button>
       <button class="button btn-secondary" style="width:100%; margin:10px 0 0 0;" onclick="closePauseModal()">取消</button>
+    </div>
+  </div>
+
+  <div id="edit-purchase-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; align-items: center; justify-content: center;">
+    <div class="modal-content" style="text-align: left;">
+      <h3>✏️ 編輯進貨</h3>
+      <p id="ep-sold-note" class="who-box who-new" style="display:none; margin-top:0;"></p>
+      <div class="form-group"><label>品項名稱</label><input type="text" id="ep-item" class="form-control" autocomplete="off"></div>
+      <div class="form-group"><label>日期</label><input type="date" id="ep-date" class="form-control"></div>
+      <div class="form-group"><label>數量</label><input type="number" id="ep-quantity" class="form-control" min="1" step="1"></div>
+      <div class="form-group"><label>每件成本（元）</label><input type="number" id="ep-cost" class="form-control" min="0" step="1"></div>
+      <div class="form-group"><label>備註（選填）</label><input type="text" id="ep-note" class="form-control"></div>
+      <button class="button" style="width:100%; margin:10px 0 0 0; background-color:#8C9C8A;" onclick="submitEditPurchase()">💾 儲存</button>
+      <button class="button btn-secondary" style="width:100%; margin:10px 0 0 0;" onclick="closeEditPurchaseModal()">取消</button>
+    </div>
+  </div>
+
+  <div id="edit-sale-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; align-items: center; justify-content: center;">
+    <div class="modal-content" style="text-align: left;">
+      <h3>✏️ 編輯銷售</h3>
+      <p id="es-mode-note" style="font-size:12px; color:#888; margin-top:0;"></p>
+      <div class="form-group" id="es-inv-item-wrap"><label>品項</label><select id="es-inv-item" class="form-control" onchange="updateEditSalePreview()"></select></div>
+      <div class="form-group" id="es-other-item-wrap"><label>品項名稱</label><input type="text" id="es-other-item" class="form-control"></div>
+      <div class="form-group">
+        <label>買家（打名字搜尋學生，也可以直接輸入名字）</label>
+        <input type="text" id="es-buyer" class="form-control" autocomplete="off" oninput="onEditSaleBuyerInput()">
+        <input type="hidden" id="es-buyer-id">
+        <div id="es-buyer-chips" class="name-chips"></div>
+        <div id="es-buyer-who" class="who-box" style="display:none;"></div>
+      </div>
+      <div class="form-group"><label>日期</label><input type="date" id="es-date" class="form-control"></div>
+      <div class="form-group"><label>數量</label><input type="number" id="es-quantity" class="form-control" min="1" step="1" oninput="updateEditSalePreview()"></div>
+      <p id="es-preview" style="font-size:13px; margin:-8px 0 12px 0;"></p>
+      <div class="form-group" id="es-cost-wrap"><label>成本（元）</label><input type="number" id="es-cost" class="form-control" min="0" step="1"></div>
+      <div class="form-group"><label>這筆總售價（元）</label><input type="number" id="es-price" class="form-control" min="0" step="1"></div>
+      <div class="form-group"><label>備註（選填）</label><input type="text" id="es-note" class="form-control"></div>
+      <button class="button" style="width:100%; margin:10px 0 0 0; background-color:#E08E79;" onclick="submitEditSale()">💾 儲存</button>
+      <button class="button btn-secondary" style="width:100%; margin:10px 0 0 0;" onclick="closeEditSaleModal()">取消</button>
     </div>
   </div>
 
@@ -3854,7 +3907,8 @@
       renderInventoryStockOverview();
       renderPurchaseList();
       renderSaleList();
-      showInventorySubtab('purchase');
+      showInventorySubtab('sale');
+      setInvFormOpen('purchase', false); setInvFormOpen('sale', false);
       showPage('inventory-page');
     }
 
@@ -3901,7 +3955,7 @@
           <div class="pay-history-row" style="align-items:flex-start; flex-direction:column; padding:10px 0;">
             <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
               <span style="font-weight:bold;">${p.itemName}</span>
-              <button class="small-btn del-btn" style="padding:2px 8px; font-size:11px;" onclick="deletePurchase('${p.id}')">刪除</button>
+              <span style="white-space:nowrap;"><button class="small-btn" style="padding:2px 8px; font-size:11px; background-color:#E2E8DF; color:#333;" onclick="openEditPurchaseModal('${p.id}')">編輯</button><button class="small-btn del-btn" style="padding:2px 8px; font-size:11px;" onclick="deletePurchase('${p.id}')">刪除</button></span>
             </div>
             <div style="font-size:13px; color:#666; margin-top:4px; text-align:left;">${p.date} ・ 數量 ${p.quantity}（剩 ${p.remaining}）・ 每件成本 ${p.costPerUnit} 元${p.note ? '<br>備註：' + p.note : ''}</div>
           </div>`).join('');
@@ -3916,7 +3970,7 @@
           <div class="pay-history-row" style="align-items:flex-start; flex-direction:column; padding:10px 0;">
             <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
               <span style="font-weight:bold;">${s.itemName}</span>
-              <button class="small-btn del-btn" style="padding:2px 8px; font-size:11px;" onclick="deleteSale('${s.id}')">刪除</button>
+              <span style="white-space:nowrap;"><button class="small-btn" style="padding:2px 8px; font-size:11px; background-color:#E2E8DF; color:#333;" onclick="openEditSaleModal('${s.id}')">編輯</button><button class="small-btn del-btn" style="padding:2px 8px; font-size:11px;" onclick="deleteSale('${s.id}')">刪除</button></span>
             </div>
             <div style="font-size:13px; color:#666; margin-top:4px; text-align:left;">${s.date} ・ 買家 ${s.buyerName} ・ 數量 ${s.quantity}<br>售價 ${s.salePrice} 元 − 成本 ${s.totalCost} 元 ＝ 利潤 <span style="color:${s.profit >= 0 ? '#5d705b' : '#B08A8A'};">${s.profit} 元</span>${s.note ? '<br>備註：' + s.note : ''}</div>
           </div>`).join('');
@@ -3945,6 +3999,7 @@
 
       renderInventoryStockOverview();
       renderPurchaseList();
+      setInvFormOpen('purchase', false);
       alert('✅ 已新增進貨！');
     }
 
@@ -4075,6 +4130,7 @@
       let buyerId = document.getElementById('sale-buyer-value').value || null;
       let buyerName = document.getElementById('sale-buyer-input').value.trim();
       if (!buyerName) { alert('請輸入買家！'); return; }
+      if (!buyerId) { let exact = students.filter(x => !x.endDate && x.name === buyerName); if (exact.length === 1) buyerId = exact[0].id; } // 打的名字剛好是某位學生，就直接算他的（學費袋的書籍雜費才看得到）
       let date = document.getElementById('sale-date').value || formatDate(new Date());
       let qty = Number(document.getElementById('sale-quantity').value) || 1;
       let priceRaw = document.getElementById('sale-price').value;
@@ -4136,6 +4192,7 @@
       renderInventoryStockOverview();
       renderPurchaseList();
       renderSaleList();
+      setInvFormOpen('sale', false);
       alert('✅ 已記錄銷售！這次利潤 ' + profit + ' 元，已加進額外收入。');
     }
 
@@ -4155,6 +4212,220 @@
       renderInventoryStockOverview();
       renderPurchaseList();
       renderSaleList();
+    }
+
+    // ---- 新增表單收合（跟學生名單的「新增學生」一樣，平常收起來，庫存和紀錄一打開就看得到）----
+    function setInvFormOpen(kind, open) {
+      let body = document.getElementById('inv-' + kind + '-form');
+      if (!body) return;
+      body.style.display = open ? 'block' : 'none';
+      document.getElementById('inv-' + kind + '-arrow').innerText = open ? '▾ 收起' : '▸ 展開';
+    }
+    function toggleInvForm(kind) { setInvFormOpen(kind, document.getElementById('inv-' + kind + '-form').style.display === 'none'); }
+    function afterInventoryChange() {
+      saveMaterialPurchasesToMemory(); saveMaterialSalesToMemory(); saveExtraIncomeToMemory();
+      renderInventoryStockOverview(); renderPurchaseList(); renderSaleList();
+      if (document.getElementById('student-detail-page').style.display === 'block' && currentDetailStudentId) renderStudentDetailPayment(); // 學費袋的書籍雜費
+    }
+    // 一筆銷售的成本，照它當初從哪幾批進貨扣的、用那幾批「現在的」每件成本重算
+    function recomputeSaleCostFromBatches(sale) {
+      if (!sale.drawnFrom || !sale.drawnFrom.length) return;
+      sale.totalCost = Number(sale.drawnFrom.reduce((t, d) => { let b = materialPurchases.find(p => p.id === d.purchaseId); return t + d.qty * (b ? Number(b.costPerUnit) || 0 : 0); }, 0).toFixed(2));
+    }
+    // 銷售改了之後，把利潤和連動的那筆額外收入一起更新
+    function syncSaleExtraIncome(sale) {
+      sale.profit = Number((Number(sale.salePrice) - Number(sale.totalCost)).toFixed(2));
+      let e = sale.extraIncomeId ? extraIncome.find(x => x.id === sale.extraIncomeId) : null;
+      if (!e) return;
+      e.date = sale.date; e.amount = sale.profit;
+      e.note = '教材銷售：' + sale.itemName + (sale.note ? '（' + sale.note + '）' : '');
+      e.studentId = sale.studentId || null; e.studentName = sale.studentId ? sale.buyerName : null;
+    }
+
+    // ---- 編輯進貨 ----
+    let editingPurchaseId = null;
+    function openEditPurchaseModal(id) {
+      let p = materialPurchases.find(x => x.id === id);
+      if (!p) return;
+      editingPurchaseId = id;
+      let sold = Number((p.quantity - p.remaining).toFixed(2));
+      document.getElementById('ep-item').value = p.itemName;
+      document.getElementById('ep-date').value = p.date;
+      document.getElementById('ep-quantity').value = p.quantity;
+      document.getElementById('ep-cost').value = p.costPerUnit;
+      document.getElementById('ep-note').value = p.note || '';
+      let note = document.getElementById('ep-sold-note');
+      note.innerText = sold > 0 ? '這批已經賣出 ' + sold + ' 件：數量最少要 ' + sold + '；改每件成本的話，那幾筆銷售的成本和利潤會跟著重算。' : '';
+      note.style.display = sold > 0 ? 'block' : 'none';
+      document.getElementById('edit-purchase-modal').style.display = 'flex';
+    }
+    function closeEditPurchaseModal() { document.getElementById('edit-purchase-modal').style.display = 'none'; editingPurchaseId = null; }
+    function submitEditPurchase() {
+      let p = materialPurchases.find(x => x.id === editingPurchaseId);
+      if (!p) { closeEditPurchaseModal(); return; }
+      let itemName = document.getElementById('ep-item').value.trim();
+      let date = document.getElementById('ep-date').value;
+      let quantity = Number(document.getElementById('ep-quantity').value);
+      let costRaw = document.getElementById('ep-cost').value;
+      let cost = Number(costRaw);
+      if (!itemName) { alert('請輸入品項名稱！'); return; }
+      if (!date) { alert('請選擇日期！'); return; }
+      if (!(quantity > 0)) { alert('請輸入大於 0 的數量！'); return; }
+      if (costRaw === '' || isNaN(cost) || cost < 0) { alert('請輸入每件成本！'); return; }
+      let sold = Number((p.quantity - p.remaining).toFixed(2));
+      if (quantity < sold) { alert('這批已經賣出 ' + sold + ' 件了，數量不能少於 ' + sold + '。'); return; }
+
+      // 改品項名稱：通常是打錯字，可以把同名的進貨和銷售全部一起改；只改這一筆的話，已經賣出的批次不能改（不然銷售紀錄會對不上）
+      let oldName = p.itemName;
+      let renameAll = false;
+      if (itemName !== oldName) {
+        let others = materialPurchases.filter(x => x.id !== p.id && x.itemName === oldName).length + materialSales.filter(s => s.itemName === oldName && s.fromInventory !== false).length;
+        if (others > 0) {
+          renameAll = confirm('要把所有叫「' + oldName + '」的進貨和銷售紀錄，都一起改成「' + itemName + '」嗎？\n\n按「確定」：全部一起改（修正打錯字用這個）\n按「取消」：只改這一筆');
+        }
+        if (!renameAll && sold > 0) { alert('這批已經有賣出紀錄，只改這一筆的話銷售紀錄會對不上，所以不能單獨改名稱。\n\n如果是打錯字，請選「全部一起改」。'); return; }
+      }
+      let costChanged = Number(p.costPerUnit) !== cost;
+      p.itemName = itemName; p.date = date; p.costPerUnit = cost; p.note = document.getElementById('ep-note').value.trim();
+      p.remaining = Number((quantity - sold).toFixed(2)); p.quantity = quantity;
+      if (renameAll) {
+        materialPurchases.forEach(x => { if (x.itemName === oldName) x.itemName = itemName; });
+        materialSales.forEach(s => { if (s.itemName === oldName && s.fromInventory !== false) { s.itemName = itemName; syncSaleExtraIncome(s); } });
+      }
+      if (costChanged) {
+        materialSales.forEach(s => { if ((s.drawnFrom || []).some(d => d.purchaseId === p.id)) { recomputeSaleCostFromBatches(s); syncSaleExtraIncome(s); } });
+      }
+      closeEditPurchaseModal();
+      afterInventoryChange();
+      alert('✅ 已更新進貨紀錄！');
+    }
+
+    // ---- 編輯銷售 ----
+    let editingSaleId = null;
+    function openEditSaleModal(id) {
+      let s = materialSales.find(x => x.id === id);
+      if (!s) return;
+      editingSaleId = id;
+      let inv = s.fromInventory !== false;
+      document.getElementById('es-mode-note').innerText = inv ? '📦 庫存品項：改品項或數量的話，會先把原本扣的庫存還回去，再重新照最早的進貨批次扣。' : '其他（不連動庫存）：成本自己填。';
+      document.getElementById('es-inv-item-wrap').style.display = inv ? 'block' : 'none';
+      document.getElementById('es-other-item-wrap').style.display = inv ? 'none' : 'block';
+      document.getElementById('es-cost-wrap').style.display = inv ? 'none' : 'block';
+      if (inv) {
+        let names = getAllItemNames();
+        if (!names.includes(s.itemName)) names.push(s.itemName);
+        document.getElementById('es-inv-item').innerHTML = names.map(n => `<option value="${escHTML(n)}">${escHTML(n)}</option>`).join('');
+        document.getElementById('es-inv-item').value = s.itemName;
+      } else {
+        document.getElementById('es-other-item').value = s.itemName;
+        document.getElementById('es-cost').value = s.totalCost;
+      }
+      document.getElementById('es-buyer').value = s.buyerName || '';
+      document.getElementById('es-buyer-id').value = s.studentId || '';
+      document.getElementById('es-date').value = s.date;
+      document.getElementById('es-quantity').value = s.quantity;
+      document.getElementById('es-price').value = s.salePrice;
+      document.getElementById('es-note').value = s.note || '';
+      updateEditSaleBuyerWho();
+      updateEditSalePreview();
+      document.getElementById('edit-sale-modal').style.display = 'flex';
+    }
+    function closeEditSaleModal() { document.getElementById('edit-sale-modal').style.display = 'none'; editingSaleId = null; }
+    // 買家：跟新增臨時課一樣，打字才列出符合的學生；點了就是那位學生，名單沒有的就只記名字
+    function onEditSaleBuyerInput() {
+      let name = document.getElementById('es-buyer').value.trim();
+      let cur = students.find(x => x.id === document.getElementById('es-buyer-id').value);
+      if (cur && cur.name !== name) document.getElementById('es-buyer-id').value = '';
+      if (!document.getElementById('es-buyer-id').value && name) {
+        let exact = students.filter(x => !x.endDate && x.name === name);
+        if (exact.length === 1) document.getElementById('es-buyer-id').value = exact[0].id;
+      }
+      updateEditSaleBuyerWho();
+    }
+    function pickEditSaleBuyer(id) {
+      let st = students.find(x => x.id === id); if (!st) return;
+      document.getElementById('es-buyer').value = st.name;
+      document.getElementById('es-buyer-id').value = st.id;
+      updateEditSaleBuyerWho();
+    }
+    function updateEditSaleBuyerWho() {
+      let name = document.getElementById('es-buyer').value.trim();
+      let sel = students.find(x => x.id === document.getElementById('es-buyer-id').value);
+      let chips = document.getElementById('es-buyer-chips');
+      let matches = (!sel && name) ? students.filter(x => !x.endDate && x.name.toLowerCase().includes(name.toLowerCase())).slice(0, 8) : [];
+      chips.innerHTML = matches.map(x => `<button type="button" class="name-chip" onclick="pickEditSaleBuyer('${x.id}')">${escHTML(x.name)}</button>`).join('');
+      chips.style.display = matches.length ? 'flex' : 'none';
+      let who = document.getElementById('es-buyer-who');
+      if (sel) { who.className = 'who-box who-existing'; who.innerHTML = '✅ 學生：<b>' + escHTML(sel.name) + '</b>（會算進他學費袋的書籍雜費）'; who.style.display = 'block'; }
+      else if (name) { who.className = 'who-box who-new'; who.innerHTML = matches.length ? '👆 是學生就點上面的名字；都不是的話就只記名字「' + escHTML(name) + '」' : '只記名字「' + escHTML(name) + '」（不是名單上的學生）'; who.style.display = 'block'; }
+      else who.style.display = 'none';
+    }
+    // 預覽：如果品項或數量改了，重新扣庫存的成本大概是多少（先把這筆原本扣的算回去）
+    function updateEditSalePreview() {
+      let s = materialSales.find(x => x.id === editingSaleId);
+      let el = document.getElementById('es-preview');
+      if (!s || s.fromInventory === false) { el.innerText = ''; return; }
+      let item = document.getElementById('es-inv-item').value;
+      let qty = Number(document.getElementById('es-quantity').value) || 0;
+      if (item === s.itemName && qty === Number(s.quantity)) { el.innerHTML = '💰 成本 ' + s.totalCost + ' 元（品項和數量沒變，成本照原本的）'; el.style.color = '#5d705b'; return; }
+      let back = {};
+      (s.drawnFrom || []).forEach(d => { back[d.purchaseId] = (back[d.purchaseId] || 0) + d.qty; });
+      let batches = materialPurchases.filter(p => p.itemName === item).map(p => ({ remaining: p.remaining + (back[p.id] || 0), cost: p.costPerUnit, date: p.date })).filter(b => b.remaining > 0).sort((a, b) => a.date.localeCompare(b.date));
+      let stock = batches.reduce((t, b) => t + b.remaining, 0);
+      if (stock < qty) { el.innerHTML = '📦 可用庫存 ' + envRound(stock) + '　⚠️ 不夠，儲存時會請你自己輸入成本'; el.style.color = '#B08A8A'; return; }
+      let left = qty, cost = 0;
+      batches.forEach(b => { if (left <= 0) return; let t = Math.min(b.remaining, left); cost += t * b.cost; left -= t; });
+      el.innerHTML = '📦 可用庫存 ' + envRound(stock) + '　💰 新的成本約 ' + envRound(cost) + ' 元'; el.style.color = '#5d705b';
+    }
+    function submitEditSale() {
+      let s = materialSales.find(x => x.id === editingSaleId);
+      if (!s) { closeEditSaleModal(); return; }
+      let inv = s.fromInventory !== false;
+      let buyerName = document.getElementById('es-buyer').value.trim();
+      let buyerId = document.getElementById('es-buyer-id').value || null;
+      let date = document.getElementById('es-date').value;
+      let qty = Number(document.getElementById('es-quantity').value);
+      let priceRaw = document.getElementById('es-price').value;
+      let price = Number(priceRaw);
+      if (!buyerName) { alert('請輸入買家！'); return; }
+      if (!date) { alert('請選擇日期！'); return; }
+      if (!(qty > 0)) { alert('請輸入大於 0 的數量！'); return; }
+      if (priceRaw === '' || isNaN(price) || price < 0) { alert('請輸入售價！'); return; }
+
+      if (inv) {
+        let item = document.getElementById('es-inv-item').value;
+        if (item !== s.itemName || qty !== Number(s.quantity)) {
+          // 先把原本扣的庫存還回去，再照新的品項／數量重新扣
+          let oldDraw = (s.drawnFrom || []).map(d => Object.assign({}, d));
+          oldDraw.forEach(d => { let b = materialPurchases.find(p => p.id === d.purchaseId); if (b) b.remaining = Number((b.remaining + d.qty).toFixed(2)); });
+          let draw = drawInventoryCost(item, qty);
+          if (draw === null) {
+            let manual = confirm('⚠️「' + item + '」的庫存不夠 ' + qty + ' 件，可能是忘記登記進貨了。\n\n要繼續、自己輸入這筆的成本嗎？');
+            let manualCost = manual ? prompt('請輸入這筆的總成本（元）：', s.totalCost) : null;
+            if (manualCost === null || isNaN(Number(manualCost)) || Number(manualCost) < 0) {
+              oldDraw.forEach(d => { let b = materialPurchases.find(p => p.id === d.purchaseId); if (b) b.remaining = Number((b.remaining - d.qty).toFixed(2)); }); // 取消：庫存恢復原狀
+              if (manualCost !== null && manual) alert('成本輸入無效，這次沒有修改。');
+              return;
+            }
+            s.totalCost = Number(manualCost); s.drawnFrom = [];
+          } else {
+            s.totalCost = draw.totalCost; s.drawnFrom = draw.drawnFrom;
+          }
+          s.itemName = item; s.quantity = qty;
+        }
+      } else {
+        let item = document.getElementById('es-other-item').value.trim();
+        let costRaw = document.getElementById('es-cost').value;
+        let cost = costRaw === '' ? 0 : Number(costRaw);
+        if (!item) { alert('請輸入品項名稱！'); return; }
+        if (isNaN(cost) || cost < 0) { alert('成本輸入有誤！'); return; }
+        s.itemName = item; s.totalCost = cost; s.quantity = qty;
+      }
+      s.buyerName = buyerName; s.studentId = buyerId; s.date = date; s.salePrice = price; s.note = document.getElementById('es-note').value.trim();
+      syncSaleExtraIncome(s);
+      closeEditSaleModal();
+      afterInventoryChange();
+      alert('✅ 已更新銷售紀錄！這筆利潤 ' + s.profit + ' 元。');
     }
     // ============ 教材買賣結束 ============
 
@@ -9075,7 +9346,7 @@
 
     // ============ 版本更新檢查 ============
     // 每次修改程式、上傳新檔案時，要把這個版本號改掉（任何不一樣的字都可以），手機才會知道有新版本。
-    const APP_VERSION = 'sm-2026.10.16-8';
+    const APP_VERSION = 'sm-2026.10.16-10';
 
     // 加入主畫面的 App 常常直接拿手機裡存的舊檔案，而且沒有重新整理按鈕。
     // 做法：去網路上抓一份「現在的這個網頁」（網址加上時間，強迫不能用舊的），比對裡面寫的版本號，不一樣就提示更新。
