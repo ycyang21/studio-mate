@@ -3101,9 +3101,10 @@
       savedScrollY = window.scrollY || window.pageYOffset || 0;
       document.body.style.position = 'fixed';
       document.body.style.top = '-' + savedScrollY + 'px';
+      // 只設 left/right，不設 width:100%：body 本身有 padding，設了 width:100% 會讓整個頁面在視窗開著的時候變寬，
+      // 月曆如果剛好在這時候重畫，就會照「變寬的寬度」排，關掉視窗後週六那一欄被切掉
       document.body.style.left = '0';
       document.body.style.right = '0';
-      document.body.style.width = '100%';
     }
 
     function unlockBodyScroll() {
@@ -3116,6 +3117,8 @@
       document.body.style.right = '';
       document.body.style.width = '';
       window.scrollTo(0, savedScrollY);
+      // 保險：視窗都關掉後讓月曆重新量一次寬度
+      if (calendar && typeof calendar.updateSize === 'function') setTimeout(() => calendar.updateSize(), 0);
     }
 
     function openModalForCalendarEvent(props, title, dateStr, timeStr, allDay) {
@@ -9072,7 +9075,7 @@
 
     // ============ 版本更新檢查 ============
     // 每次修改程式、上傳新檔案時，要把這個版本號改掉（任何不一樣的字都可以），手機才會知道有新版本。
-    const APP_VERSION = 'sm-2026.10.16-7';
+    const APP_VERSION = 'sm-2026.10.16-8';
 
     // 加入主畫面的 App 常常直接拿手機裡存的舊檔案，而且沒有重新整理按鈕。
     // 做法：去網路上抓一份「現在的這個網頁」（網址加上時間，強迫不能用舊的），比對裡面寫的版本號，不一樣就提示更新。
