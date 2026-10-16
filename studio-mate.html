@@ -524,10 +524,10 @@
         <input type="number" id="rental-duration" class="form-control" value="60" min="1" step="1" oninput="updateRentalPayInfo()">
       </div>
       <div class="form-group">
-        <label>租借人（點下面的名字就能選）</label>
-        <input type="text" id="rental-renter" class="form-control" placeholder="例如：王小姐" autocomplete="off" oninput="updateRentalPayInfo(); renderSuggestChips('rental-renter-chips'); updateRenterNewHint()">
+        <label>租借人（打名字搜尋；新的人直接打名字）</label>
+        <input type="text" id="rental-renter" class="form-control" placeholder="例如：王小姐" autocomplete="off" oninput="updateRentalPayInfo(); renderSuggestChips('rental-renter-chips'); updateRenterWho()">
         <div id="rental-renter-chips" class="name-chips" data-input="rental-renter"></div>
-        <div id="rental-renter-new" class="who-box who-new" style="display:none;">🆕 新的租借人，按確定後會自動加進租借人名單</div>
+        <div id="rental-renter-who" class="who-box" style="display:none;"></div>
       </div>
       <div class="form-group"><label>付款方式</label><div class="radio-group">
         <label><input type="radio" name="rental-paymode" value="single" checked onclick="updateRentalPayInfo()"> 單次付款</label>
@@ -8580,7 +8580,7 @@
       document.getElementById('rental-duration').value = r ? r.duration : 60;
       document.getElementById('rental-renter').value = r ? (r.renterName || '') : '';
       renderSuggestChips('rental-renter-chips');
-      updateRenterNewHint();
+      updateRenterWho();
       document.querySelector('input[name="rental-paymode"][value="' + (r ? r.payMode : 'single') + '"]').checked = true;
       document.getElementById('rental-amount').value = (r && r.payMode === 'single') ? (r.amount || '') : '';
       document.getElementById('rental-paid').checked = !!(r && r.paid);
@@ -8606,14 +8606,35 @@
       if (!box) return;
       let input = document.getElementById(box.dataset.input);
       let q = (input.value || '').trim().toLowerCase();
+      if (!q) { box.innerHTML = ''; box.style.display = 'none'; return; } // 還沒打字就不列，名單很長時才不會佔掉整個視窗
       let names = (suggestChipSources[boxId] ? suggestChipSources[boxId]() : []).filter(Boolean);
       let list = names.filter(n => n.toLowerCase() !== q && (!q || n.toLowerCase().includes(q))).slice(0, 8);
       box.innerHTML = list.map(n => '<button type="button" class="name-chip" data-v="' + escHTML(n) + '" onclick="pickSuggestChip(this)">' + escHTML(n) + '</button>').join('');
       box.style.display = list.length ? 'flex' : 'none';
     }
-    function updateRenterNewHint() {
+    // 租借人名字比對：前後空白、大小寫不同都算同一個人（打 wenhsuan 也會對到 Wenhsuan，不會多建一個人）
+    function findRenterByName(name) {
+      let n = String(name || '').trim().toLowerCase();
+      return n ? (rentalData.renters.find(x => (x.name || '').trim().toLowerCase() === n) || null) : null;
+    }
+    // 跟新增臨時課一樣：打字才列出符合的人；打完整的名字＝名單上的人，名單沒有＝新的租借人
+    function updateRenterWho() {
       let name = document.getElementById('rental-renter').value.trim();
-      document.getElementById('rental-renter-new').style.display = (name && !rentalData.renters.some(x => x.name === name)) ? 'block' : 'none';
+      let who = document.getElementById('rental-renter-who');
+      if (!name) { who.style.display = 'none'; return; }
+      let found = findRenterByName(name);
+      let partial = rentalData.renters.some(x => x.name && x.name.toLowerCase().includes(name.toLowerCase()));
+      if (found) {
+        who.className = 'who-box who-existing';
+        who.innerHTML = '✅ 已選：<b>' + escHTML(found.name) + '</b>（租借人名單上的人）';
+      } else if (partial) {
+        who.className = 'who-box who-new';
+        who.innerHTML = '👆 是名單上的人就點上面的名字；都不是的話，就當作 🆕 新的租借人「' + escHTML(name) + '」，按確定後會加進租借人名單。';
+      } else {
+        who.className = 'who-box who-new';
+        who.innerHTML = '🆕 新的租借人：<b>' + escHTML(name) + '</b>，按確定後會自動加進租借人名單。';
+      }
+      who.style.display = 'block';
     }
     function pickSuggestChip(btn) {
       let box = btn.parentElement;
@@ -8629,7 +8650,7 @@
       let info = document.getElementById('rental-prepaid-info');
       if (mode !== 'prepaid') { info.style.display = 'none'; return; }
       let name = document.getElementById('rental-renter').value.trim();
-      let renter = rentalData.renters.find(x => x.name === name);
+      let renter = findRenterByName(name);
       let hrs = Number(((Number(document.getElementById('rental-duration').value) || 0) / 60).toFixed(2));
       if (!renter) {
         info.innerText = name ? '「' + name + '」還沒有預繳紀錄，這次會扣成「超用 ' + hrs + ' 小時」，記得跟他收錢或請他買時數。' : '請先填租借人。';
@@ -8641,7 +8662,7 @@
       info.style.display = 'block';
     }
     function findOrCreateRenter(name) {
-      let renter = rentalData.renters.find(x => x.name === name);
+      let renter = findRenterByName(name);
       if (!renter) { renter = { id: generateId(), name: name, phone: '', note: '' }; rentalData.renters.push(renter); }
       return renter;
     }
@@ -9051,7 +9072,7 @@
 
     // ============ 版本更新檢查 ============
     // 每次修改程式、上傳新檔案時，要把這個版本號改掉（任何不一樣的字都可以），手機才會知道有新版本。
-    const APP_VERSION = 'sm-2026.10.16-6';
+    const APP_VERSION = 'sm-2026.10.16-7';
 
     // 加入主畫面的 App 常常直接拿手機裡存的舊檔案，而且沒有重新整理按鈕。
     // 做法：去網路上抓一份「現在的這個網頁」（網址加上時間，強迫不能用舊的），比對裡面寫的版本號，不一樣就提示更新。
