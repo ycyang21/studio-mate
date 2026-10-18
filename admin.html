@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Studio Mate 管理後台</title>
+  <style>
+    :root { --green:#8C9C8A; --green-dark:#5d705b; --blue:#7C93B3; --salmon:#E08E79; --rose:#B08A8A; --bg:#FDFBF7; --line:#e8e4dc; --text:#4A4A4A; --muted:#888; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif; background: var(--bg); color: var(--text); }
+    header { background: #4A4A4A; color: white; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+    header h1 { font-size: 18px; margin: 0; font-weight: 600; }
+    header .who { font-size: 12px; opacity: 0.8; }
+    header a, header button { color: white; background: rgba(255,255,255,0.15); border: none; border-radius: 6px; padding: 6px 10px; font-size: 13px; cursor: pointer; text-decoration: none; }
+    main { max-width: 900px; margin: 0 auto; padding: 16px; }
+    .tabs { display: flex; gap: 6px; margin-bottom: 14px; overflow-x: auto; }
+    .tab { flex: 1; min-width: 80px; padding: 10px 6px; border: 1px solid var(--line); background: white; border-radius: 8px; font-size: 14px; cursor: pointer; color: var(--muted); white-space: nowrap; }
+    .tab.active { background: var(--green); color: white; border-color: var(--green); font-weight: bold; }
+    .card { background: white; border: 1px solid var(--line); border-radius: 10px; padding: 14px; margin-bottom: 12px; }
+    .stats { display: flex; gap: 10px; margin-bottom: 12px; }
+    .stat { flex: 1; background: white; border: 1px solid var(--line); border-radius: 10px; padding: 12px; text-align: center; }
+    .stat b { display: block; font-size: 22px; color: var(--green-dark); }
+    .stat span { font-size: 12px; color: var(--muted); }
+    .row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f1eee8; }
+    .row:last-child { border-bottom: none; }
+    .row .main { flex: 1; min-width: 0; }
+    .row .title { font-weight: 600; font-size: 14px; word-break: break-all; }
+    .row .sub { font-size: 12px; color: var(--muted); margin-top: 2px; line-height: 1.5; word-break: break-all; }
+    .btn { border: none; border-radius: 6px; padding: 7px 12px; font-size: 13px; cursor: pointer; color: white; background: var(--green); white-space: nowrap; }
+    .btn.secondary { background: #E2E8DF; color: #333; }
+    .btn.danger { background: #E8A0A0; }
+    .btn.blue { background: var(--blue); }
+    .badge { display: inline-block; font-size: 11px; padding: 2px 7px; border-radius: 10px; margin-left: 6px; vertical-align: middle; }
+    .badge.ok { background: #E7F0E5; color: var(--green-dark); }
+    .badge.off { background: #F7E3E3; color: #A35C5C; }
+    .badge.used { background: #EEE; color: #888; }
+    .badge.new { background: #FDEBD2; color: #B5651D; }
+    input[type=text], input[type=number], textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 15px; font-family: inherit; }
+    label { font-size: 13px; color: #555; display: block; margin-bottom: 4px; }
+    .form-row { display: flex; gap: 8px; align-items: flex-end; flex-wrap: wrap; }
+    .form-row > div { flex: 1; min-width: 120px; }
+    .code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 17px; letter-spacing: 2px; }
+    .empty { color: #aaa; font-size: 13px; padding: 8px 0; }
+    #gate { max-width: 360px; margin: 80px auto; text-align: center; padding: 0 16px; }
+    #gate p { color: var(--muted); font-size: 14px; line-height: 1.6; }
+    .hidden { display: none !important; }
+    .keybox { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 13px; background: #F6F4EF; border: 1px dashed #cfc8b8; border-radius: 6px; padding: 8px 10px; word-break: break-all; margin: 6px 0; user-select: all; }
+    .step { font-size: 13px; line-height: 1.7; color: #555; }
+    .step b { color: #333; }
+    .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 10px 16px; border-radius: 8px; font-size: 13px; z-index: 99; }
+  </style>
+</head>
+<body>
+  <div id="gate">
+    <h2>🛠️ Studio Mate 管理後台</h2>
+    <p id="gate-msg">載入中…</p>
+    <button id="gate-login-btn" class="btn hidden" style="padding:12px 18px; font-size:15px;" onclick="adminLogin()">使用 Google 帳號登入</button>
+    <button id="gate-logout-btn" class="btn secondary hidden" style="padding:10px 16px; margin-top:10px;" onclick="adminLogout()">換一個帳號</button>
+  </div>
+
+  <div id="admin-app" class="hidden">
+    <header>
+      <div>
+        <h1>🛠️ Studio Mate 管理後台</h1>
+        <div class="who" id="admin-who"></div>
+      </div>
+      <div style="display:flex; gap:6px;">
+        <a href="studio-mate.html">回到 App</a>
+        <button onclick="adminLogout()">登出</button>
+      </div>
+    </header>
+    <main>
+      <div class="tabs">
+        <button class="tab active" data-tab="users" onclick="showTab('users')">👥 使用者</button>
+        <button class="tab" data-tab="invites" onclick="showTab('invites')">🎟️ 邀請碼</button>
+        <button class="tab" data-tab="announcements" onclick="showTab('announcements')">📢 公告</button>
+        <button class="tab" data-tab="feedback" onclick="showTab('feedback')">💬 意見回饋</button>
+        <button class="tab" data-tab="push" onclick="showTab('push')">🔔 通知</button>
+      </div>
+
+      <section id="tab-users">
+        <div class="stats">
+          <div class="stat"><b id="stat-total">–</b><span>註冊人數</span></div>
+          <div class="stat"><b id="stat-active7">–</b><span>7 天內有使用</span></div>
+          <div class="stat"><b id="stat-disabled">–</b><span>已停用</span></div>
+        </div>
+        <div class="card"><div id="users-list" class="empty">載入中…</div></div>
+        <p style="font-size:12px; color:#999; line-height:1.6;">為了保護每位老師學生的個資，後台只看得到帳號資訊，看不到任何老師的學生、點名或繳費資料。</p>
+      </section>
+
+      <section id="tab-invites" class="hidden">
+        <div class="card">
+          <div class="form-row">
+            <div><label>給誰（備註，只有你看得到）</label><input type="text" id="invite-note" placeholder="例如：小美老師"></div>
+            <div style="flex:0 0 90px; min-width:90px;"><label>產生幾組</label><input type="number" id="invite-count" value="1" min="1" max="20"></div>
+            <div style="flex:0 0 auto; min-width:0;"><button class="btn" style="padding:11px 14px;" onclick="createInvites()">產生邀請碼</button></div>
+          </div>
+        </div>
+        <div class="card"><div id="invites-list" class="empty">載入中…</div></div>
+      </section>
+
+      <section id="tab-announcements" class="hidden">
+        <div class="card">
+          <label>公告內容（所有老師登入後會在最上方看到，老師按 ✕ 就會收起來）</label>
+          <textarea id="announcement-input" rows="4" placeholder="例如：新增了琴房租借功能，到「更多」就可以使用！"></textarea>
+          <div style="text-align:right; margin-top:8px;"><button class="btn" onclick="publishAnnouncement()">發布公告</button></div>
+        </div>
+        <div class="card"><div id="announcements-list" class="empty">載入中…</div></div>
+      </section>
+
+      <section id="tab-feedback" class="hidden">
+        <div class="card"><div id="feedback-list" class="empty">載入中…</div></div>
+      </section>
+
+      <section id="tab-push" class="hidden">
+        <div class="card">
+          <div class="title" style="font-weight:600; margin-bottom:6px;">雲端提醒小幫手的狀態</div>
+          <div id="push-worker-status" class="step">讀取中…</div>
+        </div>
+        <div class="card">
+          <div class="title" style="font-weight:600; margin-bottom:6px;">① 提醒機器人帳號</div>
+          <div class="step">在 Firebase 主控台 → Authentication → Users →「新增使用者」，用下面這組 email 和密碼建立帳號，密碼也要貼到 Cloudflare 的 <b>BOT_PASSWORD</b>。</div>
+          <label style="margin-top:8px;">Email</label>
+          <div class="keybox" id="push-bot-email">reminder-bot@studio-mate-5f28b.firebaseapp.com</div>
+          <button class="btn secondary" onclick="copyText('push-bot-email')">複製 Email</button>
+          <div style="margin-top:10px;"><button class="btn" onclick="makeBotPassword()">產生一組密碼</button></div>
+          <div id="push-bot-pw-wrap" class="hidden">
+            <div class="keybox" id="push-bot-pw"></div>
+            <button class="btn secondary" onclick="copyText('push-bot-pw')">複製密碼</button>
+            <div class="step" style="color:#B5651D; margin-top:6px;">這組密碼不會存在任何地方，離開這頁就看不到了。貼到 Firebase 和 Cloudflare 兩個地方之後就不用再管它。</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="title" style="font-weight:600; margin-bottom:6px;">② 通知金鑰</div>
+          <div id="push-key-status" class="step">讀取中…</div>
+          <div style="margin-top:8px;"><button class="btn" id="push-key-btn" onclick="generatePushKeys()">產生通知金鑰</button></div>
+          <div id="push-key-result" class="hidden">
+            <div class="step" style="margin-top:10px;">把下面這串貼到 Cloudflare 的 <b>VAPID_PRIVATE_KEY</b>：</div>
+            <div class="keybox" id="push-private-key"></div>
+            <button class="btn secondary" onclick="copyText('push-private-key')">複製私鑰</button>
+            <div class="step" style="color:#B5651D; margin-top:6px;">這串私鑰只會顯示這一次，也沒有存在雲端。萬一弄丟了，重新產生一組就好（之後每台裝置要重新開啟通知）。</div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script type="module">
+    // 管理員帳號：要跟 studio-mate.html 和 Firestore 安全規則裡寫的一樣
+    const ADMIN_EMAIL = 'julie.ynyich@gmail.com';
+    const firebaseConfig = {
+      apiKey: "AIzaSyBu9tZV0VPHRPnsgnBYaoaMrK3E0_JPpZE",
+      authDomain: "studio-mate-5f28b.firebaseapp.com",
+      projectId: "studio-mate-5f28b",
+      storageBucket: "studio-mate-5f28b.firebasestorage.app",
+      messagingSenderId: "170037585014",
+      appId: "1:170037585014:web:2b9d2ea2da8b10ae22ab57"
+    };
+
+    const $ = id => document.getElementById(id);
+    const esc = str => String(str == null ? '' : str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    const fmt = ms => {
+      if (!ms) return '—';
+      let d = new Date(Number(ms));
+      return d.getFullYear() + '/' + String(d.getMonth() + 1).padStart(2, '0') + '/' + String(d.getDate()).padStart(2, '0') + ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+    };
+    const ago = ms => {
+      if (!ms) return '從未';
+      let days = Math.floor((Date.now() - Number(ms)) / 86400000);
+      return days <= 0 ? '今天' : days + ' 天前';
+    };
+    function toast(msg) {
+      document.querySelectorAll('.toast').forEach(x => x.remove());
+      let t = document.createElement('div'); t.className = 'toast'; t.innerText = msg;
+      document.body.appendChild(t); setTimeout(() => t.remove(), 2200);
+    }
+
+    let fb = null; // { db, auth, fs, au }
+
+    try {
+      const { initializeApp } = await import('https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js');
+      const fs = await import('https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js');
+      const au = await import('https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js');
+      const app = initializeApp(firebaseConfig);
+      fb = { db: fs.getFirestore(app), auth: au.getAuth(app), fs, au };
+    } catch (err) {
+      console.error(err);
+      $('gate-msg').innerText = '無法連線到雲端服務，請確認網路後重新整理。';
+    }
+
+    function showGate(msg, { login = false, logout = false } = {}) {
+      $('admin-app').classList.add('hidden');
+      $('gate').classList.remove('hidden');
+      $('gate-msg').innerText = msg;
+      $('gate-login-btn').classList.toggle('hidden', !login);
+      $('gate-logout-btn').classList.toggle('hidden', !logout);
+    }
+
+    if (fb) {
+      fb.au.getRedirectResult(fb.auth).catch(err => console.error(err));
+      fb.au.onAuthStateChanged(fb.auth, user => {
+        if (!user) { showGate('請用管理員的 Google 帳號登入。', { login: true }); return; }
+        if ((user.email || '').toLowerCase() !== ADMIN_EMAIL) {
+          showGate('這個帳號（' + user.email + '）不是管理員，無法進入後台。', { logout: true });
+          return;
+        }
+        $('gate').classList.add('hidden');
+        $('admin-app').classList.remove('hidden');
+        $('admin-who').innerText = user.email;
+        loadUsers();
+      });
+    }
+
+    window.adminLogin = function() {
+      let provider = new fb.au.GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: 'select_account' });
+      fb.au.signInWithPopup(fb.auth, provider).catch(err => {
+        if (err && (err.code === 'auth/popup-blocked' || err.code === 'auth/operation-not-supported-in-this-environment')) return fb.au.signInWithRedirect(fb.auth, provider);
+        if (err && (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request')) return;
+        console.error(err);
+        alert(err && err.code === 'auth/unauthorized-domain' ? '這個網址還沒加入 Firebase 的「授權網域」。' : '登入失敗，請再試一次。');
+      });
+    };
+    window.adminLogout = function() { fb.au.signOut(fb.auth); };
+
+    const loaded = {};
+    window.showTab = function(name) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+      ['users', 'invites', 'announcements', 'feedback', 'push'].forEach(n => $('tab-' + n).classList.toggle('hidden', n !== name));
+      if (name === 'users') loadUsers();
+      if (name === 'invites') loadInvites();
+      if (name === 'announcements') loadAnnouncements();
+      if (name === 'feedback') loadFeedback();
+      if (name === 'push') loadPushAdmin();
+    };
+
+    function failBox(el, err) {
+      console.error(err);
+      el.className = 'empty';
+      el.innerText = '讀取失敗：' + ((err && err.code) || '請確認網路，或 Firestore 安全規則是否已經貼上。');
+    }
+
+    // ---------- 使用者 ----------
+    let usersCache = [];
+    async function loadUsers() {
+      let box = $('users-list');
+      try {
+        let snap = await fb.fs.getDocs(fb.fs.collection(fb.db, 'users'));
+        usersCache = snap.docs.map(d => Object.assign({ uid: d.id }, d.data()));
+        usersCache.sort((a, b) => (Number(b.createdAt) || 0) - (Number(a.createdAt) || 0));
+        $('stat-total').innerText = usersCache.length;
+        $('stat-active7').innerText = usersCache.filter(u => Date.now() - (Number(u.lastActiveAt) || 0) < 7 * 86400000).length;
+        $('stat-disabled').innerText = usersCache.filter(u => u.disabled).length;
+        if (usersCache.length === 0) { box.className = 'empty'; box.innerText = '還沒有任何使用者。'; return; }
+        box.className = '';
+        box.innerHTML = usersCache.map(u => {
+          let isAdmin = (u.email || '').toLowerCase() === ADMIN_EMAIL;
+          let badge = u.disabled ? '<span class="badge off">已停用</span>' : '<span class="badge ok">使用中</span>';
+          let action = isAdmin ? '<span class="badge used">管理員</span>'
+            : (u.disabled
+              ? '<button class="btn secondary" onclick="setUserDisabled(\'' + u.uid + '\', false)">恢復</button>'
+              : '<button class="btn danger" onclick="setUserDisabled(\'' + u.uid + '\', true)">停用</button>');
+          return '<div class="row"><div class="main">' +
+            '<div class="title">' + esc(u.displayName || '(未命名)') + badge + '</div>' +
+            '<div class="sub">' + esc(u.email) + '<br>註冊：' + fmt(u.createdAt) + '　最後使用：' + ago(u.lastActiveAt) + (u.inviteCode ? '　邀請碼：' + esc(u.inviteCode) : '') + '</div>' +
+            '</div>' + action + '</div>';
+        }).join('');
+      } catch (err) { failBox(box, err); }
+    }
+    window.setUserDisabled = async function(uid, disabled) {
+      let u = usersCache.find(x => x.uid === uid);
+      let msg = disabled
+        ? '確定要停用「' + (u ? (u.displayName || u.email) : uid) + '」嗎？\n\n停用後他登入會看到「帳號已停用」，資料會保留，之後可以再恢復。'
+        : '確定要恢復「' + (u ? (u.displayName || u.email) : uid) + '」的帳號嗎？';
+      if (!confirm(msg)) return;
+      try {
+        await fb.fs.updateDoc(fb.fs.doc(fb.db, 'users', uid), { disabled: disabled });
+        toast(disabled ? '已停用' : '已恢復');
+        loadUsers();
+      } catch (err) { console.error(err); alert('更新失敗：' + (err.code || '')); }
+    };
+
+    // ---------- 邀請碼 ----------
+    const CODE_CHARS = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; // 拿掉容易看錯的 0/O、1/I/L
+    function randomCode() {
+      let arr = new Uint32Array(6); crypto.getRandomValues(arr);
+      return Array.from(arr, n => CODE_CHARS[n % CODE_CHARS.length]).join('');
+    }
+    window.createInvites = async function() {
+      let note = $('invite-note').value.trim();
+      let count = Math.min(20, Math.max(1, Number($('invite-count').value) || 1));
+      let made = [];
+      try {
+        for (let i = 0; i < count; i++) {
+          let code, tries = 0;
+          do { code = randomCode(); tries++; } while ((await fb.fs.getDoc(fb.fs.doc(fb.db, 'invites', code))).exists() && tries < 5);
+          await fb.fs.setDoc(fb.fs.doc(fb.db, 'invites', code), { code, note, createdAt: Date.now(), createdBy: fb.auth.currentUser.email, usedBy: null, usedAt: null, usedEmail: null });
+          made.push(code);
+        }
+        $('invite-note').value = ''; $('invite-count').value = 1;
+        toast('已產生 ' + made.length + ' 組邀請碼');
+        loadInvites();
+      } catch (err) { console.error(err); alert('產生失敗：' + (err.code || '')); }
+    };
+    let invitesCache = [];
+    async function loadInvites() {
+      let box = $('invites-list');
+      try {
+        let snap = await fb.fs.getDocs(fb.fs.collection(fb.db, 'invites'));
+        invitesCache = snap.docs.map(d => Object.assign({ id: d.id }, d.data()));
+        // 還沒用的排前面，再依建立時間新到舊
+        invitesCache.sort((a, b) => (!!a.usedBy - !!b.usedBy) || ((Number(b.createdAt) || 0) - (Number(a.createdAt) || 0)));
+        if (invitesCache.length === 0) { box.className = 'empty'; box.innerText = '還沒有產生任何邀請碼。'; return; }
+        box.className = '';
+        box.innerHTML = invitesCache.map(inv => {
+          let status = inv.usedBy
+            ? '<span class="badge used">已使用</span><div class="sub">' + esc(inv.usedEmail) + '　' + fmt(inv.usedAt) + '</div>'
+            : '<span class="badge new">未使用</span>';
+          let actions = inv.usedBy ? '' :
+            '<button class="btn blue" onclick="copyInviteMessage(\'' + inv.id + '\')">複製邀請訊息</button> ' +
+            '<button class="btn danger" onclick="deleteInvite(\'' + inv.id + '\')">刪除</button>';
+          return '<div class="row"><div class="main">' +
+            '<div class="title"><span class="code">' + esc(inv.id) + '</span>' + (inv.usedBy ? '' : '') + '</div>' +
+            '<div class="sub">' + (inv.note ? '給：' + esc(inv.note) + '　' : '') + '建立：' + fmt(inv.createdAt) + '</div>' + status +
+            '</div><div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;">' + actions + '</div></div>';
+        }).join('');
+      } catch (err) { failBox(box, err); }
+    }
+    window.copyInviteMessage = async function(code) {
+      let appUrl = new URL('studio-mate.html', location.href).href;
+      let msg = '邀請你試用 Studio Mate 工作室管理工具 🎹\n\n1. 打開這個網址：' + appUrl + '\n2. 用你的 Google 帳號登入\n3. 輸入邀請碼：' + code + '\n\n（每組邀請碼只能使用一次）';
+      try { await navigator.clipboard.writeText(msg); toast('已複製，可以直接貼到 LINE'); }
+      catch (e) { prompt('複製下面這段訊息：', msg); }
+    };
+    window.deleteInvite = async function(code) {
+      if (!confirm('確定要刪除邀請碼 ' + code + ' 嗎？刪除後就不能用了。')) return;
+      try { await fb.fs.deleteDoc(fb.fs.doc(fb.db, 'invites', code)); toast('已刪除'); loadInvites(); }
+      catch (err) { console.error(err); alert('刪除失敗：' + (err.code || '')); }
+    };
+
+    // ---------- 公告 ----------
+    window.publishAnnouncement = async function() {
+      let text = $('announcement-input').value.trim();
+      if (!text) { alert('請先輸入公告內容！'); return; }
+      try {
+        await fb.fs.addDoc(fb.fs.collection(fb.db, 'announcements'), { text, active: true, createdAt: Date.now() });
+        $('announcement-input').value = '';
+        toast('已發布');
+        loadAnnouncements();
+      } catch (err) { console.error(err); alert('發布失敗：' + (err.code || '')); }
+    };
+    async function loadAnnouncements() {
+      let box = $('announcements-list');
+      try {
+        let snap = await fb.fs.getDocs(fb.fs.query(fb.fs.collection(fb.db, 'announcements'), fb.fs.orderBy('createdAt', 'desc')));
+        if (snap.empty) { box.className = 'empty'; box.innerText = '還沒有發布過公告。'; return; }
+        box.className = '';
+        let firstActiveSeen = false;
+        box.innerHTML = snap.docs.map(d => {
+          let a = d.data();
+          let shown = a.active && !firstActiveSeen;
+          if (a.active) firstActiveSeen = true;
+          let badge = shown ? '<span class="badge ok">顯示中</span>' : (a.active ? '<span class="badge used">被較新的公告蓋過</span>' : '<span class="badge used">已停止</span>');
+          return '<div class="row"><div class="main"><div class="sub">' + fmt(a.createdAt) + badge + '</div>' +
+            '<div style="white-space:pre-wrap; font-size:14px; margin-top:4px;">' + esc(a.text) + '</div></div>' +
+            '<div style="display:flex; flex-direction:column; gap:6px;">' +
+            (a.active ? '<button class="btn secondary" onclick="setAnnouncementActive(\'' + d.id + '\', false)">停止顯示</button>'
+                      : '<button class="btn" onclick="setAnnouncementActive(\'' + d.id + '\', true)">重新顯示</button>') +
+            '<button class="btn danger" onclick="deleteAnnouncement(\'' + d.id + '\')">刪除</button></div></div>';
+        }).join('');
+      } catch (err) { failBox(box, err); }
+    }
+    window.setAnnouncementActive = async function(id, active) {
+      try { await fb.fs.updateDoc(fb.fs.doc(fb.db, 'announcements', id), { active }); loadAnnouncements(); }
+      catch (err) { console.error(err); alert('更新失敗：' + (err.code || '')); }
+    };
+    window.deleteAnnouncement = async function(id) {
+      if (!confirm('確定要刪除這則公告嗎？')) return;
+      try { await fb.fs.deleteDoc(fb.fs.doc(fb.db, 'announcements', id)); loadAnnouncements(); }
+      catch (err) { console.error(err); alert('刪除失敗：' + (err.code || '')); }
+    };
+
+    // ---------- 意見回饋 ----------
+    async function loadFeedback() {
+      let box = $('feedback-list');
+      try {
+        let snap = await fb.fs.getDocs(fb.fs.query(fb.fs.collection(fb.db, 'feedback'), fb.fs.orderBy('createdAt', 'desc')));
+        if (snap.empty) { box.className = 'empty'; box.innerText = '還沒有收到任何回饋。'; return; }
+        box.className = '';
+        box.innerHTML = snap.docs.map(d => {
+          let f = d.data();
+          let done = f.status === 'done';
+          return '<div class="row" style="align-items:flex-start;' + (done ? ' opacity:0.55;' : '') + '"><div class="main">' +
+            '<div class="sub">' + esc(f.displayName || '') + '（' + esc(f.email) + '）　' + fmt(f.createdAt) + (done ? '<span class="badge used">已處理</span>' : '<span class="badge new">新</span>') + '</div>' +
+            '<div style="white-space:pre-wrap; font-size:14px; margin-top:4px; line-height:1.6;">' + esc(f.text) + '</div></div>' +
+            (done ? '<button class="btn secondary" onclick="setFeedbackStatus(\'' + d.id + '\', \'new\')">改回未處理</button>'
+                  : '<button class="btn" onclick="setFeedbackStatus(\'' + d.id + '\', \'done\')">標記已處理</button>') +
+            '</div>';
+        }).join('');
+      } catch (err) { failBox(box, err); }
+    }
+    // ---------- 通知 ----------
+    const b64u = buf => { let s = ''; new Uint8Array(buf).forEach(b => { s += String.fromCharCode(b); }); return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); };
+    const b64uDec = str => { str = String(str).replace(/-/g, '+').replace(/_/g, '/'); while (str.length % 4) str += '='; let bin = atob(str); let out = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i); return out; };
+    window.copyText = async function(id) {
+      let text = $(id).innerText.trim();
+      try { await navigator.clipboard.writeText(text); toast('已複製'); }
+      catch (e) { prompt('複製下面這段：', text); }
+    };
+    window.makeBotPassword = function() {
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
+      let arr = new Uint32Array(28); crypto.getRandomValues(arr);
+      $('push-bot-pw').innerText = Array.from(arr, n => chars[n % chars.length]).join('');
+      $('push-bot-pw-wrap').classList.remove('hidden');
+    };
+    let pushKeyExists = false;
+    async function loadPushAdmin() {
+      try {
+        let [cfg, w] = await Promise.all([
+          fb.fs.getDoc(fb.fs.doc(fb.db, 'config', 'push')),
+          fb.fs.getDoc(fb.fs.doc(fb.db, 'pushStatus', 'worker'))
+        ]);
+        pushKeyExists = cfg.exists() && !!cfg.data().vapidPublicKey;
+        $('push-key-status').innerHTML = pushKeyExists
+          ? '✅ 已經產生過通知金鑰（' + fmt(cfg.data().createdAt) + '）。<br>除非私鑰弄丟了，不然不用再產生。'
+          : '還沒產生通知金鑰。按下面的按鈕產生一組。';
+        $('push-key-btn').innerText = pushKeyExists ? '重新產生通知金鑰' : '產生通知金鑰';
+        $('push-key-btn').className = pushKeyExists ? 'btn secondary' : 'btn';
+        if (w.exists() && w.data().lastRunAt) {
+          let d = w.data(), mins = Math.round((Date.now() - Number(d.lastRunAt)) / 60000);
+          $('push-worker-status').innerHTML = (mins > 25 ? '⚠️ ' : '✅ ') + '最後回報：' + fmt(d.lastRunAt) + '（' + (mins < 1 ? '剛剛' : mins + ' 分鐘前') + '）' +
+            (d.version ? '<br>版本：' + esc(d.version) : '') + (d.lastError ? '<br>⚠️ 訊息：' + esc(d.lastError) : '');
+        } else {
+          $('push-worker-status').innerText = '還沒收到回報。Cloudflare 設定好之後，最多 10 分鐘內會出現。';
+        }
+      } catch (err) {
+        console.error(err);
+        $('push-key-status').innerText = '讀取失敗：' + (err.code || err.message || err) + '（如果是 permission-denied，請先貼上新的 Firestore 安全規則）';
+      }
+    }
+    window.generatePushKeys = async function() {
+      if (pushKeyExists && !confirm('已經有一組通知金鑰了。重新產生之後：\n\n1. 要把新的私鑰貼到 Cloudflare（取代舊的）\n2. 每台裝置都要到「🔔 通知提醒」重新開啟通知\n\n確定要重新產生嗎？')) return;
+      try {
+        let kp = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify']);
+        let jwk = await crypto.subtle.exportKey('jwk', kp.privateKey);
+        let pub = new Uint8Array(await crypto.subtle.exportKey('raw', kp.publicKey));
+        // 確認公鑰、私鑰是同一組（用私鑰簽一次、公鑰驗一次）
+        let probe = new TextEncoder().encode('studio-mate');
+        let sig = await crypto.subtle.sign({ name: 'ECDSA', hash: 'SHA-256' }, kp.privateKey, probe);
+        if (!(await crypto.subtle.verify({ name: 'ECDSA', hash: 'SHA-256' }, kp.publicKey, sig, probe))) throw new Error('金鑰自我檢查失敗');
+        if (b64uDec(b64u(pub)).length !== 65) throw new Error('公鑰長度不對');
+        await fb.fs.setDoc(fb.fs.doc(fb.db, 'config', 'push'), { vapidPublicKey: b64u(pub), createdAt: Date.now(), createdBy: fb.auth.currentUser.email });
+        $('push-private-key').innerText = jwk.d;
+        $('push-key-result').classList.remove('hidden');
+        toast('已產生通知金鑰');
+        loadPushAdmin();
+      } catch (err) { console.error(err); alert('產生失敗：' + (err.code || err.message || err)); }
+    };
+
+    window.setFeedbackStatus = async function(id, status) {
+      try { await fb.fs.updateDoc(fb.fs.doc(fb.db, 'feedback', id), { status }); loadFeedback(); }
+      catch (err) { console.error(err); alert('更新失敗：' + (err.code || '')); }
+    };
+  </script>
+</body>
+</html>
