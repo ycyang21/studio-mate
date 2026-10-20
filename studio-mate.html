@@ -298,6 +298,17 @@
     body.desktop-layout #manage-withdrawn-list[style*="none"] { display: none !important; }
     body.desktop-layout #manage-list > .card, body.desktop-layout #manage-withdrawn-list > .card { width: auto; margin: 0; }
     body.desktop-layout #manage-list > p, body.desktop-layout #manage-withdrawn-list > p { grid-column: 1 / -1; }
+    /* 平板（iPad）這種中等寬度：左側選單窄一點；寬度不夠時，月曆頁「當天行程」改放到月曆下面、首頁兩欄改成上下排，不會把月曆擠扁 */
+    @media (min-width: 701px) and (max-width: 1279px) {
+      body.desktop-layout #desktop-sidebar { width: 180px; padding: 20px 8px 14px 8px; }
+      body.desktop-layout #app-root { margin-left: 180px; padding: 22px 20px 36px 20px; }
+      body.desktop-layout #calendar-layout { grid-template-columns: minmax(0, 1fr) 250px; }
+    }
+    @media (min-width: 701px) and (max-width: 999px) {
+      body.desktop-layout #calendar-layout { grid-template-columns: minmax(0, 1fr); }
+      body.desktop-layout #calendar-day-panel { display: none !important; } /* 點日期會跳出當天視窗 */
+      body.desktop-layout .dash-columns { grid-template-columns: minmax(0, 1fr); }
+    }
 
     /* 琴房租借：金黃色，跟上課的顏色分開 */
     .event-rental { background-color: #C99A3B !important; color: white !important; }
@@ -3015,7 +3026,7 @@
         if (panel) panel.style.display = 'none';
         renderCalendar();
         // 電腦版右邊一開始就先顯示今天的行程
-        if (!isMobileCalendarMode) selectCalendarDay(formatDate(new Date()));
+        if (!isMobileCalendarMode) selectCalendarDay(formatDate(new Date()), { noModal: true });
       }
     }
 
@@ -3188,7 +3199,7 @@
               selectCalendarDay(info.event.extendedProps.dateStr);
               return;
             }
-            selectCalendarDay(info.event.extendedProps.dateStr); // 電腦版：右邊同時換成這一天，點名完回來就看得到最新狀態
+            selectCalendarDay(info.event.extendedProps.dateStr, { noModal: true }); // 電腦版：右邊同時換成這一天，點名完回來就看得到最新狀態
             let timeStr = info.event.start.toLocaleTimeString('zh-TW', {hour: '2-digit', minute:'2-digit', hour12: false});
             openModalForCalendarEvent(info.event.extendedProps, info.event.title, info.event.extendedProps.dateStr, timeStr, info.event.allDay);
           }
@@ -3218,7 +3229,12 @@
 
     // 手機版點某一天：在月曆正下方展開那一天完整的課程清單，月曆本身不會被取代或捲走，
     // 你可以連續點好幾個不同日期比較，不用每次都要返回或往上捲。
-    function selectCalendarDay(dateStr) {
+    // 平板直放這種寬度（701～999）：右邊放不下當天行程，點日期改成跟手機一樣跳出視窗；點月曆上的課還是直接點名
+    function isStackedCalendar() {
+      return !isMobileCalendarMode && !!window.matchMedia && window.matchMedia('(min-width: 701px) and (max-width: 999px)').matches;
+    }
+    // opts.noModal：只更新選取的日期跟右邊欄位，不跳出當天視窗（例如剛進月曆頁、點月曆上的課去點名時）
+    function selectCalendarDay(dateStr, opts) {
       selectedCalendarDate = dateStr;
       let items = getDisplayItemsForDate(dateStr);
       currentDayPanelItems = items;
@@ -3230,24 +3246,28 @@
       let d = new Date(dateStr + 'T00:00:00');
       let titleText = dateStr + '（' + getDayName(d.getDay().toString()) + '）';
       // 手機版：這一天的課改成在畫面中間跳出一個視窗（不用再往下捲找課表，點名完關掉也還在原地）；電腦版維持右邊的欄位
-      let useModal = isMobileCalendarMode;
-      document.getElementById(useModal ? 'day-modal-title' : 'calendar-day-panel-title').innerText = useModal ? '📅 ' + titleText : titleText;
-
-      let list = document.getElementById(useModal ? 'day-modal-list' : 'calendar-day-panel-list');
+      // 平板直放：右邊欄位放不下（畫面上藏起來），點日期一樣跳出視窗；轉成橫放時右邊欄位會直接出現，內容已經是同一天
+      let useModal = isMobileCalendarMode || (isStackedCalendar() && !(opts && opts.noModal));
+      let html;
       if (items.length === 0) {
-        list.innerHTML = '<p style="color:#aaa; font-size:13px;">這天沒有排課。</p>';
+        html = '<p style="color:#aaa; font-size:13px;">這天沒有排課。</p>';
       } else {
-        list.innerHTML = buildActiveInactiveHTML(items, (it, idx) => {
+        html = buildActiveInactiveHTML(items, (it, idx) => {
           let timeCol = it.allDay ? '' : `<div class="day-panel-time"><div>${it.time}</div><div class="day-panel-time-end">${it.endTime}</div></div>`;
           return `<div class="day-panel-item ${it.className}" onclick="openDayPanelItem(${idx})">${timeCol}<div class="day-panel-title">${it.shortTitle || it.title}</div></div>`;
         }, '這天沒有要上的課。');
       }
+      if (!isMobileCalendarMode) {
+        document.getElementById('calendar-day-panel-title').innerText = titleText;
+        document.getElementById('calendar-day-panel-list').innerHTML = html;
+        document.getElementById('calendar-day-panel').style.display = 'block';
+      }
       if (useModal) {
+        document.getElementById('day-modal-title').innerText = '📅 ' + titleText;
+        document.getElementById('day-modal-list').innerHTML = html;
         let m = document.getElementById('day-modal');
         if (m.style.display !== 'flex') { lockBodyScroll(); m.style.display = 'flex'; }
-        return;
       }
-      document.getElementById('calendar-day-panel').style.display = 'block';
     }
     function closeDayModal() {
       document.getElementById('day-modal').style.display = 'none';
@@ -3560,7 +3580,7 @@
 
     // 手機版：如果下方目前正展開著某一天的清單，資料異動後順便刷新，不用手動重新點一次日期就能看到最新狀態
     function refreshDayPanelIfNeeded() {
-      if (selectedCalendarDate && (document.getElementById('calendar-day-panel').style.display === 'block' || document.getElementById('day-modal').style.display === 'flex')) selectCalendarDay(selectedCalendarDate);
+      if (selectedCalendarDate && (document.getElementById('calendar-day-panel').style.display === 'block' || document.getElementById('day-modal').style.display === 'flex')) selectCalendarDay(selectedCalendarDate, { noModal: document.getElementById('day-modal').style.display !== 'flex' });
       // 從首頁「今日課程」點進來點名／調課的話，首頁清單也要跟著更新，不然會一直顯示舊狀態
       if (document.getElementById('dashboard-page').style.display === 'block') renderDashboard();
       // 從未點名檢查清單點進去處理完，清單要馬上更新，處理好的那堂就會消失
@@ -10060,7 +10080,7 @@
 
     // ============ 版本更新檢查 ============
     // 每次修改程式、上傳新檔案時，要把這個版本號改掉（任何不一樣的字都可以），手機才會知道有新版本。
-    const APP_VERSION = 'sm-2026.10.20-2';
+    const APP_VERSION = 'sm-2026.10.20-3';
 
     // 加入主畫面的 App 常常直接拿手機裡存的舊檔案，而且沒有重新整理按鈕。
     // 做法：去網路上抓一份「現在的這個網頁」（網址加上時間，強迫不能用舊的），比對裡面寫的版本號，不一樣就提示更新。
