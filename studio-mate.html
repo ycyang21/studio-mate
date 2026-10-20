@@ -148,6 +148,13 @@
     .day-nav { display: flex; gap: 8px; margin-bottom: 12px; }
     .day-nav .small-btn { flex: 1; margin: 0; padding: 8px; font-size: 13px; background-color: #F2F2F2; color: #555; }
     #day-modal .modal-body { padding-top: 12px; }
+    #sync-banner { display: none; margin: 10px auto 0 auto; width: 90%; max-width: 600px; border-radius: 8px; padding: 9px 12px; font-size: 13px; line-height: 1.6; text-align: left; position: relative; box-sizing: border-box; }
+    #sync-banner.sync-offline { background: #F1F0EC; color: #555; border: 1px solid #DDD9CF; }
+    #sync-banner.sync-pending { background: #FFF6EA; color: #8A5A1E; border: 1px solid #EBCB9C; }
+    #sync-banner.sync-done { background: #EEF3EC; color: #4A6741; border: 1px solid #C9D7C5; }
+    #sync-banner.sync-conflict { background: #FBEDEE; color: #8E3D42; border: 1px solid #E4B9BC; padding-right: 30px; }
+    #sync-banner .sync-x { position: absolute; top: 6px; right: 10px; cursor: pointer; color: #999; font-size: 16px; }
+    #sync-banner button { font-size: 12px; padding: 3px 10px; margin: 4px 0 0 0; border: 1px solid currentColor; background: transparent; color: inherit; border-radius: 6px; cursor: pointer; }
     .inv-add-btn { width: 100%; margin: 0 0 14px 0; padding: 11px; font-size: 15px; color: white; }
     /* 一次記很多筆（銷售／進貨）：一項一張小卡 */
     .bt-row { border: 1px solid #E3E1D8; background: #FCFBF8; border-radius: 10px; padding: 10px 12px 12px; margin-bottom: 10px; }
@@ -438,6 +445,8 @@
     <div id="announcement-text" style="white-space:pre-wrap; line-height:1.5; padding-right:18px;"></div>
     <span onclick="dismissAnnouncement()" style="position:absolute; top:6px; right:10px; cursor:pointer; color:#999; font-size:16px;">✕</span>
   </div>
+  <!-- 離線／同步狀態：沒網路時、有修改還沒上傳時才出現 -->
+  <div id="sync-banner"></div>
   <div id="main-menu" style="display: none;">
     <h1 class="studio-name-label">Studio Mate</h1>
     <p>工作室管理系統</p>
@@ -2343,9 +2352,12 @@
     // 雲端服務完全載不進來（例如沒有網路）：這台裝置之前登入過的話，先用本機資料；從來沒登入過就只能等網路
     function onCloudLoadFailed() {
       if (currentLocalUid && currentLocalUid !== 'guest') {
+        if (!cloudDb) cloudLoadFailed = true; // 雲端元件根本沒載進來：之後連上網，要重新整理一次才能開始上傳
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('app-root').style.display = 'block';
+        appInteractive = true;
         refreshCurrentView();
+        updateSyncBanner();
       } else {
         showLoginStep('signin');
         showLoginError('目前無法連線到雲端服務，請確認網路後重新整理。');
@@ -2376,13 +2388,17 @@
     function doLogoutDirect() { if (cloudAuth) cloudFns.signOut(cloudAuth); }
     function doLogout() {
       if (!cloudAuth) return;
-      if (confirm('確定要登出嗎？')) { cloudFns.signOut(cloudAuth); }
+      let msg = getSyncDirty()
+        ? '這台還有修改沒上傳到雲端（資料還好好存在這台）。\n登出後，要等你下次在這台登入、而且有網路時才會上傳；在那之前，其他裝置看不到這些修改。\n\n確定要登出嗎？'
+        : '確定要登出嗎？';
+      if (confirm(msg)) { cloudFns.signOut(cloudAuth); }
     }
 
     // 登入之後：看看這個帳號有沒有開通過。沒有的話要輸入邀請碼（管理員自己不用）；被停用就擋下來。
     async function enterAfterSignIn(user) {
-      showLoginScreen('loading');
-      showLoginError('');
+      let returning = currentLocalUid === user.uid;
+      if (returning) openAppForUser(user); // 這台裝置之前就是用這個帳號：馬上打開（沒網路也能用），帳號狀態在背景確認
+      else { showLoginScreen('loading'); showLoginError(''); }
       try {
         let ref = cloudFns.doc(cloudDb, 'users', user.uid);
         let snap = await cloudFns.getDoc(ref);
@@ -2394,21 +2410,21 @@
           } else {
             document.getElementById('invite-account-label').innerText = '登入帳號：' + (user.email || '');
             document.getElementById('invite-code-input').value = '';
-            showLoginStep('invite');
+            showLoginScreen('invite');
             return;
           }
         }
         let profile = snap.data();
-        if (profile.disabled) { showLoginStep('disabled'); return; }
+        if (profile.disabled) { if (unsubscribeCloud) { unsubscribeCloud(); unsubscribeCloud = null; } showLoginScreen('disabled'); return; }
         // 「最後使用時間」給管理後台看，半天更新一次就夠了，不用每次都寫
         if (Date.now() - (Number(profile.lastActiveAt) || 0) > 6 * 3600 * 1000) {
           cloudFns.updateDoc(ref, { lastActiveAt: Date.now() }).catch(function() {});
         }
-        openAppForUser(user);
+        if (!returning) openAppForUser(user);
       } catch (err) {
+        // 沒有網路，但這台裝置之前就是用這個帳號：已經用本機資料打開了，網路恢復後會自動同步
+        if (returning) { console.warn('暫時讀不到帳號資料（可能沒有網路），先用這台裝置的資料：', err); return; }
         console.error('讀取帳號資料失敗：', err);
-        // 沒有網路，但這台裝置之前就是用這個帳號：先用本機資料讓你繼續用，網路恢復後會自動同步
-        if (currentLocalUid === user.uid) { openAppForUser(user); return; }
         showLoginStep('signin');
         showLoginError('讀取帳號資料失敗，請確認網路連線後再試一次。');
       }
@@ -2447,6 +2463,7 @@
       }
       document.getElementById('login-screen').style.display = 'none';
       document.getElementById('app-root').style.display = 'block';
+      appInteractive = true;
       document.querySelectorAll('.logout-btn').forEach(btn => { btn.style.display = 'block'; });
       document.querySelectorAll('.admin-link-btn').forEach(btn => { btn.style.display = isAdminEmail(user.email) ? 'block' : 'none'; });
       document.querySelectorAll('.account-label').forEach(el => { el.innerText = '登入帳號：' + (user.email || ''); });
@@ -2454,6 +2471,8 @@
       refreshCurrentView();
       startCloudListener();
       loadAnnouncement();
+      updateSyncBanner();
+      setTimeout(flushPendingUpload, 1500); // 上次有還沒上傳的修改（例如離線時改的）就補上傳
     }
 
     // 從這台裝置上「目前帳號」的本機資料重新載入所有清單
@@ -2492,7 +2511,7 @@
         bar.dataset.id = latest.id;
         document.getElementById('announcement-text').innerText = latest.text || '';
         bar.style.display = 'block';
-      }).catch(function(err) { console.error('讀取公告失敗：', err); });
+      }).catch(function(err) { console.warn('讀取公告失敗（可能沒有網路）：', err); });
     }
     function dismissAnnouncement() {
       let bar = document.getElementById('announcement-bar');
@@ -2611,8 +2630,16 @@
 
       let ref = userDataDocRef();
       unsubscribeCloud = cloudFns.onSnapshot(ref, function(snap) {
+        let dirty = getSyncDirty();
+        if (dirty) {
+          // 這台有還沒上傳的修改：雲端的版本比較舊（或是自己剛送出去的那份），不拿來蓋掉，改成把這台的補上傳
+          let own = snap.exists() && (snap.data().updatedAt === dirty.lastTry || (snap.metadata && snap.metadata.hasPendingWrites));
+          if (!own) flushPendingUpload();
+          return;
+        }
         if (snap.exists()) {
           let data = snap.data();
+          if (data.updatedAt) lsSet('sm_sync_base', data.updatedAt);
           students = data.students ? JSON.parse(data.students) : [];
           makeupBank = data.makeupBank ? JSON.parse(data.makeupBank) : [];
           paymentRecords = data.payments ? JSON.parse(data.payments) : [];
@@ -2658,10 +2685,12 @@
     // 把目前的學生名單／補課存摺推上雲端，同時偷偷存一份帶時間戳記的歷史備份（不會顯示在畫面上）。
     // saveToMemory() 和 saveMakeupToMemory() 會自動呼叫這個函式。
     const MAX_AUTO_BACKUPS = 30; // 最多保留幾筆自動備份
-    function pushToCloud() {
-      if (!cloudDb || !cloudAuth || !cloudAuth.currentUser) return; // 還沒登入雲端服務時，只存本機，不報錯
-      scheduleReminderSync(); // 資料有變動，接下來 7 天的提醒也跟著重算（幾秒後才做，連續修改只算一次）
-      let payload = {
+    // ============ 存到雲端（含離線修改）============
+    // 每次存檔：資料一定先存在這台裝置，並記下「有修改還沒上傳」；有網路就馬上上傳，成功才把記號清掉。
+    // 沒網路（或上傳到一半斷線、App 被關掉）：記號會留著，下次連上網、或下次打開 App 時自動補上傳。
+    // 有修改還沒上傳的時候，雲端傳下來的舊資料不會蓋掉這台的資料。
+    function buildCloudPayload() {
+      return {
         students: JSON.stringify(students),
         makeupBank: JSON.stringify(makeupBank),
         payments: JSON.stringify(paymentRecords),
@@ -2679,33 +2708,122 @@
         rental: JSON.stringify(rentalData),
         updatedAt: new Date().toISOString()
       };
-      let ref = userDataDocRef();
-      cloudFns.setDoc(ref, payload).then(function() {
-        let backupsRef = userBackupsColRef();
-        return cloudFns.addDoc(backupsRef, {
-          students: payload.students,
-          makeupBank: payload.makeupBank,
-          payments: payload.payments,
-          tempLessons: payload.tempLessons,
-          extraIncome: payload.extraIncome,
-          badDebt: payload.badDebt,
-          todos: payload.todos,
-          lessonNotes: payload.lessonNotes,
-          progressNotes: payload.progressNotes,
-          achievements: payload.achievements,
-          materialPurchases: payload.materialPurchases,
-          materialSales: payload.materialSales,
-          expenses: payload.expenses,
-          settings: payload.settings,
-          rental: payload.rental,
-          savedAt: Date.now()
-        });
-      }).then(function() {
-        trimOldBackups();
-      }).catch(function(err) {
-        console.error('雲端儲存或自動備份失敗，主資料仍保留在本機，網路恢復後再試一次即可：', err);
-      });
     }
+    function getSyncDirty() { try { return JSON.parse(lsGet('sm_sync_dirty')) || null; } catch (e) { return null; } }
+    function setSyncDirty(d) { if (d) lsSet('sm_sync_dirty', JSON.stringify(d)); else localStorage.removeItem(lsKey('sm_sync_dirty')); }
+    let syncSeq = 0, syncInFlight = false, syncAgain = false, syncNotice = null;
+    let appInteractive = false; // App 畫面打開、可以操作之後的存檔才算「你的修改」（開啟時程式自動整理資料的存檔不算）
+    let cloudLoadFailed = false; // 打開 App 時雲端元件沒載進來（沒網路、手機裡也還沒存）
+    function markLocalChange() {
+      let d = getSyncDirty() || { since: Date.now(), base: lsGet('sm_sync_base') || '', offline: false };
+      if (navigator.onLine === false) d.offline = true; // 有在沒網路的時候改過，連上網後要提醒「已經上傳」
+      d.count = (d.count || 0) + 1;
+      setSyncDirty(d);
+      syncSeq++;
+    }
+    function pushToCloud() {
+      if (appInteractive && currentLocalUid && currentLocalUid !== 'guest') markLocalChange(); // 雲端還沒連上（例如沒網路打開 App）也要記著
+      updateSyncBanner();
+      if (!cloudDb || !cloudAuth || !cloudAuth.currentUser) return; // 還沒登入雲端服務時，只存本機，不報錯
+      scheduleReminderSync(); // 資料有變動，接下來 7 天的提醒也跟著重算（幾秒後才做，連續修改只算一次）
+      if (navigator.onLine === false) return; // 沒網路：先存在這台，連上網再一次上傳
+      uploadLocalData(false);
+    }
+    function withTimeout(promise, ms) {
+      return Promise.race([promise, new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), ms))]);
+    }
+    // 把這台的資料上傳。reconnect＝離線一陣子之後補上傳：先看雲端在這段時間有沒有被別台裝置改過
+    async function uploadLocalData(reconnect) {
+      if (!cloudDb || !cloudAuth || !cloudAuth.currentUser) return;
+      if (syncInFlight) { syncAgain = true; return; }
+      syncInFlight = true;
+      updateSyncBanner();
+      let seq = syncSeq;
+      let dirty = getSyncDirty();
+      let ref = userDataDocRef();
+      try {
+        let otherDeviceAt = null;
+        if (reconnect && dirty) {
+          let snap = await withTimeout(cloudFns.getDoc(ref), 15000);
+          let serverAt = snap.exists() ? (snap.data().updatedAt || '') : '';
+          // 雲端的版本不是「開始離線前看到的那份」，也不是這台上次試著上傳的那份 → 中間有別台裝置改過
+          if (serverAt && dirty.base && serverAt !== dirty.base && serverAt !== dirty.lastTry) otherDeviceAt = serverAt;
+        }
+        let payload = buildCloudPayload();
+        if (dirty) { dirty.lastTry = payload.updatedAt; setSyncDirty(dirty); }
+        await cloudFns.setDoc(ref, payload);
+        lsSet('sm_sync_base', payload.updatedAt);
+        if (seq === syncSeq) setSyncDirty(null); // 上傳途中又有新的修改，就留著記號，等下一次一起上傳
+        if (dirty && (dirty.offline || reconnect)) {
+          syncNotice = otherDeviceAt ? { kind: 'conflict', at: otherDeviceAt } : { kind: 'done', until: Date.now() + 6000 };
+        }
+        let backup = Object.assign({}, payload, { savedAt: Date.now() });
+        delete backup.updatedAt;
+        cloudFns.addDoc(userBackupsColRef(), backup).then(function() { trimOldBackups(); })
+          .catch(function(err) { console.warn('自動備份失敗（主資料已經上傳）：', err); });
+      } catch (err) {
+        console.warn('上傳到雲端失敗，資料還在這台裝置，連上網後會自動再試：', err);
+      } finally {
+        syncInFlight = false;
+        updateSyncBanner();
+        if (syncAgain) { syncAgain = false; uploadLocalData(false); }
+      }
+    }
+    // 連上網、打開 App、從背景切回來時：有還沒上傳的修改就補上傳
+    function flushPendingUpload() {
+      if (!getSyncDirty() || navigator.onLine === false || syncInFlight) { updateSyncBanner(); return; }
+      uploadLocalData(true);
+    }
+    window.addEventListener('online', function() { setTimeout(flushPendingUpload, 1500); updateSyncBanner(); });
+    window.addEventListener('offline', function() { updateSyncBanner(); });
+    document.addEventListener('visibilitychange', function() { if (document.visibilityState === 'visible') flushPendingUpload(); });
+    setInterval(function() { if (getSyncDirty()) { if (!syncInFlight && navigator.onLine !== false && Date.now() - (getSyncDirty().since || 0) > 20000) flushPendingUpload(); updateSyncBanner(); } }, 15000);
+
+    // 畫面上方的狀態列：沒網路、有修改還沒上傳、剛補上傳完、離線期間別台裝置也改過
+    function updateSyncBanner() {
+      let el = document.getElementById('sync-banner');
+      if (!el) return;
+      if (currentLocalUid === 'guest') { el.style.display = 'none'; return; }
+      let dirty = getSyncDirty();
+      let offline = navigator.onLine === false;
+      if (syncNotice && syncNotice.kind === 'conflict') {
+        let d = new Date(syncNotice.at);
+        let when = isNaN(d) ? '' : (d.getMonth() + 1) + '/' + d.getDate() + ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+        el.className = 'sync-conflict';
+        el.innerHTML = '⚠️ 你離線的時候，另一台裝置也改過資料。已經用<b>這台</b>的資料為準。<br>另一台改的內容如果要找回來：更多 →「🕐 歷史版本」' + (when ? '，選 ' + when + ' 左右的那一份' : '') + '。' +
+          '<span class="sync-x" onclick="dismissSyncNotice()">✕</span>';
+        el.style.display = 'block';
+        return;
+      }
+      if (offline) {
+        el.className = 'sync-offline';
+        el.innerHTML = '📴 目前沒有網路，顯示的是這台裝置上次存的資料。' + (dirty ? '<br>你的修改已經先存在這台，連上網後會自動上傳。' : '可以照常查看和修改。');
+        el.style.display = 'block';
+        return;
+      }
+      if (cloudLoadFailed && !cloudDb) {
+        el.className = 'sync-pending';
+        el.innerHTML = '☁️ 已經連上網了，但剛才打開 App 時雲端服務沒有載入。' + (dirty ? '你的修改都還在這台，' : '') + '請按「重新整理」' + (dirty ? '，修改就會接著上傳。' : '，恢復雲端同步。') +
+          '<br><button type="button" onclick="location.reload()">重新整理</button>';
+        el.style.display = 'block';
+        return;
+      }
+      if (dirty && Date.now() - (dirty.since || 0) > 8000) {
+        el.className = 'sync-pending';
+        el.innerHTML = syncInFlight ? '☁️ 正在把這台的修改上傳到雲端…' : '☁️ 有修改還沒上傳到雲端（網路不穩）。資料已經存在這台，會自動再試。<br><button type="button" onclick="flushPendingUpload()">現在重試</button>';
+        el.style.display = 'block';
+        return;
+      }
+      if (syncNotice && syncNotice.kind === 'done' && Date.now() < syncNotice.until) {
+        el.className = 'sync-done';
+        el.innerHTML = '✅ 之前還沒上傳的修改，已經上傳到雲端了。';
+        el.style.display = 'block';
+        setTimeout(updateSyncBanner, Math.max(500, syncNotice.until - Date.now() + 100));
+        return;
+      }
+      el.style.display = 'none';
+    }
+    function dismissSyncNotice() { syncNotice = null; updateSyncBanner(); }
 
     // 只保留最近 MAX_AUTO_BACKUPS 筆自動備份，避免筆數無限增加
     function trimOldBackups() {
@@ -9939,7 +10057,7 @@
 
     // ============ 版本更新檢查 ============
     // 每次修改程式、上傳新檔案時，要把這個版本號改掉（任何不一樣的字都可以），手機才會知道有新版本。
-    const APP_VERSION = 'sm-2026.10.19-2';
+    const APP_VERSION = 'sm-2026.10.20-1';
 
     // 加入主畫面的 App 常常直接拿手機裡存的舊檔案，而且沒有重新整理按鈕。
     // 做法：去網路上抓一份「現在的這個網頁」（網址加上時間，強迫不能用舊的），比對裡面寫的版本號，不一樣就提示更新。
@@ -9980,6 +10098,9 @@
     applySettingsToUI();
     // 一打開先顯示登入畫面（載入中），等確認登入狀態後才顯示內容，避免看到上一個帳號的資料
     showLoginScreen('loading');
+    setTimeout(function() {
+      if (currentLocalUid !== 'guest' && document.getElementById('login-screen').style.display !== 'none' && document.getElementById('login-step-loading').style.display !== 'none') onCloudLoadFailed();
+    }, 8000);
     if (window.innerWidth <= 700) {
       document.body.classList.add('mobile-tabs');
     } else {
