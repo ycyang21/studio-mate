@@ -2,7 +2,7 @@
 // 1. 讓 iPhone／Android 可以把 Studio Mate「加入主畫面」當成 App 用。
 // 2. 離線存取：在手機裡存一份 App 本身（網頁、月曆元件、雲端連線元件），沒網路也打得開。
 //    有網路時一律先拿網路上最新的版本（拿到就順便更新手機裡那一份），所以不會卡在舊檔案；
-//    只有網路連不上（或 6 秒都沒回應）時，才用手機裡存的那一份。
+//    只有網路連不上（或 6 秒都沒回應）時，才用手機裡存的那一份。外觀主題用的字體也會存一份。
 // 3. 收到雲端提醒小幫手送來的通知時，跳出通知；點通知會打開 Studio Mate 對應的畫面。
 var CACHE = 'studio-mate-offline-v1';
 // App 本身（同一個網站底下）
@@ -14,7 +14,8 @@ var CDN = [
   'https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js',
   'https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js'
 ];
-var CDN_PREFIXES = ['https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/', 'https://www.gstatic.com/firebasejs/12.2.1/'];
+// 字體（Google Fonts）：第一次有網路時存下來，之後沒網路也能用同樣的字體
+var CDN_PREFIXES = ['https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/', 'https://www.gstatic.com/firebasejs/12.2.1/', 'https://fonts.googleapis.com/css2', 'https://fonts.gstatic.com/'];
 var NETWORK_TIMEOUT_MS = 6000;
 
 self.addEventListener('install', function(event) {
