@@ -2472,6 +2472,7 @@
       startCloudListener();
       loadAnnouncement();
       updateSyncBanner();
+      syncStarting = true; // 這 1.5 秒畫面上顯示「正在上傳」，不要誤顯示「網路不穩」
       setTimeout(flushPendingUpload, 1500); // 上次有還沒上傳的修改（例如離線時改的）就補上傳
     }
 
@@ -2712,6 +2713,7 @@
     function getSyncDirty() { try { return JSON.parse(lsGet('sm_sync_dirty')) || null; } catch (e) { return null; } }
     function setSyncDirty(d) { if (d) lsSet('sm_sync_dirty', JSON.stringify(d)); else localStorage.removeItem(lsKey('sm_sync_dirty')); }
     let syncSeq = 0, syncInFlight = false, syncAgain = false, syncNotice = null;
+    let syncStarting = false; // 剛連上網／剛打開 App，馬上就要開始補上傳
     let appInteractive = false; // App 畫面打開、可以操作之後的存檔才算「你的修改」（開啟時程式自動整理資料的存檔不算）
     let cloudLoadFailed = false; // 打開 App 時雲端元件沒載進來（沒網路、手機裡也還沒存）
     function markLocalChange() {
@@ -2771,10 +2773,11 @@
     }
     // 連上網、打開 App、從背景切回來時：有還沒上傳的修改就補上傳
     function flushPendingUpload() {
+      syncStarting = false;
       if (!getSyncDirty() || navigator.onLine === false || syncInFlight) { updateSyncBanner(); return; }
       uploadLocalData(true);
     }
-    window.addEventListener('online', function() { setTimeout(flushPendingUpload, 1500); updateSyncBanner(); });
+    window.addEventListener('online', function() { syncStarting = true; setTimeout(flushPendingUpload, 1500); updateSyncBanner(); }); // 等網路穩一下再上傳
     window.addEventListener('offline', function() { updateSyncBanner(); });
     document.addEventListener('visibilitychange', function() { if (document.visibilityState === 'visible') flushPendingUpload(); });
     setInterval(function() { if (getSyncDirty()) { if (!syncInFlight && navigator.onLine !== false && Date.now() - (getSyncDirty().since || 0) > 20000) flushPendingUpload(); updateSyncBanner(); } }, 15000);
@@ -2810,7 +2813,7 @@
       }
       if (dirty && Date.now() - (dirty.since || 0) > 8000) {
         el.className = 'sync-pending';
-        el.innerHTML = syncInFlight ? '☁️ 正在把這台的修改上傳到雲端…' : '☁️ 有修改還沒上傳到雲端（網路不穩）。資料已經存在這台，會自動再試。<br><button type="button" onclick="flushPendingUpload()">現在重試</button>';
+        el.innerHTML = (syncInFlight || syncStarting) ? '☁️ 正在把這台的修改上傳到雲端…' : '☁️ 有修改還沒上傳到雲端（網路不穩）。資料已經存在這台，會自動再試。<br><button type="button" onclick="flushPendingUpload()">現在重試</button>';
         el.style.display = 'block';
         return;
       }
@@ -10057,7 +10060,7 @@
 
     // ============ 版本更新檢查 ============
     // 每次修改程式、上傳新檔案時，要把這個版本號改掉（任何不一樣的字都可以），手機才會知道有新版本。
-    const APP_VERSION = 'sm-2026.10.20-1';
+    const APP_VERSION = 'sm-2026.10.20-2';
 
     // 加入主畫面的 App 常常直接拿手機裡存的舊檔案，而且沒有重新整理按鈕。
     // 做法：去網路上抓一份「現在的這個網頁」（網址加上時間，強迫不能用舊的），比對裡面寫的版本號，不一樣就提示更新。
