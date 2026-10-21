@@ -27,6 +27,9 @@
     body { font-family: "Helvetica Neue", Arial, sans-serif; text-align: center; padding: 15px; background-color: var(--c-bg); color: var(--c-text); }
     /* 像 App 一樣操作：只能上下左右捲動，關掉「點兩下放大」和「兩指縮放」。拖曳把手自己有設定，不受影響 */
     html, body, * { touch-action: pan-x pan-y; }
+    /* 隱藏側邊的捲軸（拉 bar）：還是可以用手指、滑鼠滾輪、觸控板捲動，只是旁邊不顯示那條 bar */
+    html, body, * { scrollbar-width: none; -ms-overflow-style: none; }
+    html::-webkit-scrollbar, body::-webkit-scrollbar, *::-webkit-scrollbar { display: none; width: 0; height: 0; background: transparent; }
     /* iPhone 點到字比 16px 小的輸入框會自動放大畫面；手機版把所有輸入框統一成 16px，就不會一點就放大 */
     @media (max-width: 700px) {
       input:not([type="checkbox"]):not([type="radio"]), select, textarea { font-size: 16px !important; }
@@ -10443,7 +10446,7 @@
 
     // ============ 版本更新檢查 ============
     // 每次修改程式、上傳新檔案時，要把這個版本號改掉（任何不一樣的字都可以），手機才會知道有新版本。
-    const APP_VERSION = 'sm-2026.10.21-4';
+    const APP_VERSION = 'sm-2026.10.21-5';
 
     // 加入主畫面的 App 常常直接拿手機裡存的舊檔案，而且沒有重新整理按鈕。
     // 做法：去網路上抓一份「現在的這個網頁」（網址加上時間，強迫不能用舊的），比對裡面寫的版本號，不一樣就提示更新。
