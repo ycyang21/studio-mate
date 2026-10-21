@@ -19,6 +19,8 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Playfair+Display:wght@600;700&family=Cormorant+Garamond:wght@600;700&family=Lora:wght@600;700&display=swap">
   <!-- 一打開就先套上這台裝置上次的主題，畫面不會先閃一下別的顏色 -->
   <script>try { var smTheme = localStorage.getItem('sm_theme'); if (smTheme) document.documentElement.setAttribute('data-theme', smTheme); } catch (e) {}</script>
+  <!-- 在 LINE 裡面點開：網址加上 openExternalBrowser=1，LINE 會改用手機的 Safari／Chrome 打開（只試一次，不會一直跳） -->
+  <script>try { if (/ Line\//.test(navigator.userAgent) && !/[?&]openExternalBrowser=1/.test(location.search)) { var smU = new URL(location.href); smU.searchParams.set('openExternalBrowser', '1'); location.replace(smU.href); } } catch (e) {}</script>
   <!-- 關掉兩指放大縮小：iPhone 的 Safari 不理會上面的 user-scalable=no，要在這裡把縮放手勢擋掉 -->
   <script>['gesturestart', 'gesturechange', 'gestureend'].forEach(function(t) { document.addEventListener(t, function(e) { e.preventDefault(); }, { passive: false }); });</script>
   <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
@@ -513,6 +515,16 @@
     .fc .fc-col-header-cell-cushion { color: var(--c-muted); font-weight: 700; font-size: 12px; text-decoration: none; }
     .fc .fc-daygrid-day-number { color: var(--c-text2); text-decoration: none; font-variant-numeric: tabular-nums; }
     .fc .fc-day-today .fc-daygrid-day-number { background: var(--c-primary); color: #FFFFFF; border-radius: 999px; min-width: 22px; text-align: center; padding: 1px 6px; margin: 3px; font-weight: 700; }
+    /* 今天的日期（例如「21日」）一定排成一行，不會被窄格子擠成兩行；手機的格子比較窄，左右留白縮小一點 */
+    .fc .fc-day-today .fc-daygrid-day-number { white-space: nowrap; flex-shrink: 0; }
+    #calendar.calendar-compact .fc-day-today .fc-daygrid-day-number { padding: 1px 4px; margin: 2px 1px; min-width: 0; letter-spacing: -0.2px; }
+    @media (max-width: 374px) {
+      #calendar.calendar-compact .fc-daygrid-day-number { font-size: 12px; }
+      #calendar.calendar-compact .fc-day-today .fc-daygrid-day-number { padding: 1px 3px; margin: 2px 0; letter-spacing: -0.4px; }
+    }
+    /* 月曆左上角的「‹」「›」：兩顆分開，各自是完整的圓角按鈕（FullCalendar 預設會把它們黏成一組） */
+    .fc .fc-button-group { gap: 8px; }
+    .fc .fc-button-group > .fc-button { margin-left: 0 !important; flex: 0 0 auto; border-radius: var(--c-r-small) !important; }
     .fc-event { border-radius: 6px; }
     .event-piano { background-color: var(--c-ev-piano-bg) !important; color: var(--c-ev-piano-fg) !important; box-shadow: inset 0 0 0 1px var(--c-ev-ring); }
     .event-violin { background-color: var(--c-ev-violin-bg) !important; color: var(--c-ev-violin-fg) !important; box-shadow: inset 0 0 0 1px var(--c-ev-ring); }
@@ -654,6 +666,13 @@
       <h1>Studio Mate</h1>
       <p>給跑課老師的工作室管理工具</p>
       <div id="login-step-signin">
+        <!-- 在 LINE、Facebook、Instagram 這些 App 裡面打開時才會出現：Google 不允許在這種內建瀏覽器裡登入 -->
+        <div id="inapp-warning" style="display:none; text-align:left; background:var(--c-accent-soft); border:1px solid var(--c-accent-soft2); color:var(--c-text); border-radius:var(--c-r-small); padding:12px 14px; margin-bottom:14px; font-size:14px; line-height:1.6;">
+          <b>⚠️ 請改用 Safari 或 Chrome 開啟</b><br>
+          你現在是在 <b id="inapp-name">LINE</b> 裡面開啟這個網頁，Google 不允許在這裡登入。<br>
+          請點畫面角落的「⋯」或分享按鈕，選「用預設瀏覽器開啟」或「在 Safari 中開啟」；也可以複製網址，貼到 Safari 或 Chrome。
+          <button class="button btn-secondary" style="width:100%; margin:10px 0 0 0;" onclick="copyAppLink()">📋 複製網址</button>
+        </div>
         <button class="button" style="width:100%; display:flex; align-items:center; justify-content:center; gap:8px;" onclick="doGoogleLogin()"><span style="background:var(--c-surface); color:#4285F4; border-radius:50%; width:22px; height:22px; display:inline-flex; align-items:center; justify-content:center; font-weight:bold;">G</span> 使用 Google 帳號登入</button>
       </div>
       <div id="login-step-loading" style="display:none;"><p style="color:var(--c-muted);">載入中…</p></div>
@@ -2690,6 +2709,27 @@
       ['signin', 'loading', 'invite', 'disabled'].forEach(st => {
         document.getElementById('login-step-' + st).style.display = (st === step) ? 'block' : 'none';
       });
+      if (step === 'signin') updateInAppWarning();
+    }
+    // LINE、Facebook、Instagram、微信這些 App 裡面內建的瀏覽器：Google 不允許在裡面登入（會出現奇怪的英文錯誤頁）
+    function getInAppBrowserName() {
+      let ua = navigator.userAgent || '';
+      if (/ Line\//.test(ua)) return 'LINE';
+      if (/FBAN|FBAV|FB_IAB|FBIOS|MessengerForiOS/.test(ua)) return 'Facebook';
+      if (/Instagram/.test(ua)) return 'Instagram';
+      if (/MicroMessenger/.test(ua)) return '微信';
+      return '';
+    }
+    function updateInAppWarning() {
+      let name = getInAppBrowserName();
+      document.getElementById('inapp-warning').style.display = name ? 'block' : 'none';
+      if (name) document.getElementById('inapp-name').textContent = name;
+    }
+    function copyAppLink() {
+      let url = location.origin + location.pathname; // 不帶後面的參數，貼到 Safari／Chrome 打開就好
+      let done = () => alert('已複製網址。\n請打開 Safari 或 Chrome，在網址列貼上後打開，再用 Google 帳號登入。');
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done, () => prompt('請複製這個網址，貼到 Safari 或 Chrome：', url));
+      else prompt('請複製這個網址，貼到 Safari 或 Chrome：', url);
     }
     function showLoginError(msg) {
       let el = document.getElementById('login-error');
@@ -2741,6 +2781,11 @@
 
     function doGoogleLogin() {
       showLoginError('');
+      if (getInAppBrowserName()) { // 在 LINE 等 App 裡面硬登入一定失敗，直接請對方換瀏覽器
+        updateInAppWarning();
+        alert('Google 不允許在 ' + getInAppBrowserName() + ' 裡面登入。\n請改用 Safari 或 Chrome 開啟這個網頁（畫面上有說明）。');
+        return;
+      }
       if (!cloudAuth) { alert('雲端服務還在連線中，請稍後再試一次！'); return; }
       let provider = new cloudFns.GoogleAuthProvider();
       provider.setCustomParameters({ prompt: 'select_account' });
@@ -10446,7 +10491,7 @@
 
     // ============ 版本更新檢查 ============
     // 每次修改程式、上傳新檔案時，要把這個版本號改掉（任何不一樣的字都可以），手機才會知道有新版本。
-    const APP_VERSION = 'sm-2026.10.21-5';
+    const APP_VERSION = 'sm-2026.10.21-7';
 
     // 加入主畫面的 App 常常直接拿手機裡存的舊檔案，而且沒有重新整理按鈕。
     // 做法：去網路上抓一份「現在的這個網頁」（網址加上時間，強迫不能用舊的），比對裡面寫的版本號，不一樣就提示更新。
