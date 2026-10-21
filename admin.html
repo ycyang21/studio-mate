@@ -327,8 +327,9 @@
       } catch (err) { failBox(box, err); }
     }
     window.copyInviteMessage = async function(code) {
-      let appUrl = new URL('studio-mate.html', location.href).href;
-      let msg = '邀請你試用 Studio Mate 工作室管理工具 🎹\n\n1. 打開這個網址：' + appUrl + '\n2. 用你的 Google 帳號登入\n3. 輸入邀請碼：' + code + '\n\n（每組邀請碼只能使用一次）';
+      // 網址加上 openExternalBrowser=1：在 LINE 點這個連結時，會直接用手機的 Safari／Chrome 打開（Google 不允許在 LINE 裡面登入）
+      let appUrl = new URL('studio-mate.html?openExternalBrowser=1', location.href).href;
+      let msg = '邀請你試用 Studio Mate 工作室管理工具 🎹\n\n1. 用手機的 Safari 或 Chrome 打開這個網址：' + appUrl + '\n2. 用你的 Google 帳號登入\n3. 輸入邀請碼：' + code + '\n\n（每組邀請碼只能使用一次。如果網頁是在 LINE 裡面打開的，Google 會不讓你登入，請改用 Safari 或 Chrome。）';
       try { await navigator.clipboard.writeText(msg); toast('已複製，可以直接貼到 LINE'); }
       catch (e) { prompt('複製下面這段訊息：', msg); }
     };
