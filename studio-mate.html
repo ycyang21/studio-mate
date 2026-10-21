@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <title>Studio Mate 工作室管理</title>
   <!-- 加入主畫面用：App 名稱、圖示、顏色 -->
   <link rel="manifest" href="manifest.json">
@@ -19,12 +19,14 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Playfair+Display:wght@600;700&family=Cormorant+Garamond:wght@600;700&family=Lora:wght@600;700&display=swap">
   <!-- 一打開就先套上這台裝置上次的主題，畫面不會先閃一下別的顏色 -->
   <script>try { var smTheme = localStorage.getItem('sm_theme'); if (smTheme) document.documentElement.setAttribute('data-theme', smTheme); } catch (e) {}</script>
+  <!-- 關掉兩指放大縮小：iPhone 的 Safari 不理會上面的 user-scalable=no，要在這裡把縮放手勢擋掉 -->
+  <script>['gesturestart', 'gesturechange', 'gestureend'].forEach(function(t) { document.addEventListener(t, function(e) { e.preventDefault(); }, { passive: false }); });</script>
   <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
   
   <style>
     body { font-family: "Helvetica Neue", Arial, sans-serif; text-align: center; padding: 15px; background-color: var(--c-bg); color: var(--c-text); }
-    /* 像 App 一樣操作：關掉「點兩下放大」（兩隻手指縮放還是可以用）。拖曳把手自己有設定，不受影響 */
-    html, body, * { touch-action: manipulation; }
+    /* 像 App 一樣操作：只能上下左右捲動，關掉「點兩下放大」和「兩指縮放」。拖曳把手自己有設定，不受影響 */
+    html, body, * { touch-action: pan-x pan-y; }
     /* iPhone 點到字比 16px 小的輸入框會自動放大畫面；手機版把所有輸入框統一成 16px，就不會一點就放大 */
     @media (max-width: 700px) {
       input:not([type="checkbox"]):not([type="radio"]), select, textarea { font-size: 16px !important; }
@@ -10441,7 +10443,7 @@
 
     // ============ 版本更新檢查 ============
     // 每次修改程式、上傳新檔案時，要把這個版本號改掉（任何不一樣的字都可以），手機才會知道有新版本。
-    const APP_VERSION = 'sm-2026.10.21-3';
+    const APP_VERSION = 'sm-2026.10.21-4';
 
     // 加入主畫面的 App 常常直接拿手機裡存的舊檔案，而且沒有重新整理按鈕。
     // 做法：去網路上抓一份「現在的這個網頁」（網址加上時間，強迫不能用舊的），比對裡面寫的版本號，不一樣就提示更新。
