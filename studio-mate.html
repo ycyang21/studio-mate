@@ -109,6 +109,42 @@
     .todo-remind-icon { font-size: 13px; opacity: 0.7; }
     .todo-when-hint { font-size: 11px; color: var(--c-muted2); margin-top: 4px; }
     .nt-sec { border-top: 1px solid var(--c-divider); padding-top: 12px; margin-top: 12px; }
+    /* App 自己的提示框、確認框、下方小提示（取代手機原生跳窗） */
+    .sm-dialog-ov { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 100002; background: var(--c-overlay); display: flex; align-items: center; justify-content: center; padding: 24px; box-sizing: border-box; animation: smFadeIn .15s ease-out; }
+    .sm-dialog { background: var(--c-surface); color: var(--c-text); border-radius: var(--c-r-modal); width: 100%; max-width: 360px; max-height: 80vh; max-height: 80dvh; padding: 22px 18px 14px; box-sizing: border-box; box-shadow: 0 16px 48px var(--c-shadow); text-align: left; display: flex; flex-direction: column; animation: smPopIn .18s ease-out; }
+    .sm-dialog-msg { white-space: pre-wrap; word-break: break-word; font-size: 15px; line-height: 1.65; overflow-y: auto; min-height: 0; }
+    .sm-dialog-input { margin: 12px 0 0 0 !important; width: 100% !important; box-sizing: border-box; font-size: 16px !important; }
+    textarea.sm-dialog-input { min-height: 120px; font-size: 14px !important; resize: vertical; }
+    .sm-dialog-btns { display: flex; gap: 10px; margin-top: 18px; flex-shrink: 0; }
+    .sm-dialog-btn { flex: 1; border: none; border-radius: var(--c-r-btn); padding: 12px 10px; font-size: 15px; font-weight: 700; cursor: pointer; margin: 0; font-family: inherit; }
+    .sm-dialog-btn.sm-primary { background: var(--c-primary); color: #FFFFFF; }
+    .sm-dialog-btn.sm-danger { background: var(--c-danger); color: #FFFFFF; }
+    .sm-dialog-btn.sm-cancel { background: var(--c-fill2); color: var(--c-text); }
+    #sm-toast-box { position: fixed; left: 0; right: 0; bottom: 28px; z-index: 100003; display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; padding: 0 16px; }
+    body.mobile-tabs #sm-toast-box { bottom: calc(56px + env(safe-area-inset-bottom, 0px) + 14px); }
+    .sm-toast { max-width: 420px; background: var(--c-text); color: var(--c-bg); padding: 10px 18px; border-radius: 14px; font-size: 14px; font-weight: 600; line-height: 1.5; box-shadow: 0 8px 24px var(--c-shadow); opacity: 0; transform: translateY(10px); transition: opacity .2s ease, transform .2s ease; white-space: pre-line; text-align: center; }
+    .sm-toast.show { opacity: 1; transform: none; }
+    @keyframes smFadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes smPopIn { from { opacity: 0; transform: scale(.96); } to { opacity: 1; transform: none; } }
+    @media print { .sm-dialog-ov, #sm-toast-box { display: none !important; } }
+    /* 發送紀錄（收起來，點「發送紀錄 ▸」才展開） */
+    .nt-log { margin-top: 10px; font-size: 13px; }
+    .nt-log summary { cursor: pointer; color: var(--c-muted); font-weight: 600; list-style: none; padding: 4px 0; }
+    .nt-log summary::-webkit-details-marker { display: none; }
+    .nt-log summary::after { content: ' ▸'; }
+    .nt-log[open] summary::after { content: ' ▾'; }
+    .nt-log-row { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--c-fill2); }
+    .nt-log-row:last-child { border-bottom: none; }
+    .nt-log-when { color: var(--c-muted); font-variant-numeric: tabular-nums; white-space: nowrap; margin-right: 6px; }
+    .nt-log-res { white-space: nowrap; font-weight: 600; }
+    .nt-log-ok { color: var(--c-primary-text); } .nt-log-bad { color: var(--c-danger-text); } .nt-log-skip { color: var(--c-muted); }
+    .nt-log-late { display: block; font-size: 11px; font-weight: 400; color: var(--c-muted); text-align: right; }
+    .nt-log-res { text-align: right; }
+    /* 這台裝置的通知沒有開啟（只有偵測到才出現） */
+    #push-lost-banner { margin: 10px auto 0 auto; width: 90%; max-width: 600px; box-sizing: border-box; border-radius: var(--c-r-small); padding: 7px 6px 7px 12px; font-size: 13px; background: var(--c-gold-soft); border: 1px solid var(--c-gold-line); color: var(--c-gold-text); align-items: center; gap: 8px; text-align: left; }
+    #push-lost-banner .plb-text { flex: 1; font-weight: 600; }
+    #push-lost-banner .plb-btn { border: none; background: var(--c-gold); color: #FFFFFF; font-weight: 700; border-radius: var(--c-r-small); padding: 6px 14px; font-size: 13px; cursor: pointer; }
+    #push-lost-banner .plb-x { border: none; background: none; color: var(--c-gold-text); font-size: 15px; padding: 4px 6px; cursor: pointer; }
     .nt-sec:first-child { border-top: none; padding-top: 0; margin-top: 0; }
     .nt-sec-title { font-weight: bold; font-size: 14px; color: var(--c-text); margin-bottom: 8px; }
     .nt-status { font-size: 13px; line-height: 1.6; border-radius: 8px; padding: 8px 10px; margin-bottom: 8px; }
@@ -254,6 +290,18 @@
       padding-bottom: env(safe-area-inset-bottom, 0px);
     }
     body.mobile-tabs { padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px)); }
+    /* 手機版：整個 App 固定在畫面上，只有中間的內容自己捲動（跟一般 App 一樣）。
+       iPhone 主畫面 App 如果是「整頁」在捲，捲動或往上拉過頭時，底部分頁列會被帶著往上跑（iOS 的問題）；
+       改成整頁不動、只捲內容區，分頁列就會一直貼在最下面。列印不受影響 */
+    @media screen {
+      html.mobile-shell, html.mobile-shell body { height: 100%; overflow: hidden; overscroll-behavior: none; }
+      html.mobile-shell body.mobile-tabs { position: fixed; top: 0; left: 0; right: 0; bottom: 0; padding: 0; margin: 0; }
+      html.mobile-shell body.mobile-tabs #app-root {
+        position: absolute; top: 0; left: 0; right: 0; bottom: 0; box-sizing: border-box;
+        overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain;
+        padding: 15px 15px calc(56px + env(safe-area-inset-bottom, 0px)) 15px;
+      }
+    }
     .bottom-tab-btn {
       flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
       gap: 2px; padding: 8px 0 6px 0; background: none; border: none; color: var(--c-muted2); cursor: pointer;
@@ -722,6 +770,8 @@
   </div>
   <!-- 離線／同步狀態：沒網路時、有修改還沒上傳時才出現 -->
   <div id="sync-banner"></div>
+  <!-- 這台裝置的通知沒開（例如重新加入主畫面後，iPhone 會把通知一起清掉）：只有偵測到才出現；按 ✕ 之後這台就不再提醒 -->
+  <div id="push-lost-banner" style="display:none;"><span class="plb-text">🔔 這台裝置的通知沒有開啟</span><button class="plb-btn" onclick="pushLostEnable()">開啟</button><button class="plb-x" onclick="dismissPushLostBanner()" aria-label="這台不用通知">✕</button></div>
   <div id="main-menu" style="display: none;">
     <h1 class="studio-name-label">Studio Mate</h1>
     <p>工作室管理系統</p>
@@ -1955,6 +2005,7 @@
         <div class="nt-sec-title">雲端狀態</div>
         <div id="notify-cloud-status" class="nt-status nt-muted">讀取中…</div>
         <button class="small-btn" style="width:100%; margin:0; padding:9px; background-color:var(--c-blue); color:white;" onclick="sendTestPush()">📨 傳送測試通知</button>
+        <details id="notify-log-wrap" class="nt-log" style="display:none;"><summary>發送紀錄</summary><div id="notify-log"></div></details>
       </div>
       <div class="nt-sec">
         <div class="nt-sec-title">已開啟通知的裝置</div>
@@ -2153,10 +2204,107 @@
 
   <script>
 
+    // ============ App 自己的提示框（取代手機原生的跳窗） ============
+    // 原生跳窗在 iPhone 上會顯示網址、每次都要按「好」才會消失，看起來不像 App。
+    // - 成功訊息（✅ 開頭、短短一句）：畫面下方浮出一行小提示，兩秒後自己消失，不用按
+    // - 其他提醒、錯誤：App 樣式的提示框
+    // - 要確認的事（smConfirm）：App 樣式的確認框；刪除、清除這種救不回來的，確定鍵是紅色
+    const SM_NATIVE_DIALOGS = false; // 只有自動測試會改成 true（測試程式比較好自動按原生跳窗）
+    const smNativeAlert = window.alert.bind(window), smNativeConfirm = window.confirm.bind(window), smNativePrompt = window.prompt.bind(window);
+    let smDialogQueue = [], smDialogOpen = false;
+    function smToast(msg, ms) {
+      msg = String(msg == null ? '' : msg).trim();
+      let box = document.getElementById('sm-toast-box');
+      if (!box) { box = document.createElement('div'); box.id = 'sm-toast-box'; box.setAttribute('aria-live', 'polite'); document.body.appendChild(box); }
+      let t = document.createElement('div'); t.className = 'sm-toast'; t.textContent = msg;
+      box.appendChild(t);
+      requestAnimationFrame(() => requestAnimationFrame(() => t.classList.add('show')));
+      setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, ms || Math.min(5000, 1800 + msg.length * 40));
+    }
+    // opts: { msg, buttons: [{ label, value, kind: 'primary' | 'danger' | 'cancel' }], input: { value, multiline, readonly } }
+    function smDialog(opts) {
+      return new Promise(resolve => { smDialogQueue.push({ opts: opts, resolve: resolve }); smNextDialog(); });
+    }
+    function smNextDialog() {
+      if (smDialogOpen || !smDialogQueue.length) return;
+      smDialogOpen = true;
+      let cur = smDialogQueue.shift(), opts = cur.opts;
+      let prevFocus = document.activeElement;
+      let ov = document.createElement('div'); ov.className = 'sm-dialog-ov';
+      let card = document.createElement('div'); card.className = 'sm-dialog'; card.setAttribute('role', 'alertdialog'); card.setAttribute('aria-modal', 'true');
+      let msg = document.createElement('div'); msg.className = 'sm-dialog-msg'; msg.textContent = String(opts.msg == null ? '' : opts.msg);
+      card.appendChild(msg);
+      let input = null;
+      if (opts.input) {
+        input = document.createElement(opts.input.multiline ? 'textarea' : 'input');
+        input.className = 'form-control sm-dialog-input';
+        input.value = opts.input.value == null ? '' : String(opts.input.value);
+        if (opts.input.readonly) input.readOnly = true;
+        if (opts.input.type) input.type = opts.input.type;
+        if (opts.input.inputmode) input.inputMode = opts.input.inputmode;
+        card.appendChild(input);
+      }
+      let row = document.createElement('div'); row.className = 'sm-dialog-btns';
+      let finish = v => {
+        document.removeEventListener('keydown', onKey, true);
+        ov.remove(); smDialogOpen = false;
+        try { if (prevFocus && prevFocus.focus && document.contains(prevFocus) && !/^(INPUT|TEXTAREA|SELECT)$/.test(prevFocus.tagName)) prevFocus.focus(); } catch (e) {}
+        cur.resolve(v);
+        setTimeout(smNextDialog, 0);
+      };
+      let buttons = opts.buttons || [{ label: '好', value: true, kind: 'primary' }];
+      let main = null, cancel = null;
+      buttons.forEach(b => {
+        let el = document.createElement('button'); el.type = 'button';
+        el.className = 'sm-dialog-btn sm-' + (b.kind || 'primary'); el.textContent = b.label;
+        el.onclick = () => finish(b.value === '__input' ? input.value : b.value);
+        row.appendChild(el);
+        if (b.kind === 'cancel') cancel = b; else main = el;
+      });
+      card.appendChild(row); ov.appendChild(card); document.body.appendChild(ov);
+      function onKey(e) {
+        if (e.key === 'Escape' && cancel) { e.preventDefault(); finish(cancel.value); }
+        else if (e.key === 'Enter' && !(input && input.tagName === 'TEXTAREA') && main) { e.preventDefault(); main.click(); }
+      }
+      document.addEventListener('keydown', onKey, true);
+      setTimeout(() => {
+        if (input && !opts.input.readonly) { input.focus(); input.select(); }
+        else if (input) { input.focus(); input.select(); }
+        else if (main) main.focus({ preventScroll: true });
+      }, 30);
+    }
+    function smAlert(msg) {
+      if (SM_NATIVE_DIALOGS) { smNativeAlert(msg); return Promise.resolve(true); }
+      return smDialog({ msg: msg, buttons: [{ label: '好', value: true, kind: 'primary' }] });
+    }
+    // 刪除、清除、退班這種救不回來的動作：確定鍵用紅色
+    function smConfirm(msg, o) {
+      o = o || {};
+      if (SM_NATIVE_DIALOGS) return Promise.resolve(smNativeConfirm(msg));
+      let danger = o.danger !== undefined ? o.danger : /刪除|清除|退班|無法復原|移除/.test(String(msg));
+      return smDialog({ msg: msg, buttons: [{ label: o.cancel || '取消', value: false, kind: 'cancel' }, { label: o.ok || '確定', value: true, kind: danger ? 'danger' : 'primary' }] });
+    }
+    // o.type：'date'（跳出日期選擇）、'number'（數字鍵盤）
+    function smPrompt(msg, def, o) {
+      o = o || {};
+      if (SM_NATIVE_DIALOGS) return Promise.resolve(smNativePrompt(msg, def));
+      return smDialog({ msg: msg, input: { value: def, type: o.type === 'date' ? 'date' : (o.type === 'number' ? 'text' : null), inputmode: o.type === 'number' ? 'decimal' : null }, buttons: [{ label: '取消', value: null, kind: 'cancel' }, { label: '確定', value: '__input', kind: 'primary' }] });
+    }
+    // 複製失敗時：把文字放在框裡讓使用者自己長按複製
+    function smCopyBox(msg, text) {
+      if (SM_NATIVE_DIALOGS) { smNativePrompt(msg, text); return Promise.resolve(true); }
+      return smDialog({ msg: msg, input: { value: text, multiline: /\n/.test(String(text)) || String(text).length > 40, readonly: true }, buttons: [{ label: '好', value: true, kind: 'primary' }] });
+    }
+    // 程式裡其他地方的 alert(...) 全部自動改用上面的樣式
+    if (!SM_NATIVE_DIALOGS) window.alert = function(msg) {
+      msg = String(msg == null ? '' : msg);
+      if (/^\s*✅/.test(msg) && msg.length <= 40) smToast(msg); else smAlert(msg);
+    };
+
     // ============ 畫面上的 emoji 自動換成線條圖示 ============
     // 程式裡的文字照舊寫 emoji；顯示到畫面上時，這裡會把它換成同一套線條圖示（顏色跟著文字）。
     // 不處理的地方：月曆元件內部（另外處理）、列印報表、輸入框；下拉選單的選項只能放文字，所以直接拿掉 emoji。
-    // 跳出來的系統對話框（alert、confirm）是手機系統畫的，維持原本的文字。
+    // App 自己的提示框、確認框也一樣會換成圖示。
     const SM_NO_ICONS = false; // 只有自動測試會改成 true（測試裡用文字比對畫面）
     const SM_EMOJI_ICON = {"✅": "ic-check-circle", "⚠": "ic-alert", "💰": "ic-coins", "✏": "ic-pencil", "❌": "ic-x-circle", "↩": "ic-undo", "🔀": "ic-shuffle", "💾": "ic-save", "🔄": "ic-refresh", "💸": "ic-banknote", "➕": "ic-plus", "➖": "ic-minus", "👥": "ic-users", "👤": "ic-user", "🔑": "ic-key", "✕": "ic-x", "📝": "ic-note", "📦": "ic-box", "🔔": "ic-bell", "▸": "ic-chev-r ic-sm", "▶": "ic-chev-r ic-sm", "◀": "ic-chev-l ic-sm", "▾": "ic-chev-d ic-sm", "⏸": "ic-pause", "⚙": "ic-settings", "📅": "ic-calendar", "📤": "ic-upload", "📥": "ic-download", "📋": "ic-clipboard", "🗑": "ic-trash", "🆕": "ic-sparkle", "👁": "ic-eye", "🔺": "ic-eye-off", "🔧": "ic-wrench", "🛠": "ic-wrench", "🔍": "ic-search", "🕐": "ic-clock", "🕒": "ic-clock", "🔁": "ic-repeat", "🔥": "ic-flame", "⭐": "ic-star", "⚡": "ic-zap", "💤": "ic-moon", "💡": "ic-bulb", "📌": "ic-pin", "💬": "ic-chat", "🚪": "ic-door", "📍": "ic-map-pin", "🏠": "ic-home", "🎓": "ic-grad", "📔": "ic-book", "📓": "ic-book", "📒": "ic-book", "📚": "ic-book", "🟢": "ic-dot ic-dot-ok", "🟠": "ic-dot ic-dot-warn", "☀": "ic-sun", "☁": "ic-cloud", "👆": "ic-pointer", "⏳": "ic-hourglass", "📞": "ic-phone", "⬆": "ic-share", "🌱": "ic-sprout", "🏆": "ic-trophy", "📄": "ic-file", "📜": "ic-file", "📨": "ic-send", "❔": "ic-help", "↪": "ic-logout", "📢": "ic-megaphone", "💳": "ic-card", "👋": "ic-sparkle", "📲": "ic-smartphone", "📊": "ic-chart", "🔲": "ic-grid", "☰": "ic-list", "📴": "ic-wifi-off", "🎁": "ic-gift", "⏰": "ic-alarm", "🎤": "ic-mic", "🎵": "ic-music", "🧾": "ic-receipt", "🎨": "ic-palette"};
     const SM_EMOJI_SRC = '(' + Object.keys(SM_EMOJI_ICON).map(function(e) { return e.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }).join('|') + ')\uFE0F?';
@@ -2621,8 +2769,8 @@
       if (document.getElementById('student-detail-page').style.display === 'block' && currentDetailStudentId) renderStudentDetailBasicInfo();
       if (document.getElementById('dashboard-page').style.display === 'block') renderDashboard();
     }
-    function submitPauseModal() {
-      if (pausingGroupId) { submitGroupPause(); return; }
+    async function submitPauseModal() {
+      if (pausingGroupId) { await submitGroupPause(); return; }
       let s = students.find(x => x.id === pausingStudentId);
       if (!s) { closePauseModal(); return; }
       let start = document.getElementById('pause-start').value;
@@ -2636,7 +2784,7 @@
       let marked = [s.attendedDates, s.canceledDates, s.makeupConvertedDates, s.absentChargedDates, s.rescheduledDates].flat().filter(d => d && d >= start && (!end || d <= end));
       let msg = '確定要讓「' + s.name + '」從 ' + start + ' 開始停課' + (end ? '，' + resume + ' 回來上課' : '（回來日期未定）') + ' 嗎？\n\n停課期間的課不會出現在月曆上，預繳的堂數不會變。';
       if (marked.length > 0) msg += '\n\n※ 這段期間裡有 ' + marked.length + ' 堂已經點過名，那幾堂的紀錄會照樣保留。';
-      if (!confirm(msg)) return;
+      if (!await smConfirm(msg)) return;
       if (!s.pauses) s.pauses = [];
       let p = editingPauseId ? s.pauses.find(x => x.id === editingPauseId) : null;
       if (!p) { p = { id: generateId() }; s.pauses.push(p); }
@@ -2645,25 +2793,25 @@
       afterPauseChange();
       alert('✅ 已設定停課！' + (end ? '\n' + resume + ' 起月曆上會自動恢復他的課。' : '\n回來的時候，到學生詳細資料按「▶️ 恢復上課」。'));
     }
-    function deletePause() {
+    async function deletePause() {
       let s = students.find(x => x.id === pausingStudentId);
       if (!s) return;
-      if (!confirm('確定要刪除這次停課嗎？刪除後，這段期間的課會重新出現在月曆上。')) return;
+      if (!await smConfirm('確定要刪除這次停課嗎？刪除後，這段期間的課會重新出現在月曆上。')) return;
       s.pauses = (s.pauses || []).filter(x => x.id !== editingPauseId);
       closePauseModal();
       afterPauseChange();
     }
-    function resumeFromPause(studentId) {
+    async function resumeFromPause(studentId) {
       let s = students.find(x => x.id === studentId);
       let p = s && getCurrentPause(s);
       if (!p) return;
       let today = formatDate(new Date());
-      let resume = prompt('從哪一天開始恢復上課？（格式：2026-01-15）', today);
+      let resume = await smPrompt('從哪一天開始恢復上課？', today, { type: 'date' });
       if (resume === null) return;
       resume = resume.trim();
       if (!/^\d{4}-\d{2}-\d{2}$/.test(resume)) { alert('日期格式不對，請用 2026-01-15 這種格式。'); return; }
       if (resume <= p.start) {
-        if (!confirm('恢復日期在停課開始之前或當天，等於這次停課取消，確定嗎？')) return;
+        if (!await smConfirm('恢復日期在停課開始之前或當天，等於這次停課取消，確定嗎？')) return;
         s.pauses = s.pauses.filter(x => x.id !== p.id);
       } else {
         p.end = addDaysStr(resume, -1);
@@ -2672,7 +2820,7 @@
       alert('✅ ' + resume + ' 起恢復上課！');
     }
 
-    function checkScheduleConflictWarning(freq, dayIndex, timeVal, anchorDate, duration, excludeId, groupId) {
+    async function checkScheduleConflictWarning(freq, dayIndex, timeVal, anchorDate, duration, excludeId, groupId) {
       if (freq === 'appointment') return true;
       let conflictName = null;
       for (let other of students) {
@@ -2687,15 +2835,15 @@
         break;
       }
       if (!conflictName) return true;
-      return confirm('⚠️ 這個上課時間（' + getDayName(dayIndex) + ' ' + timeVal + '）跟「' + conflictName + '」重疊，確定要繼續嗎？');
+      return await smConfirm('⚠️ 這個上課時間（' + getDayName(dayIndex) + ' ' + timeVal + '）跟「' + conflictName + '」重疊，確定要繼續嗎？');
     }
 
     // 新增/編輯學生時的姓名防呆：姓名＋樂器都跟某位在學學生相同才提醒（不含自己、不含已退班），
     // 因為同名不同樂器、或同一位學生想再加開一堂同樂器的課，都是合理情況，不用特別打擾。
-    function checkDuplicateNameWarning(name, instrument, excludeId) {
+    async function checkDuplicateNameWarning(name, instrument, excludeId) {
       let dup = students.find(s => s.id !== excludeId && !s.endDate && s.name === name && s.instrument === instrument);
       if (!dup) return true;
-      return confirm('⚠️ 名單裡已經有一位「' + name + '」，樂器也是「' + instrument + '」。\n\n如果是同一位學生想加開新的課，或者剛好是同名同姓的不同學生，都可以繼續新增；如果是不小心重複輸入，請按取消。');
+      return await smConfirm('⚠️ 名單裡已經有一位「' + name + '」，樂器也是「' + instrument + '」。\n\n如果是同一位學生想加開新的課，或者剛好是同名同姓的不同學生，都可以繼續新增；如果是不小心重複輸入，請按取消。');
     }
 
     // ============ Firebase 雲端同步 ============
@@ -2728,8 +2876,8 @@
     function copyAppLink() {
       let url = location.origin + location.pathname; // 不帶後面的參數，貼到 Safari／Chrome 打開就好
       let done = () => alert('已複製網址。\n請打開 Safari 或 Chrome，在網址列貼上後打開，再用 Google 帳號登入。');
-      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done, () => prompt('請複製這個網址，貼到 Safari 或 Chrome：', url));
-      else prompt('請複製這個網址，貼到 Safari 或 Chrome：', url);
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done, () => smCopyBox('請複製這個網址，貼到 Safari 或 Chrome：', url));
+      else smCopyBox('請複製這個網址，貼到 Safari 或 Chrome：', url);
     }
     function showLoginError(msg) {
       let el = document.getElementById('login-error');
@@ -2802,12 +2950,12 @@
     }
 
     function doLogoutDirect() { if (cloudAuth) cloudFns.signOut(cloudAuth); }
-    function doLogout() {
+    async function doLogout() {
       if (!cloudAuth) return;
       let msg = getSyncDirty()
         ? '這台還有修改沒上傳到雲端（資料還好好存在這台）。\n登出後，要等你下次在這台登入、而且有網路時才會上傳；在那之前，其他裝置看不到這些修改。\n\n確定要登出嗎？'
         : '確定要登出嗎？';
-      if (confirm(msg)) { cloudFns.signOut(cloudAuth); }
+      if (await smConfirm(msg)) { cloudFns.signOut(cloudAuth); }
     }
 
     // 登入之後：看看這個帳號有沒有開通過。沒有的話要輸入邀請碼（管理員自己不用）；被停用就擋下來。
@@ -3292,8 +3440,8 @@
 
     function closeHistoryModal() { document.getElementById('history-modal').style.display = 'none'; }
 
-    function restoreBackup(backupId) {
-      if (!confirm('確定要還原到這個版本嗎？目前的資料會被取代。（放心，目前的狀態本身也已經是歷史版本清單裡最新的一筆，還原錯了還能再從清單挑回來。）')) return;
+    async function restoreBackup(backupId) {
+      if (!await smConfirm('確定要還原到這個版本嗎？目前的資料會被取代。（放心，目前的狀態本身也已經是歷史版本清單裡最新的一筆，還原錯了還能再從清單挑回來。）')) return;
       let ref = cloudFns.doc(cloudDb, 'users', cloudAuth.currentUser.uid, 'data', 'main', 'backups', backupId);
       cloudFns.getDoc(ref).then(function(snap) {
         if (!snap.exists()) { alert('找不到這個版本，可能已經被自動清除了。'); return; }
@@ -3731,7 +3879,33 @@
     // 手機瀏覽器對「全螢幕固定視窗」開關常常會自己亂跳捲動位置，光是事後補拉回去常常會跟瀏覽器自己的動作打架、時間點對不準。
     // 比較可靠的做法是：開視窗的當下，直接把整個 body 釘死在目前這個捲動位置（用 position:fixed + 負的 top 位移模擬），
     // 讓背景畫面在視窗開著的期間根本不會被瀏覽器誤判成「可以滑動、可以跳位置」；關視窗時再放開、還原回原本的位置。
+    // 手機版的內容是在 #app-root 裡面捲（整頁不捲）；電腦版還是整頁捲
+    function appScroller() { return document.documentElement.classList.contains('mobile-shell') ? document.getElementById('app-root') : null; }
+    function scrollAppBy(dy) { let sc = appScroller(); if (sc) sc.scrollTop += dy; else window.scrollBy(0, dy); }
+    // 手機版：只要有任何視窗開著，後面的內容區就不能捲（捲動位置保留，關掉視窗後回到原位）
+    function syncAppScrollLock() {
+      let sc = appScroller(); if (!sc) return;
+      let open = Array.from(document.querySelectorAll('[id$="-modal"]')).some(el => el.style.display === 'flex' || el.style.display === 'block');
+      sc.style.overflowY = open ? 'hidden' : '';
+    }
+    function watchModalsForScrollLock() {
+      if (!appScroller() || !window.MutationObserver) return;
+      let obs = new MutationObserver(syncAppScrollLock);
+      document.querySelectorAll('[id$="-modal"]').forEach(m => obs.observe(m, { attributes: true, attributeFilter: ['style'] }));
+    }
+    // 手機版：鍵盤收起來之後，iPhone 偶爾會把整頁往上推一點沒有推回來（底部分頁列會跟著跑掉），這裡把它推回原位
+    document.addEventListener('focusout', function() {
+      if (!appScroller()) return;
+      setTimeout(function() {
+        let a = document.activeElement;
+        if (a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return; // 只是換到下一個輸入框，鍵盤還開著
+        if (window.scrollY || document.documentElement.scrollTop || document.body.scrollTop) window.scrollTo(0, 0);
+      }, 150);
+    });
+
     function lockBodyScroll() {
+      let sc = appScroller();
+      if (sc) { sc.style.overflowY = 'hidden'; return; } // 手機版：視窗開著的時候，後面的內容區不要跟著捲（捲動位置會保留）
       if (document.body.style.position === 'fixed') return; // 已經有視窗釘住畫面了（例如當天課表視窗上面再開點名視窗），維持原本的位置
       savedScrollY = window.scrollY || window.pageYOffset || 0;
       document.body.style.position = 'fixed';
@@ -3745,6 +3919,12 @@
     function unlockBodyScroll() {
       // 下面還有別的視窗開著（例如點名完回到當天課表視窗），畫面要繼續釘住
       if (Array.from(document.querySelectorAll('[id$="-modal"]')).some(el => el.style.display === 'flex' || el.style.display === 'block')) return;
+      let sc = appScroller();
+      if (sc) {
+        syncAppScrollLock();
+        if (calendar && typeof calendar.updateSize === 'function') setTimeout(() => calendar.updateSize(), 0);
+        return;
+      }
       if (document.body.style.position !== 'fixed') return;
       document.body.style.position = '';
       document.body.style.top = '';
@@ -3939,7 +4119,7 @@
     // 1. 還沒排任何補課 → 直接可以
     // 2. 已排但都還沒上 → 列出日期確認，確定後那些排課會跟著整筆紀錄一起刪掉
     // 3. 有任何一堂已經上過 → 擋下來，請先把那堂補課恢復為尚未出席（或取消排課）
-    function confirmRemoveConvertedMakeup(record) {
+    async function confirmRemoveConvertedMakeup(record) {
       if (!record) return true;
       let done = record.schedules.filter(sch => sch.attended);
       if (done.length > 0 || (record.status === 'history' && record.schedules.length === 0)) {
@@ -3953,18 +4133,18 @@
           let shared = makeupBank.some(r => r.id !== record.id && r.studentId === record.studentId && r.schedules.some(x => x.date === sch.date && x.time === sch.time));
           return '• ' + formatReportDate(sch.date) + (sch.time ? ' ' + sch.time : '') + (shared ? '\n   （這堂補課有一部分是扣另一筆欠課，取消後那堂會剩下另一部分的堂數）' : '');
         }).join('\n');
-        return confirm('這堂轉出去的補課已經排了時間：\n' + lines + '\n\n取消轉補課會把這些補課排課一起取消（補課管理那邊也會移除），這堂變回一般課。確定嗎？');
+        return await smConfirm('這堂轉出去的補課已經排了時間：\n' + lines + '\n\n取消轉補課會把這些補課排課一起取消（補課管理那邊也會移除），這堂變回一般課。確定嗎？');
       }
       return true;
     }
 
-    function cancelMakeupConversion() {
-      if (currentModalEvent && currentModalEvent.type === 'temp') markTempStatus('reset');
-      else markStatus('reset');
+    async function cancelMakeupConversion() {
+      if (currentModalEvent && currentModalEvent.type === 'temp') await markTempStatus('reset');
+      else await markStatus('reset');
     }
 
     // 在「原本那堂」取消調課：刪掉調過去的那堂，這堂恢復成未點名
-    function cancelRescheduleFromOriginal() {
+    async function cancelRescheduleFromOriginal() {
       let s = students[currentModalEvent.stuIdx];
       let dateStr = currentModalEvent.dateStr;
       if (!s) { closeModal(); return; }
@@ -3977,7 +4157,7 @@
       let msg = linked.length > 0
         ? '確定要取消這次調課嗎？\n\n• 調過去的 ' + linked.map(t => formatReportDate(t.date) + (t.time ? ' ' + t.time : '')).join('、') + ' 那堂會刪除\n• 這堂 ' + formatReportDate(dateStr) + '會恢復成「未點名」'
         : '找不到調過去的那堂（可能是以前調的課）。\n\n取消後這堂會恢復成「未點名」；如果月曆上還有調過去的那堂，請記得另外把它刪除。\n\n確定要取消調課嗎？';
-      if (!confirm(msg)) return;
+      if (!await smConfirm(msg)) return;
       if (linked.length > 0) {
         let ids = linked.map(t => t.id);
         tempLessons = tempLessons.filter(t => !ids.includes(t.id));
@@ -4085,7 +4265,7 @@
 
     // 勾選「出席的同時，登記已收費」時，如果這位學生本來就有預繳剩餘，跳出二次確認，
     // 避免把已經包含在既有預繳裡的這一堂又重複登記一筆繳費（取消勾選則不需要檢查）。
-    function checkPaidCheckboxWarning(checkboxEl) {
+    async function checkPaidCheckboxWarning(checkboxEl) {
       if (!checkboxEl.checked || !currentModalEvent) return;
       let studentId = null;
       if (currentModalEvent.type === 'normal') {
@@ -4100,12 +4280,12 @@
       if (!studentId) return;
       let balance = getStudentBalance(studentId);
       if (balance < 0) {
-        let ok = confirm('⚠️ 這位學生目前預繳剩餘 ' + Math.abs(balance) + ' 堂，這堂課很可能已經包含在先前登記的繳費裡了。\n\n確定還要「額外」再登記一筆繳費嗎？');
+        let ok = await smConfirm('⚠️ 這位學生目前預繳剩餘 ' + Math.abs(balance) + ' 堂，這堂課很可能已經包含在先前登記的繳費裡了。\n\n確定還要「額外」再登記一筆繳費嗎？');
         if (!ok) { checkboxEl.checked = false; }
       }
     }
 
-    function markStatus(status) {
+    async function markStatus(status) {
       let stuIdx = currentModalEvent.stuIdx;
       let dateStr = currentModalEvent.dateStr;
       let s = students[stuIdx];
@@ -4113,15 +4293,15 @@
 
       // 出席／缺席收費代表「這堂課確定發生過了」，如果日期還沒到，先跟你確認一下，避免手滑點錯
       if ((status === 'attended' || status === 'absent_charged') && dateStr > formatDate(new Date())) {
-        if (!confirm('⚠️ ' + dateStr + ' 這天還沒到，出席狀況應該還未確定，確定要現在標記嗎？')) return;
+        if (!await smConfirm('⚠️ ' + dateStr + ' 這天還沒到，出席狀況應該還未確定，確定要現在標記嗎？')) return;
       }
       let payCheckbox = document.getElementById('modal-mark-paid');
-      if (!applyNormalLessonStatus(s, dateStr, status, !!(payCheckbox && payCheckbox.checked))) return;
+      if (!await applyNormalLessonStatus(s, dateStr, status, !!(payCheckbox && payCheckbox.checked))) return;
       saveToMemory(); if (calendar) calendar.refetchEvents(); closeModal();
     }
 
     // 一般課改狀態的核心：點名視窗、團體課一起點名都用這一份。回傳 false＝被擋下或按了取消（資料沒動）
-    function applyNormalLessonStatus(s, dateStr, status, markPaid) {
+    async function applyNormalLessonStatus(s, dateStr, status, markPaid) {
 
       // 這堂原本已經調到別天：改成其他狀態（出席、延期、恢復未點名…）的話，調過去的那堂也要一起處理，
       // 不然同一堂課會變成兩堂。調過去的那堂已經出席的話就先擋下來，避免動到已經算學費的紀錄。
@@ -4134,7 +4314,7 @@
         }
         if (linked.length > 0) {
           let where = linked.map(t => formatReportDate(t.date) + (t.time ? ' ' + t.time : '')).join('、');
-          if (!confirm('這堂已經調到 ' + where + '。\n\n改成別的狀態的話，會一併刪除調過去的那堂調課，確定嗎？')) return false;
+          if (!await smConfirm('這堂已經調到 ' + where + '。\n\n改成別的狀態的話，會一併刪除調過去的那堂調課，確定嗎？')) return false;
           let linkedIds = linked.map(t => t.id);
           tempLessons = tempLessons.filter(t => !linkedIds.includes(t.id));
           saveTempToMemory();
@@ -4150,7 +4330,7 @@
       if (s.makeupConvertedDates.includes(dateStr)) {
         // 取消轉補課：分三種情況（沒排／已排沒上／已經上過），詳見 confirmRemoveConvertedMakeup
         let relatedRecord = makeupBank.find(r => r.studentId === s.id && r.dateGen === dateStr && !r.fromTempId);
-        if (!confirmRemoveConvertedMakeup(relatedRecord)) return false;
+        if (!await confirmRemoveConvertedMakeup(relatedRecord)) return false;
         makeupBank = makeupBank.filter(r => !(r.studentId === s.id && r.dateGen === dateStr && !r.fromTempId));
         saveMakeupToMemory();
       }
@@ -4196,7 +4376,7 @@
       return true;
     }
 
-    function markMakeupStatus(status) {
+    async function markMakeupStatus(status) {
       let recordId = currentModalEvent.recordId;
       let schIdx = currentModalEvent.schIdx;
       let record = makeupBank.find(r => r.id === recordId);
@@ -4205,10 +4385,10 @@
         let sch = record.schedules[schIdx];
 
         if (status === 'canceled') {
-          if (!confirm("確定要取消這堂補課嗎？時數將退回給學生。")) { closeModal(); return; }
+          if (!await smConfirm("確定要取消這堂補課嗎？時數將退回給學生。")) { closeModal(); return; }
         }
         if (status === 'attended' && sch.date > formatDate(new Date())) {
-          if (!confirm('⚠️ ' + sch.date + ' 這天還沒到，出席狀況應該還未確定，確定要現在標記嗎？')) return;
+          if (!await smConfirm('⚠️ ' + sch.date + ' 這天還沒到，出席狀況應該還未確定，確定要現在標記嗎？')) return;
         }
 
         // 同樣先清掉這筆補課之前「點名時登記」的繳費紀錄，理由跟一般課一樣：避免重複、確保復原時錢會跟著消失
@@ -4241,25 +4421,25 @@
 
     // 臨時課的點名：跟一般課邏輯很像，但沒有「轉為補課」這個選項——臨時課本來就是單次加的課，
     // 沒有固定課表可以延期或補課，取消了就單純是取消。
-    function markTempStatus(status) {
+    async function markTempStatus(status) {
       let t = tempLessons.find(x => x.id === currentModalEvent.tempId);
       if (!t) { closeModal(); return; }
 
       if ((status === 'attended' || status === 'absent_charged') && t.date > formatDate(new Date())) {
-        if (!confirm('⚠️ ' + t.date + ' 這天還沒到，出席狀況應該還未確定，確定要現在標記嗎？')) return;
+        if (!await smConfirm('⚠️ ' + t.date + ' 這天還沒到，出席狀況應該還未確定，確定要現在標記嗎？')) return;
       }
       let payCheckbox = document.getElementById('modal-temp-mark-paid');
-      if (!applyTempLessonStatus(t, status, !!(payCheckbox && payCheckbox.checked))) return;
+      if (!await applyTempLessonStatus(t, status, !!(payCheckbox && payCheckbox.checked))) return;
       saveTempToMemory(); if (calendar) calendar.refetchEvents(); closeModal();
     }
 
     // 臨時課／調課改狀態的核心（點名視窗、團體課一起點名共用）。回傳 false＝被擋下
-    function applyTempLessonStatus(t, status, markPaid) {
+    async function applyTempLessonStatus(t, status, markPaid) {
 
       // 原本轉成補課的調課：改成其他狀態前，先照三種情況檢查補課紀錄能不能拿掉
       if (t.makeupConverted) {
         let rec = makeupBank.find(r => r.fromTempId === t.id);
-        if (!confirmRemoveConvertedMakeup(rec)) return false;
+        if (!await confirmRemoveConvertedMakeup(rec)) return false;
         makeupBank = makeupBank.filter(r => r.fromTempId !== t.id);
         saveMakeupToMemory();
         t.makeupConverted = false;
@@ -4305,9 +4485,9 @@
       return true;
     }
 
-    function deleteTempLesson() {
+    async function deleteTempLesson() {
       let tempId = currentModalEvent.tempId;
-      if (!confirm('確定要刪除這筆臨時課紀錄嗎？此動作無法復原。')) return;
+      if (!await smConfirm('確定要刪除這筆臨時課紀錄嗎？此動作無法復原。')) return;
       tempLessons = tempLessons.filter(x => x.id !== tempId);
       saveTempToMemory();
       if (calendar) calendar.refetchEvents();
@@ -4316,7 +4496,7 @@
 
     // 取消調課：刪掉調過去的這堂，原本那堂恢復成「未點名」，等於這次調課沒發生過。
     // 已經出席的不能直接取消，要先恢復未點名（那時候才會把「點名時登記」的繳費一起清掉，不會留下多的繳費紀錄）。
-    function cancelReschedule() {
+    async function cancelReschedule() {
       let t = tempLessons.find(x => x.id === currentModalEvent.tempId);
       if (!t) { closeModal(); return; }
       if (isTempLessonLocked(t)) {
@@ -4332,7 +4512,7 @@
       } else {
         msg = '這堂是以前調的課，沒有記錄原本是哪一天，所以只能刪除這堂。\n\n刪除後，請到月曆找到原本標著「🔀 已調課」的那天，按「↩️ 取消調課」。\n\n確定要刪除這堂調課嗎？';
       }
-      if (!confirm(msg)) return;
+      if (!await smConfirm(msg)) return;
       tempLessons = tempLessons.filter(x => x.id !== t.id);
       saveTempToMemory();
       if (origin) {
@@ -4400,7 +4580,7 @@
       }
     }
 
-    function submitEditTempLesson() {
+    async function submitEditTempLesson() {
       let t = tempLessons.find(x => x.id === editingTempLessonId);
       if (!t) { closeEditTempLessonModal(); return; }
 
@@ -4430,10 +4610,10 @@
 
       let conflictName = findScheduleConflict(newDate, newTime, newDuration, null, t.id);
       if (conflictName) {
-        let ok = confirm('⚠️ 這個時段（' + newDate + ' ' + newTime + '）已經有 ' + conflictName + ' 排課了，確定還要改到這裡嗎？');
+        let ok = await smConfirm('⚠️ 這個時段（' + newDate + ' ' + newTime + '）已經有 ' + conflictName + ' 排課了，確定還要改到這裡嗎？');
         if (!ok) return;
       }
-      if (!confirmRentalClash(newDate, newTime, newDuration, (document.getElementById('edit-temp-location').value.trim() || getTempLessonLocation(t).location))) return; // 這個時段這間工作室已經租給別人的話，先提醒
+      if (!await confirmRentalClash(newDate, newTime, newDuration, (document.getElementById('edit-temp-location').value.trim() || getTempLessonLocation(t).location))) return; // 這個時段這間工作室已經租給別人的話，先提醒
 
       t.date = newDate;
       t.time = newTime;
@@ -4544,11 +4724,11 @@
       document.getElementById('sale-list').innerHTML = html;
     }
 
-    function deletePurchase(id) {
+    async function deletePurchase(id) {
       let p = materialPurchases.find(x => x.id === id);
       if (!p) return;
       if (p.remaining < p.quantity) { alert('這批進貨已經有部分被銷售紀錄用掉成本了，沒辦法直接刪除。如果真的要刪，請先處理掉相關的銷售紀錄。'); return; }
-      if (!confirm('確定要刪除這筆進貨紀錄嗎？')) return;
+      if (!await smConfirm('確定要刪除這筆進貨紀錄嗎？')) return;
       materialPurchases = materialPurchases.filter(x => x.id !== id);
       saveMaterialPurchasesToMemory();
       renderInventoryStockOverview();
@@ -4905,10 +5085,10 @@
     }
     // ============ 一次記很多筆結束 ============
 
-    function deleteSale(id) {
+    async function deleteSale(id) {
       let sale = materialSales.find(s => s.id === id);
       if (!sale) return;
-      if (!confirm('確定要刪除這筆銷售紀錄嗎？扣掉的庫存、對應的額外收入都會一併還原。')) return;
+      if (!await smConfirm('確定要刪除這筆銷售紀錄嗎？扣掉的庫存、對應的額外收入都會一併還原。')) return;
       (sale.drawnFrom || []).forEach(d => {
         let batch = materialPurchases.find(p => p.id === d.purchaseId);
         if (batch) batch.remaining = Number((batch.remaining + d.qty).toFixed(2));
@@ -4961,7 +5141,7 @@
       document.getElementById('edit-purchase-modal').style.display = 'flex';
     }
     function closeEditPurchaseModal() { document.getElementById('edit-purchase-modal').style.display = 'none'; editingPurchaseId = null; }
-    function submitEditPurchase() {
+    async function submitEditPurchase() {
       let p = materialPurchases.find(x => x.id === editingPurchaseId);
       if (!p) { closeEditPurchaseModal(); return; }
       let itemName = document.getElementById('ep-item').value.trim();
@@ -4982,7 +5162,7 @@
       if (itemName !== oldName) {
         let others = materialPurchases.filter(x => x.id !== p.id && x.itemName === oldName).length + materialSales.filter(s => s.itemName === oldName && s.fromInventory !== false).length;
         if (others > 0) {
-          renameAll = confirm('要把所有叫「' + oldName + '」的進貨和銷售紀錄，都一起改成「' + itemName + '」嗎？\n\n按「確定」：全部一起改（修正打錯字用這個）\n按「取消」：只改這一筆');
+          renameAll = await smConfirm('要把所有叫「' + oldName + '」的進貨和銷售紀錄，都一起改成「' + itemName + '」嗎？\n\n按「確定」：全部一起改（修正打錯字用這個）\n按「取消」：只改這一筆');
         }
         if (!renameAll && sold > 0) { alert('這批已經有賣出紀錄，只改這一筆的話銷售紀錄會對不上，所以不能單獨改名稱。\n\n如果是打錯字，請選「全部一起改」。'); return; }
       }
@@ -5078,7 +5258,7 @@
       batches.forEach(b => { if (left <= 0) return; let t = Math.min(b.remaining, left); cost += t * b.cost; left -= t; });
       el.innerHTML = '📦 可用庫存 ' + envRound(stock) + '　💰 新的成本約 ' + envRound(cost) + ' 元'; el.style.color = 'var(--c-primary-text)';
     }
-    function submitEditSale() {
+    async function submitEditSale() {
       let s = materialSales.find(x => x.id === editingSaleId);
       if (!s) { closeEditSaleModal(); return; }
       let inv = s.fromInventory !== false;
@@ -5101,8 +5281,8 @@
           oldDraw.forEach(d => { let b = materialPurchases.find(p => p.id === d.purchaseId); if (b) b.remaining = Number((b.remaining + d.qty).toFixed(2)); });
           let draw = drawInventoryCost(item, qty);
           if (draw === null) {
-            let manual = confirm('⚠️「' + item + '」的庫存不夠 ' + qty + ' 件，可能是忘記登記進貨了。\n\n要繼續、自己輸入這筆的成本嗎？');
-            let manualCost = manual ? prompt('請輸入這筆的總成本（元）：', s.totalCost) : null;
+            let manual = await smConfirm('⚠️「' + item + '」的庫存不夠 ' + qty + ' 件，可能是忘記登記進貨了。\n\n要繼續、自己輸入這筆的成本嗎？');
+            let manualCost = manual ? await smPrompt('請輸入這筆的總成本（元）：', s.totalCost, { type: 'number' }) : null;
             if (manualCost === null || isNaN(Number(manualCost)) || Number(manualCost) < 0) {
               oldDraw.forEach(d => { let b = materialPurchases.find(p => p.id === d.purchaseId); if (b) b.remaining = Number((b.remaining - d.qty).toFixed(2)); }); // 取消：庫存恢復原狀
               if (manualCost !== null && manual) alert('成本輸入無效，這次沒有修改。');
@@ -5268,7 +5448,7 @@
       saveMakeupToMemory();
     }
 
-    function submitNewMakeupFromCalendar() {
+    async function submitNewMakeupFromCalendar() {
       let studentId = document.getElementById('newmakeup-student-value').value;
       if (!studentId) { alert('請先選擇學生！'); return; }
       let s = students.find(x => x.id === studentId);
@@ -5287,10 +5467,10 @@
 
       let conflictName = findScheduleConflict(date, timeInput, duration);
       if (conflictName) {
-        let ok = confirm('⚠️ 這個時段（' + date + ' ' + timeInput + '）已經有 ' + conflictName + ' 排課了，確定還要排在這裡嗎？');
+        let ok = await smConfirm('⚠️ 這個時段（' + date + ' ' + timeInput + '）已經有 ' + conflictName + ' 排課了，確定還要排在這裡嗎？');
         if (!ok) return;
       }
-      if (!confirmRentalClash(date, timeInput, duration, s.location)) return; // 這個時段這間工作室已經租給別人的話，先提醒
+      if (!await confirmRentalClash(date, timeInput, duration, s.location)) return; // 這個時段這間工作室已經租給別人的話，先提醒
 
       scheduleAgainstActiveMakeupRecords(studentId, amt, date, timeInput, duration);
       closeNewMakeupModal();
@@ -5378,7 +5558,7 @@
       }
     }
 
-    function submitTempLesson() {
+    async function submitTempLesson() {
       let mode = getTempMode();
       if (mode === 'manual' && !document.getElementById('temp-name').value.trim()) { alert('請輸入學生名字！'); return; }
       let dateStr = document.getElementById('temp-date').value;
@@ -5392,10 +5572,10 @@
 
       let conflictName = findScheduleConflict(dateStr, timeStr, duration);
       if (conflictName) {
-        let ok = confirm('⚠️ 這個時段（' + dateStr + ' ' + timeStr + '）已經有 ' + conflictName + ' 排課了，確定還要新增嗎？');
+        let ok = await smConfirm('⚠️ 這個時段（' + dateStr + ' ' + timeStr + '）已經有 ' + conflictName + ' 排課了，確定還要新增嗎？');
         if (!ok) return;
       }
-      if (!confirmRentalClash(dateStr, timeStr, duration, location)) return; // 這個時段這間工作室已經租給別人的話，先提醒
+      if (!await confirmRentalClash(dateStr, timeStr, duration, location)) return; // 這個時段這間工作室已經租給別人的話，先提醒
 
       if (mode === 'existing') {
         let studentId = document.getElementById('temp-student-value').value;
@@ -5587,8 +5767,8 @@
       alert('✅ 已新增支出！');
     }
 
-    function deleteExpense(id) {
-      if (!confirm('確定要刪除這筆支出嗎？')) return;
+    async function deleteExpense(id) {
+      if (!await smConfirm('確定要刪除這筆支出嗎？')) return;
       expenses = expenses.filter(e => e.id !== id);
       saveExpensesToMemory();
       renderExpensePage();
@@ -5756,20 +5936,20 @@
       return { title: title, html: h };
     }
 
-    function generateMonthlyReportPDF() {
+    async function generateMonthlyReportPDF() {
       let monthStr = document.getElementById('salary-month-picker').value;
       if (!monthStr) { alert('請先選擇結算月份！'); return; }
       if (monthStr <= getCurrentMonthStr()) {
         let unmarked = getUnmarkedLessons(monthStr);
         if (unmarked.length > 0) {
           let missing = Math.round(unmarked.reduce((s, it) => s + it.fee, 0));
-          if (!confirm('⚠️ ' + monthStr + ' 還有 ' + unmarked.length + ' 堂課沒處理（約 NT$ ' + missing.toLocaleString() + ' 還沒計入），總表金額可能偏低，確定要產出嗎？\n\n按「取消」可以先到「未點名檢查」處理。')) return;
+          if (!await smConfirm('⚠️ ' + monthStr + ' 還有 ' + unmarked.length + ' 堂課沒處理（約 NT$ ' + missing.toLocaleString() + ' 還沒計入），總表金額可能偏低，確定要產出嗎？\n\n按「取消」可以先到「未點名檢查」處理。')) return;
         }
       }
       // 只算已經出席、會出現在總表上的那幾堂
       let legacyThisMonth = findLegacyRescheduleCandidates().filter(p => p.temp.date.startsWith(monthStr) && p.temp.attended);
       if (legacyThisMonth.length > 0) {
-        if (confirm('🔀 這個月有 ' + legacyThisMonth.length + ' 堂課看起來是以前調過的課，目前總表還會寫成「臨時課」。\n\n按「確定」先去確認（建議）；按「取消」直接產出總表。')) {
+        if (await smConfirm('🔀 這個月有 ' + legacyThisMonth.length + ' 堂課看起來是以前調過的課，目前總表還會寫成「臨時課」。\n\n按「確定」先去確認（建議）；按「取消」直接產出總表。')) {
           openLegacyRescheduleModal();
           return;
         }
@@ -5889,7 +6069,7 @@
       }
     }
 
-    function doScheduleMakeup(recordId, amt, dateStr, timeStr, duration) {
+    async function doScheduleMakeup(recordId, amt, dateStr, timeStr, duration) {
       let record = makeupBank.find(r => r.id === recordId);
       if (!record) { alert('找不到這筆補課紀錄，請重新整理頁面再試一次！'); return false; }
       if (!amt || amt <= 0 || amt > record.remaining) { alert(`❌ 輸入錯誤！最多只能補 ${record.remaining} 堂`); return false; }
@@ -5897,10 +6077,10 @@
       // 衝堂檢查：跟其他所有排課入口（臨時課、調課、月曆新增補課…）一樣，時段重疊就先提醒
       let conflictName = findScheduleConflict(dateStr, timeStr, duration || 60);
       if (conflictName) {
-        let ok = confirm('⚠️ 這個時段（' + dateStr + ' ' + timeStr + '）已經有 ' + conflictName + ' 排課了，確定還要排在這裡嗎？');
+        let ok = await smConfirm('⚠️ 這個時段（' + dateStr + ' ' + timeStr + '）已經有 ' + conflictName + ' 排課了，確定還要排在這裡嗎？');
         if (!ok) return false;
       }
-      if (!confirmRentalClash(dateStr, timeStr, duration || 60, getStudentLocationById(record.studentId))) return false; // 這個時段這間工作室已經租給別人的話，先提醒
+      if (!await confirmRentalClash(dateStr, timeStr, duration || 60, getStudentLocationById(record.studentId))) return false; // 這個時段這間工作室已經租給別人的話，先提醒
       record.schedules.push({ date: dateStr, time: timeStr, amount: amt, duration: duration || 60, attended: false });
       record.remaining = Number((record.remaining - amt).toFixed(2));
       saveMakeupToMemory();
@@ -5908,12 +6088,12 @@
     }
 
     // 從月曆「已轉補課」的虛線框排課：讀取 cal_ 開頭的欄位，排定成功後直接關掉點名視窗、刷新月曆
-    function scheduleMakeupFromCalendar(recordId) {
+    async function scheduleMakeupFromCalendar(recordId) {
       let amt = Number(document.getElementById('cal_amt_' + recordId).value);
       let date = document.getElementById('cal_date_' + recordId).value;
       let timeInput = getTimeValue('cal_time_' + recordId);
       let duration = Number(document.getElementById('cal_duration_' + recordId).value) || 60;
-      if (!doScheduleMakeup(recordId, amt, date, timeInput, duration)) return;
+      if (!await doScheduleMakeup(recordId, amt, date, timeInput, duration)) return;
       closeModal();
       if (calendar) calendar.refetchEvents();
       alert('✅ 排定成功！');
@@ -5921,7 +6101,7 @@
 
     // 從學生詳細頁的補課分頁排課：讀取 detail_ 開頭的欄位，排定成功後刷新詳細頁本身
     // 學生詳細頁的補課分頁：只有一個排課表單，一律先扣最舊的一筆（跟月曆上的「🔄 新增補課」同一套規則，先有的先清掉）
-    function scheduleMakeupFromDetailFIFO() {
+    async function scheduleMakeupFromDetailFIFO() {
       let s = students.find(x => x.id === currentDetailStudentId);
       if (!s) return;
       let total = getStudentRemainingMakeup(s.id);
@@ -5933,10 +6113,10 @@
       if (!date || !timeInput) { alert('❌ 請完整選擇補課的日期與時間！'); return; }
       let conflictName = findScheduleConflict(date, timeInput, duration);
       if (conflictName) {
-        let ok = confirm('⚠️ 這個時段（' + date + ' ' + timeInput + '）已經有 ' + conflictName + ' 排課了，確定還要排在這裡嗎？');
+        let ok = await smConfirm('⚠️ 這個時段（' + date + ' ' + timeInput + '）已經有 ' + conflictName + ' 排課了，確定還要排在這裡嗎？');
         if (!ok) return;
       }
-      if (!confirmRentalClash(date, timeInput, duration, s.location)) return; // 這個時段這間工作室已經租給別人的話，先提醒
+      if (!await confirmRentalClash(date, timeInput, duration, s.location)) return; // 這個時段這間工作室已經租給別人的話，先提醒
       scheduleAgainstActiveMakeupRecords(s.id, amt, date, timeInput, duration);
       renderStudentDetailMakeup();
       if (calendar) calendar.refetchEvents();
@@ -5956,8 +6136,8 @@
       }
     }
 
-    function cancelMakeupRecord(recordId) {
-      if(confirm("確定刪除嗎？")) {
+    async function cancelMakeupRecord(recordId) {
+      if(await smConfirm("確定刪除嗎？")) {
         makeupBank = makeupBank.filter(r => r.id !== recordId);
         saveMakeupToMemory();
         renderStudentDetailMakeup();
@@ -6013,7 +6193,7 @@
       }
     }
 
-    function submitEditMakeupSchedule() {
+    async function submitEditMakeupSchedule() {
       let record = makeupBank.find(r => r.id === editingMakeupRecordId);
       if (!record) { closeEditMakeupScheduleModal(); return; }
       let sch = record.schedules[editingMakeupSchIdx];
@@ -6030,10 +6210,10 @@
 
       let conflictName = findScheduleConflict(newDate, newTime, newDuration, { recordId: editingMakeupRecordId, schIdx: editingMakeupSchIdx });
       if (conflictName) {
-        let ok = confirm('⚠️ 這個時段（' + newDate + ' ' + newTime + '）已經有 ' + conflictName + ' 排課了，確定還要改到這裡嗎？');
+        let ok = await smConfirm('⚠️ 這個時段（' + newDate + ' ' + newTime + '）已經有 ' + conflictName + ' 排課了，確定還要改到這裡嗎？');
         if (!ok) return;
       }
-      if (!confirmRentalClash(newDate, newTime, newDuration, getStudentLocationById(record.studentId))) return; // 這個時段這間工作室已經租給別人的話，先提醒
+      if (!await confirmRentalClash(newDate, newTime, newDuration, getStudentLocationById(record.studentId))) return; // 這個時段這間工作室已經租給別人的話，先提醒
 
       record.remaining = Number((maxAllowed - newAmt).toFixed(2));
       sch.amount = newAmt;
@@ -6133,9 +6313,9 @@
       alert('✅ 已登記繳費！');
     }
 
-    function deletePaymentRecord(recordId, idPrefix) {
+    async function deletePaymentRecord(recordId, idPrefix) {
       idPrefix = idPrefix || '';
-      if (confirm('確定要刪除這筆繳費紀錄嗎？')) {
+      if (await smConfirm('確定要刪除這筆繳費紀錄嗎？')) {
         paymentRecords = paymentRecords.filter(p => p.id !== recordId);
         savePaymentToMemory();
         renderStudentDetailPayment();
@@ -6668,30 +6848,30 @@
       renderGroupModal();
       refreshDayPanelIfNeeded();
     }
-    function applyGroupMember(m, status, idx) {
+    async function applyGroupMember(m, status, idx) {
       let paidEl = document.getElementById('gm-paid-' + idx);
       let markPaid = !!(paidEl && paidEl.checked);
       return m.temp ? applyTempLessonStatus(m.temp, status, markPaid) : applyNormalLessonStatus(m.s, currentGroupCtx.dateStr, status, markPaid);
     }
-    function groupMemberStatus(idx, status) {
+    async function groupMemberStatus(idx, status) {
       let ctx = currentGroupCtx; if (!ctx) return;
       let m = getGroupLessonMembers(ctx)[idx];
       if (!m) return;
       if ((status === 'attended' || status === 'absent_charged') && ctx.dateStr > formatDate(new Date())) {
-        if (!confirm('⚠️ ' + ctx.dateStr + ' 這天還沒到，出席狀況應該還未確定，確定要現在標記嗎？')) return;
+        if (!await smConfirm('⚠️ ' + ctx.dateStr + ' 這天還沒到，出席狀況應該還未確定，確定要現在標記嗎？')) return;
       }
-      applyGroupMember(m, status, idx);
+      await applyGroupMember(m, status, idx);
       afterGroupChange();
     }
-    function groupApplyAll(status) {
+    async function groupApplyAll(status) {
       let ctx = currentGroupCtx; if (!ctx) return;
       let ms = getGroupLessonMembers(ctx);
       let targets = status === 'reset' ? ms.filter(m => m.st === 'canceled') : ms.filter(m => m.st === 'none');
       if (!targets.length) return;
       if (status === 'attended' && ctx.dateStr > formatDate(new Date())) {
-        if (!confirm('⚠️ ' + ctx.dateStr + ' 這天還沒到，出席狀況應該還未確定，確定要現在標記嗎？')) return;
+        if (!await smConfirm('⚠️ ' + ctx.dateStr + ' 這天還沒到，出席狀況應該還未確定，確定要現在標記嗎？')) return;
       }
-      targets.forEach(m => applyGroupMember(m, status, ms.indexOf(m)));
+      for (const m of targets) await applyGroupMember(m, status, ms.indexOf(m));
       afterGroupChange();
     }
     function openGroupMemberFull(idx) {
@@ -6724,7 +6904,7 @@
       document.getElementById('reschedule-modal').style.display = 'flex';
       setModalBack('reschedule-modal', () => openGroupModal(ctx.groupId, ctx.dateStr, ctx.time));
     }
-    function submitGroupReschedule() {
+    async function submitGroupReschedule() {
       let ctx = rescheduleGroupCtx;
       let g = getGroupById(ctx.groupId);
       let ms = getGroupLessonMembers(ctx).filter(m => !m.temp && (m.st === 'none' || m.st === 'canceled'));
@@ -6737,20 +6917,20 @@
       if (!amount || amount <= 0) { alert('請輸入這堂算幾堂！'); return; }
       if (newDate === ctx.dateStr && newTime === ctx.time) { alert('新的日期和時間跟原本一樣喔！'); return; }
       let conflictName = findScheduleConflict(newDate, newTime, duration, null, null, null, { groupId: ctx.groupId, date: ctx.dateStr });
-      if (conflictName && !confirm('⚠️ 這個時段（' + newDate + ' ' + newTime + '）已經有 ' + conflictName + ' 排課了，確定還要調課到這裡嗎？')) return;
-      if (!confirmRentalClash(newDate, newTime, duration, ms[0].s.location)) return;
+      if (conflictName && !await smConfirm('⚠️ 這個時段（' + newDate + ' ' + newTime + '）已經有 ' + conflictName + ' 排課了，確定還要調課到這裡嗎？')) return;
+      if (!await confirmRentalClash(newDate, newTime, duration, ms[0].s.location)) return;
       let amountNote = amount !== 1 ? '（' + duration + ' 分鐘，算 ' + amount + ' 堂）' : '';
-      if (!confirm('確定要把「👥 ' + g.name + '」這堂課（' + ms.map(m => m.s.name).join('、') + '）整團調到 ' + newDate + ' ' + newTime + amountNote + ' 嗎？')) return;
-      ms.forEach(m => {
-        if (!applyNormalLessonStatus(m.s, ctx.dateStr, 'rescheduled', false)) return;
+      if (!await smConfirm('確定要把「👥 ' + g.name + '」這堂課（' + ms.map(m => m.s.name).join('、') + '）整團調到 ' + newDate + ' ' + newTime + amountNote + ' 嗎？')) return;
+      for (const m of ms) {
+        if (!(await applyNormalLessonStatus(m.s, ctx.dateStr, 'rescheduled', false))) continue;
         tempLessons.push({ id: generateId(), studentId: m.s.id, studentName: m.s.name, date: newDate, time: newTime, duration: duration, amount: amount, attended: false, canceled: false, kind: 'reschedule', rescheduledFrom: ctx.dateStr, groupId: ctx.groupId });
-      });
+      }
       saveToMemory(); saveTempToMemory();
       closeRescheduleModal();
       if (calendar) calendar.refetchEvents();
       alert('✅ 已整團調課！');
     }
-    function cancelGroupReschedule() {
+    async function cancelGroupReschedule() {
       let ctx = currentGroupCtx; if (!ctx) return;
       let ms = getGroupLessonMembers(ctx);
       let isTempCtx = ms.every(m => m.temp);
@@ -6765,7 +6945,7 @@
       }
       let from = pairs.map(p => p.from).find(Boolean);
       let where = allTemps.length ? formatReportDate(allTemps[0].date) + (allTemps[0].time ? ' ' + allTemps[0].time : '') : '';
-      if (!confirm('確定要取消這次整團調課嗎？\n\n' + (where ? '• 調過去的 ' + where + ' 那堂會刪除\n' : '') + (from ? '• 原本 ' + formatReportDate(from) + ' 那堂會恢復成「未點名」' : ''))) return;
+      if (!await smConfirm('確定要取消這次整團調課嗎？\n\n' + (where ? '• 調過去的 ' + where + ' 那堂會刪除\n' : '') + (from ? '• 原本 ' + formatReportDate(from) + ' 那堂會恢復成「未點名」' : ''))) return;
       let ids = allTemps.map(t => t.id);
       tempLessons = tempLessons.filter(t => !ids.includes(t.id));
       pairs.forEach(p => { if (p.origin && p.from) p.origin.rescheduledDates = (p.origin.rescheduledDates || []).filter(d => d !== p.from); });
@@ -6785,7 +6965,7 @@
       document.getElementById('pause-modal-title').innerText = '⏸️ 整團停課';
       document.getElementById('pause-student-name').innerText = '👥 ' + g.name + '（' + mem.map(s => s.name).join('、') + '）';
     }
-    function submitGroupPause() {
+    async function submitGroupPause() {
       let g = getGroupById(pausingGroupId);
       let mem = getGroupMembers(pausingGroupId);
       if (!g || !mem.length) { closePauseModal(); return; }
@@ -6796,7 +6976,7 @@
       if (!openEnded && !resume) { alert('請選擇哪一天回來上課，或勾選「還不確定」！'); return; }
       if (!openEnded && resume <= start) { alert('回來上課的日期要在開始停課之後！'); return; }
       let end = openEnded ? '' : addDaysStr(resume, -1);
-      if (!confirm('確定要讓「' + g.name + '」整團（' + mem.map(s => s.name).join('、') + '）從 ' + start + ' 開始停課' + (end ? '，' + resume + ' 回來上課' : '（回來日期未定）') + ' 嗎？\n\n停課期間的課不會出現在月曆上，每位同學預繳的堂數都不會變。')) return;
+      if (!await smConfirm('確定要讓「' + g.name + '」整團（' + mem.map(s => s.name).join('、') + '）從 ' + start + ' 開始停課' + (end ? '，' + resume + ' 回來上課' : '（回來日期未定）') + ' 嗎？\n\n停課期間的課不會出現在月曆上，每位同學預繳的堂數都不會變。')) return;
       let note = document.getElementById('pause-note').value.trim();
       mem.forEach(s => { if (!s.pauses) s.pauses = []; s.pauses.push({ id: generateId(), start: start, end: end, note: note }); });
       closePauseModal();
@@ -6805,8 +6985,8 @@
     }
 
     // ---- 學生名單裡的團體課管理 ----
-    function createGroup(name) {
-      name = String(name == null ? (prompt('團體課名稱（例如：西屯小團）：') || '') : name).trim();
+    async function createGroup(name) {
+      name = String(name == null ? ((await smPrompt('團體課名稱（例如：西屯小團）：', '')) || '') : name).trim();
       if (!name) return null;
       if (getGroups().some(g => g.name === name)) { alert('已經有一個叫「' + name + '」的團體課了，請換個名稱。'); return null; }
       let g = { id: generateId(), name: name };
@@ -6814,15 +6994,15 @@
       saveSettingsToMemory();
       return g;
     }
-    function createGroupPrompt() {
-      let g = createGroup();
+    async function createGroupPrompt() {
+      let g = await createGroup();
       if (!g) return;
       renderGroupManage(); renderGroupSelects();
-      if (confirm('✅ 已建立「' + g.name + '」！\n\n要現在新增第一位同學嗎？\n（已經在名單上的學生，可以按他的「編輯」，在「團體課」選這一團）')) startAddGroupMember(g.id);
+      if (await smConfirm('✅ 已建立「' + g.name + '」！\n\n要現在新增第一位同學嗎？\n（已經在名單上的學生，可以按他的「編輯」，在「團體課」選這一團）')) await startAddGroupMember(g.id);
     }
-    function renameGroup(groupId) {
+    async function renameGroup(groupId) {
       let g = getGroupById(groupId); if (!g) return;
-      let name = (prompt('新的名稱：', g.name) || '').trim();
+      let name = ((await smPrompt('新的名稱：', g.name)) || '').trim();
       if (!name || name === g.name) return;
       if (getGroups().some(x => x.id !== groupId && x.name === name)) { alert('已經有一個叫「' + name + '」的團體課了。'); return; }
       g.name = name;
@@ -6830,10 +7010,10 @@
       renderManageList();
       if (calendar) calendar.refetchEvents();
     }
-    function deleteGroup(groupId) {
+    async function deleteGroup(groupId) {
       let g = getGroupById(groupId); if (!g) return;
       let mem = students.filter(s => s.groupId === groupId);
-      if (!confirm('確定要刪除「' + g.name + '」這個團體嗎？\n\n' + (mem.length ? mem.map(s => s.name).join('、') + ' 會變回一般的個別學生，' : '') + '上課、繳費紀錄都不會刪除。')) return;
+      if (!await smConfirm('確定要刪除「' + g.name + '」這個團體嗎？\n\n' + (mem.length ? mem.map(s => s.name).join('、') + ' 會變回一般的個別學生，' : '') + '上課、繳費紀錄都不會刪除。')) return;
       students.forEach(s => { if (s.groupId === groupId) delete s.groupId; });
       tempLessons.forEach(t => { if (t.groupId === groupId) delete t.groupId; });
       appSettings.groups = getGroups().filter(x => x.id !== groupId);
@@ -6877,13 +7057,13 @@
         </div>`;
       }).join('') || '<p style="font-size:13px; color:var(--c-faint);">還沒有團體課。</p>';
     }
-    function startAddGroupMember(groupId) {
+    async function startAddGroupMember(groupId) {
       let body = document.getElementById('add-student-form-body');
       body.style.display = 'block';
       document.getElementById('add-student-toggle-arrow').innerText = '▾ 收起';
       renderGroupSelects();
       document.getElementById('add-group').value = groupId;
-      onStudentGroupChange('add');
+      await onStudentGroupChange('add');
       body.scrollIntoView({ block: 'start', behavior: 'smooth' });
     }
     function renderGroupSelects() {
@@ -6899,10 +7079,10 @@
       let v = document.getElementById(prefix + '-group').value;
       return getGroupById(v) ? v : '';
     }
-    function onStudentGroupChange(prefix) {
+    async function onStudentGroupChange(prefix) {
       let sel = document.getElementById(prefix + '-group');
       if (sel.value === '__new') {
-        let g = createGroup();
+        let g = await createGroup();
         renderGroupSelects();
         sel.value = g ? g.id : '';
         renderGroupManage();
@@ -6916,7 +7096,7 @@
       if (prefix === 'edit') {
         let me = students[editingIndex];
         let same = me && me.freq === ref.freq && me.dayIndex === ref.dayIndex && me.timeVal === ref.timeVal;
-        if (same || !confirm('要把上課時間、地點改成跟「' + g.name + '」其他同學一樣嗎？\n（' + studentScheduleLabel(ref) + (ref.location ? '・' + ref.location : '') + '）')) return;
+        if (same || !await smConfirm('要把上課時間、地點改成跟「' + g.name + '」其他同學一樣嗎？\n（' + studentScheduleLabel(ref) + (ref.location ? '・' + ref.location : '') + '）')) return;
       }
       fillScheduleFromStudent(prefix, ref);
     }
@@ -7153,12 +7333,12 @@
       });
       return out;
     }
-    function repairPlanMakeups(studentId) {
+    async function repairPlanMakeups(studentId) {
       let s = students.find(x => x.id === studentId);
       if (!s) return;
       let list = getMisplacedPlanMakeups(s);
       if (!list.length) return;
-      if (!confirm('要把這 ' + list.length + ' 堂「舊方案時就上過」的補課搬回舊方案嗎？\n\n搬完之後，這位學生的「已上課」會少算 ' + list.reduce((t, x) => t + (Number(x.sch.amount) || 0), 0) + ' 堂，欠費／預繳會變正確。')) return;
+      if (!await smConfirm('要把這 ' + list.length + ' 堂「舊方案時就上過」的補課搬回舊方案嗎？\n\n搬完之後，這位學生的「已上課」會少算 ' + list.reduce((t, x) => t + (Number(x.sch.amount) || 0), 0) + ' 堂，欠費／預繳會變正確。')) return;
       let add = [];
       makeupBank.forEach(r => {
         if (r.studentId !== s.id) return;
@@ -7295,8 +7475,8 @@
       if (!s) return;
       let msg = buildTuitionMessage(s, buildTuitionEnvelope(s), payId || null);
       let done = () => alert('✅ 已複製，可以直接貼到 LINE：\n\n' + msg);
-      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(msg).then(done).catch(() => prompt('複製下面這段訊息：', msg));
-      else prompt('複製下面這段訊息：', msg);
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(msg).then(done).catch(() => smCopyBox('複製下面這段訊息：', msg));
+      else smCopyBox('複製下面這段訊息：', msg);
     }
 
     // ---------- 編輯單筆繳費紀錄（補記金額、改日期／堂數／備註） ----------
@@ -7344,10 +7524,10 @@
       closePayEditModal();
       renderStudentDetailPayment();
     }
-    function deletePayFromEditModal() {
+    async function deletePayFromEditModal() {
       let id = editingPayId;
       if (!id) return;
-      if (!confirm('確定要刪除這筆繳費紀錄嗎？')) return;
+      if (!await smConfirm('確定要刪除這筆繳費紀錄嗎？')) return;
       paymentRecords = paymentRecords.filter(p => p.id !== id);
       savePaymentToMemory();
       closePayEditModal();
@@ -7865,7 +8045,7 @@
 
     function closeConvertModal() { document.getElementById('convert-modal').style.display = 'none'; convertingTempId = null; }
 
-    function submitConvertStudent() {
+    async function submitConvertStudent() {
       let name = document.getElementById('convert-name').value.trim();
       let fee = document.getElementById('convert-fee').value.trim();
       let phone = document.getElementById('convert-phone').value.trim();
@@ -7896,9 +8076,9 @@
         }
       }
 
-      if (!checkDuplicateNameWarning(name, instrument, null)) return;
-      if (!checkScheduleConflictWarning(freq, dayIndex, timeVal, anchorDate, duration, null)) return;
-      if (!confirmRecurringRentalClash(freq, dayIndex, timeVal, duration, anchorDate, startDate, location, null)) return; // 固定時段撞到已經租出去的琴房，先提醒
+      if (!await checkDuplicateNameWarning(name, instrument, null)) return;
+      if (!await checkScheduleConflictWarning(freq, dayIndex, timeVal, anchorDate, duration, null)) return;
+      if (!await confirmRecurringRentalClash(freq, dayIndex, timeVal, duration, anchorDate, startDate, location, null)) return; // 固定時段撞到已經租出去的琴房，先提醒
 
       let newId = generateId();
       students.push({ id: newId, name: name, instrument: instrument, freq: freq, startDate: startDate, duration: duration, singleLessonPay: singleLessonPay, payMode: payForm.mode || undefined, payPackage: isPackageMode(payForm.mode) ? payForm.pkg : undefined, location: location, locationAbbr: locationAbbr, dayIndex: dayIndex, timeVal: timeVal, fee: fee, phone: phone, anchorDate: anchorDate, attendedDates: [], canceledDates: [], makeupConvertedDates: [] });
@@ -7985,13 +8165,13 @@
       }
     }
 
-    function confirmWithdraw(action) {
+    async function confirmWithdraw(action) {
       let s = students.find(x => x.id === withdrawingStudentId);
       if (!s) return;
       let endDate = document.getElementById('withdraw-date').value;
       if (!endDate) { alert('請選擇最後上課日期！'); return; }
 
-      if (!confirm('確定要讓「' + s.name + '」退班嗎？' + endDate + ' 之後月曆上不會再排這位學生的課，過去的出席與繳費紀錄都會保留。此動作無法復原。')) return;
+      if (!await smConfirm('確定要讓「' + s.name + '」退班嗎？' + endDate + ' 之後月曆上不會再排這位學生的課，過去的出席與繳費紀錄都會保留。此動作無法復原。')) return;
 
       let balance = getStudentBalance(s.id);
       let fee = Number(s.fee) || 0;
@@ -8109,7 +8289,7 @@
 
     function closePlanChangeModal() { document.getElementById('plan-change-modal').style.display = 'none'; planChangingStudentId = null; refreshDayPanelIfNeeded(); }
 
-    function submitPlanChange() {
+    async function submitPlanChange() {
       let oldS = students.find(x => x.id === planChangingStudentId);
       if (!oldS) return;
 
@@ -8142,11 +8322,11 @@
         }
       }
 
-      if (!checkDuplicateNameWarning(oldS.name, instrument, oldS.id)) return;
-      if (!checkScheduleConflictWarning(freq, dayIndex, timeVal, anchorDate, duration, oldS.id, oldS.groupId)) return;
-      if (!confirmRecurringRentalClash(freq, dayIndex, timeVal, duration, anchorDate, effectiveDate, location, null)) return; // 新方案的固定時段撞到已經租出去的琴房，先提醒
+      if (!await checkDuplicateNameWarning(oldS.name, instrument, oldS.id)) return;
+      if (!await checkScheduleConflictWarning(freq, dayIndex, timeVal, anchorDate, duration, oldS.id, oldS.groupId)) return;
+      if (!await confirmRecurringRentalClash(freq, dayIndex, timeVal, duration, anchorDate, effectiveDate, location, null)) return; // 新方案的固定時段撞到已經租出去的琴房，先提醒
 
-      if (!confirm('確定要幫「' + oldS.name + '」異動課程方案嗎？' + effectiveDate + ' 開始會套用新設定，' + effectiveDate + ' 以前的紀錄完全不會變動。')) return;
+      if (!await smConfirm('確定要幫「' + oldS.name + '」異動課程方案嗎？' + effectiveDate + ' 開始會套用新設定，' + effectiveDate + ' 以前的紀錄完全不會變動。')) return;
 
       // 舊方案在生效日期的前一天結束
       let effDateObj = new Date(effectiveDate + 'T00:00:00');
@@ -8245,8 +8425,8 @@
 
     function closeRescheduleModal() { document.getElementById('reschedule-modal').style.display = 'none'; rescheduleGroupCtx = null; refreshDayPanelIfNeeded(); }
 
-    function submitReschedule() {
-      if (rescheduleGroupCtx) { submitGroupReschedule(); return; }
+    async function submitReschedule() {
+      if (rescheduleGroupCtx) { await submitGroupReschedule(); return; }
       if (!currentModalEvent || currentModalEvent.type !== 'normal') { closeRescheduleModal(); return; }
       let s = students[currentModalEvent.stuIdx];
       if (!s) { closeRescheduleModal(); return; }
@@ -8260,16 +8440,16 @@
 
       let conflictName = findScheduleConflict(newDate, newTime, duration, null, null, { studentId: s.id, date: currentModalEvent.dateStr });
       if (conflictName) {
-        let ok = confirm('⚠️ 這個時段（' + newDate + ' ' + newTime + '）已經有 ' + conflictName + ' 排課了，確定還要調課到這裡嗎？');
+        let ok = await smConfirm('⚠️ 這個時段（' + newDate + ' ' + newTime + '）已經有 ' + conflictName + ' 排課了，確定還要調課到這裡嗎？');
         if (!ok) return;
       }
-      if (!confirmRentalClash(newDate, newTime, duration, s.location)) return; // 這個時段這間工作室已經租給別人的話，先提醒
+      if (!await confirmRentalClash(newDate, newTime, duration, s.location)) return; // 這個時段這間工作室已經租給別人的話，先提醒
 
       let amountNote = amount !== 1 ? '（' + duration + ' 分鐘，算 ' + amount + ' 堂）' : '';
-      if (!confirm('確定要把「' + s.name + '」這堂課調到 ' + newDate + ' ' + newTime + amountNote + ' 嗎？原本的時段會標記為調課。')) return;
+      if (!await smConfirm('確定要把「' + s.name + '」這堂課調到 ' + newDate + ' ' + newTime + amountNote + ' 嗎？原本的時段會標記為調課。')) return;
 
       let originalDate = currentModalEvent.dateStr;
-      markStatus('rescheduled'); // 原本那堂標記為「已調課」（不是延期），跟延期用不同的樣式跟紀錄區分開來
+      await markStatus('rescheduled'); // 原本那堂標記為「已調課」（不是延期），跟延期用不同的樣式跟紀錄區分開來
 
       // kind: 'reschedule' 讓收支總表的備註寫「調課（原 MM/DD）」，而不是「臨時課」；只是標籤，不影響學費計算
       tempLessons.push({ id: generateId(), studentId: s.id, studentName: s.name, date: newDate, time: newTime, duration: duration, amount: amount, attended: false, canceled: false, kind: 'reschedule', rescheduledFrom: originalDate });
@@ -8317,8 +8497,8 @@
       refreshTodoViews();
     }
 
-    function deleteTodo(id) {
-      if (!confirm('確定要刪除這筆待辦事項嗎？')) return;
+    async function deleteTodo(id) {
+      if (!await smConfirm('確定要刪除這筆待辦事項嗎？')) return;
       todos = todos.filter(x => x.id !== id);
       saveTodosToMemory();
       refreshTodoViews();
@@ -8398,7 +8578,7 @@
       e.preventDefault();
       todoDrag.ghost.style.left = (e.clientX - todoDrag.dx) + 'px';
       todoDrag.ghost.style.top = (e.clientY - todoDrag.dy) + 'px';
-      if (e.clientY < 70) window.scrollBy(0, -14); else if (e.clientY > window.innerHeight - 90) window.scrollBy(0, 14); // 拖到畫面邊緣自動捲動
+      if (e.clientY < 70) scrollAppBy(-14); else if (e.clientY > window.innerHeight - 90) scrollAppBy(14); // 拖到畫面邊緣自動捲動
       let el = document.elementFromPoint(e.clientX, e.clientY);
       let quad = el && el.closest('.todo-quad');
       if (!quad) return;
@@ -8786,8 +8966,8 @@
       renderStudentDetailLessonNotes();
     }
 
-    function deleteLessonNote(id) {
-      if (!confirm('確定要刪除這筆課堂記錄嗎？')) return;
+    async function deleteLessonNote(id) {
+      if (!await smConfirm('確定要刪除這筆課堂記錄嗎？')) return;
       lessonNotes = lessonNotes.filter(n => n.id !== id);
       saveLessonNotesToMemory();
       renderStudentDetailLessonNotes();
@@ -8823,8 +9003,8 @@
       renderStudentDetailProgress();
     }
 
-    function deleteProgressNote(id) {
-      if (!confirm('確定要刪除這筆學習進度嗎？')) return;
+    async function deleteProgressNote(id) {
+      if (!await smConfirm('確定要刪除這筆學習進度嗎？')) return;
       progressNotes = progressNotes.filter(n => n.id !== id);
       saveProgressNotesToMemory();
       renderStudentDetailProgress();
@@ -8865,8 +9045,8 @@
       renderStudentDetailAchievements();
     }
 
-    function deleteAchievement(id) {
-      if (!confirm('確定要刪除這筆成就記錄嗎？')) return;
+    async function deleteAchievement(id) {
+      if (!await smConfirm('確定要刪除這筆成就記錄嗎？')) return;
       achievements = achievements.filter(a => a.id !== id);
       saveAchievementsToMemory();
       renderStudentDetailAchievements();
@@ -9073,7 +9253,7 @@
 
     function closeEditModal() { document.getElementById('edit-modal').style.display = 'none'; editingIndex = null; }
 
-    function saveEditedStudent() {
+    async function saveEditedStudent() {
       if (editingIndex === null) return;
       let name = document.getElementById('edit-name').value.trim();
       let fee = document.getElementById('edit-fee').value.trim();
@@ -9106,9 +9286,9 @@
 
       let editId = students[editingIndex].id;
       let editGroupId = readGroupSelect('edit');
-      if (!checkDuplicateNameWarning(name, instrument, editId)) return;
-      if (!checkScheduleConflictWarning(freq, dayIndex, timeVal, anchorDate, duration, editId, editGroupId)) return;
-      if (!confirmRecurringRentalClash(freq, dayIndex, timeVal, duration, anchorDate, startDate, location, editId)) return; // 改過的固定時段撞到已經租出去的琴房，先提醒
+      if (!await checkDuplicateNameWarning(name, instrument, editId)) return;
+      if (!await checkScheduleConflictWarning(freq, dayIndex, timeVal, anchorDate, duration, editId, editGroupId)) return;
+      if (!await confirmRecurringRentalClash(freq, dayIndex, timeVal, duration, anchorDate, startDate, location, editId)) return; // 改過的固定時段撞到已經租出去的琴房，先提醒
 
       let s = students[editingIndex];
       s.name = name; s.instrument = instrument; s.freq = freq; s.startDate = startDate; s.duration = duration; s.singleLessonPay = singleLessonPay; s.location = location; s.locationAbbr = locationAbbr; s.dayIndex = dayIndex; s.timeVal = timeVal; s.fee = fee; s.phone = phone; s.anchorDate = anchorDate;
@@ -9129,7 +9309,7 @@
       alert('✅ 已更新學生資料！');
     }
     
-    function addStudent() {
+    async function addStudent() {
       let name = document.getElementById('add-name').value.trim(); 
       let fee = document.getElementById('add-fee').value.trim(); 
       let phone = document.getElementById('add-phone').value.trim(); 
@@ -9161,9 +9341,9 @@
       }
       
       let addGroupId = readGroupSelect('add');
-      if (!checkDuplicateNameWarning(name, instrument, null)) return;
-      if (!checkScheduleConflictWarning(freq, dayIndex, timeVal, anchorDate, duration, null, addGroupId)) return;
-      if (!confirmRecurringRentalClash(freq, dayIndex, timeVal, duration, anchorDate, startDate, location, null)) return; // 固定時段撞到已經租出去的琴房，先提醒
+      if (!await checkDuplicateNameWarning(name, instrument, null)) return;
+      if (!await checkScheduleConflictWarning(freq, dayIndex, timeVal, anchorDate, duration, null, addGroupId)) return;
+      if (!await confirmRecurringRentalClash(freq, dayIndex, timeVal, duration, anchorDate, startDate, location, null)) return; // 固定時段撞到已經租出去的琴房，先提醒
 
       let newStu = { id: generateId(), name: name, instrument: instrument, freq: freq, startDate: startDate, duration: duration, singleLessonPay: singleLessonPay, location: location, locationAbbr: locationAbbr, dayIndex: dayIndex, timeVal: timeVal, fee: fee, phone: phone, anchorDate: anchorDate, attendedDates: [], canceledDates: [], makeupConvertedDates: [] };
       if (addGroupId) newStu.groupId = addGroupId;
@@ -9184,7 +9364,7 @@
       renderManageList(); alert('✅ 新增成功！');
     }
     
-    function deleteStudent(index) {
+    async function deleteStudent(index) {
       let s = students[index];
       let relatedRecords = makeupBank.filter(r => r.studentId === s.id);
       let relatedPayments = paymentRecords.filter(p => p.studentId === s.id);
@@ -9206,7 +9386,7 @@
       if (s.changedToId) {
         warnMsg += '\n\n💡 這筆資料是課程方案異動前的舊方案，刪除它不會影響已經接續的新方案，新方案的資料是獨立的一筆。';
       }
-      if (confirm(warnMsg)) {
+      if (await smConfirm(warnMsg)) {
         makeupBank = makeupBank.filter(r => r.studentId !== s.id);
         saveMakeupToMemory();
         paymentRecords = paymentRecords.filter(p => p.studentId !== s.id);
@@ -9255,12 +9435,12 @@
       URL.revokeObjectURL(url);
     }
 
-    function importBackup(event) {
+    async function importBackup(event) {
       let file = event.target.files[0];
       if (!file) return;
 
       let reader = new FileReader();
-      reader.onload = function(e) {
+      reader.onload = async function(e) {
         let data;
         try {
           data = JSON.parse(e.target.result);
@@ -9275,7 +9455,7 @@
           return;
         }
         let confirmMsg = '即將匯入備份（匯出時間：' + (data.exportedAt || '未知') + '，共 ' + data.students.length + ' 位學生）。\n\n⚠️ 這會完全覆蓋目前這台裝置上的所有資料，此動作無法復原，確定要匯入嗎？';
-        if (!confirm(confirmMsg)) { event.target.value = ''; return; }
+        if (!await smConfirm(confirmMsg)) { event.target.value = ''; return; }
 
         students = data.students;
         makeupBank = data.makeupBank;
@@ -9333,11 +9513,11 @@
     function openCleanupModal() { document.getElementById('cleanup-modal').style.display = 'flex'; }
     function closeCleanupModal() { document.getElementById('cleanup-modal').style.display = 'none'; }
 
-    function runDataCleanup() {
+    async function runDataCleanup() {
       let cutoff = document.getElementById('cleanup-cutoff-date').value;
       if (!cutoff) { alert('請選擇日期！'); return; }
-      if (!confirm('⚠️ 確定要清除 ' + cutoff + ' 以前的詳細紀錄嗎？建議先確認已經匯出備份。這個動作無法復原！')) return;
-      if (!confirm('再次確認：真的要繼續清除嗎？清除後無法復原。')) return;
+      if (!await smConfirm('⚠️ 確定要清除 ' + cutoff + ' 以前的詳細紀錄嗎？建議先確認已經匯出備份。這個動作無法復原！')) return;
+      if (!await smConfirm('再次確認：真的要繼續清除嗎？清除後無法復原。')) return;
 
       students.forEach(s => {
         // 1. 算出這位學生在 cutoff 當下、清除前的已上課／已繳堂數
@@ -9444,11 +9624,11 @@
       return { clash, unlocated };
     }
     // 排課時：如果這間工作室這個時段已經租出去，先問一下（只看租借，上課本身的衝堂另外有檢查）
-    function confirmRentalClash(dateStr, timeStr, duration, location) {
+    async function confirmRentalClash(dateStr, timeStr, duration, location) {
       if (!location || !dateStr || !timeStr || rentalData.rentals.length === 0) return true;
       let hit = rentalData.rentals.filter(r => r.date === dateStr && r.location === location && timeRangesOverlap(timeStr, Number(duration) || 60, r.time, Number(r.duration) || 60));
       if (hit.length === 0) return true;
-      return confirm('🔑 這個時段' + location + '已經租給 ' + hit.map(r => (r.renterName || '別人') + '（' + r.time + '–' + computeEndTime(r.time, Number(r.duration) || 60) + '）').join('、') + ' 了，確定還要排在這裡嗎？');
+      return await smConfirm('🔑 這個時段' + location + '已經租給 ' + hit.map(r => (r.renterName || '別人') + '（' + r.time + '–' + computeEndTime(r.time, Number(r.duration) || 60) + '）').join('、') + ' 了，確定還要排在這裡嗎？');
     }
 
     function renderRentalLocationRadios() {
@@ -9476,12 +9656,12 @@
         return timeRangesOverlap(timeVal, Number(duration) || 60, r.time, Number(r.duration) || 60);
       }).sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
     }
-    function confirmRecurringRentalClash(freq, dayIndex, timeVal, duration, anchorDate, startDate, location, studentId) {
+    async function confirmRecurringRentalClash(freq, dayIndex, timeVal, duration, anchorDate, startDate, location, studentId) {
       let hits = findRecurringRentalClashes(freq, dayIndex, timeVal, duration, anchorDate, startDate, location, studentId);
       if (hits.length === 0) return true;
       let lines = hits.slice(0, 8).map(r => '• ' + formatReportDate(r.date) + ' ' + r.time + '–' + computeEndTime(r.time, Number(r.duration) || 60) + ' ' + (r.renterName || '租借'));
       if (hits.length > 8) lines.push('…還有 ' + (hits.length - 8) + ' 筆');
-      return confirm('🔑 這個固定時段（' + getDayName(String(dayIndex)) + ' ' + timeVal + '，' + location + '）會撞到已經租出去的琴房：\n' + lines.join('\n') +
+      return await smConfirm('🔑 這個固定時段（' + getDayName(String(dayIndex)) + ' ' + timeVal + '，' + location + '）會撞到已經租出去的琴房：\n' + lines.join('\n') +
         '\n\n可以先去琴房租借調整這幾筆，或改上課時間。\n確定還是要用這個時段嗎？');
     }
 
@@ -9596,7 +9776,7 @@
       if (!renter) { renter = { id: generateId(), name: name, phone: '', note: '' }; rentalData.renters.push(renter); }
       return renter;
     }
-    function submitRentalModal() {
+    async function submitRentalModal() {
       let locInput = document.querySelector('input[name="rental-location"]:checked');
       if (!locInput) { alert('請選擇工作室！'); return; }
       let location = locInput.value;
@@ -9615,10 +9795,10 @@
       // 地點衝突：同一間工作室、時間重疊（你自己在別間上課不算衝突）
       let occ = findLocationOccupants(date, time, duration, location, it => it.props.type === 'rental' && it.props.rentalId === editingRentalId);
       if (occ.clash.length > 0) {
-        if (!confirm('⚠️ 這個時段' + location + '已經有：' + occ.clash.join('、') + '\n\n確定還要租出去嗎？')) return;
+        if (!await smConfirm('⚠️ 這個時段' + location + '已經有：' + occ.clash.join('、') + '\n\n確定還要租出去嗎？')) return;
       }
       if (occ.unlocated.length > 0) {
-        if (!confirm('這個時段你有 ' + occ.unlocated.length + ' 堂課沒有填上課地點（' + occ.unlocated.join('、') + '），系統沒辦法判斷會不會用到' + location + '。\n\n確定不會撞到嗎？')) return;
+        if (!await smConfirm('這個時段你有 ' + occ.unlocated.length + ' 堂課沒有填上課地點（' + occ.unlocated.join('、') + '），系統沒辦法判斷會不會用到' + location + '。\n\n確定不會撞到嗎？')) return;
       }
 
       let renter = findOrCreateRenter(renterName);
@@ -9695,10 +9875,10 @@
         '<button class="small-btn" style="flex:1; margin:0; padding:10px; background-color:var(--c-danger); color:white;" onclick="deleteRentalFromDetail()">🗑️ 取消這筆租借</button></div>';
       document.getElementById('rental-detail-body').innerHTML = html;
     }
-    function setRentalPaid(paid) {
+    async function setRentalPaid(paid) {
       let r = rentalData.rentals.find(x => x.id === viewingRentalId); if (!r) return;
       if (paid && !(Number(r.amount) > 0)) {
-        let a = prompt('這次收了多少錢？', '');
+        let a = await smPrompt('這次收了多少錢？', '', { type: 'number' });
         if (a === null) return;
         if (!(Number(a) > 0)) { alert('請輸入大於 0 的金額！'); return; }
         r.amount = Number(a);
@@ -9735,14 +9915,14 @@
       }
       let msg = buildRentalMessage(r);
       let done = () => alert('✅ 已複製，可以直接貼到 LINE：\n\n' + msg);
-      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(msg).then(done).catch(() => prompt('複製下面這段訊息：', msg));
-      else prompt('複製下面這段訊息：', msg);
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(msg).then(done).catch(() => smCopyBox('複製下面這段訊息：', msg));
+      else smCopyBox('複製下面這段訊息：', msg);
     }
     function editRentalFromDetail() { let id = viewingRentalId; closeRentalDetail(); openRentalModal(id); setModalBack('rental-modal', () => openRentalDetail(id)); }
-    function deleteRentalFromDetail() {
+    async function deleteRentalFromDetail() {
       let r = rentalData.rentals.find(x => x.id === viewingRentalId); if (!r) return;
       let extra = r.payMode === 'prepaid' ? '\n\n扣掉的 ' + rentalHours(r) + ' 小時會退回預繳時數。' : (r.paid ? '\n\n這筆已經收款 NT$ ' + r.amount + '，取消後也會從收入裡拿掉（如果有退錢給對方的話）。' : '');
-      if (!confirm('確定要取消 ' + formatReportDate(r.date) + ' ' + r.time + ' ' + (r.renterName || '') + ' 的租借嗎？' + extra)) return;
+      if (!await smConfirm('確定要取消 ' + formatReportDate(r.date) + ' ' + r.time + ' ' + (r.renterName || '') + ' 的租借嗎？' + extra)) return;
       rentalData.rentals = rentalData.rentals.filter(x => x.id !== r.id);
       saveRentalToMemory(); closeRentalDetail(); afterRentalChange();
     }
@@ -9843,11 +10023,11 @@
       saveRentalToMemory(); closeRenterModal(); afterRentalChange();
       if (currentRentalSubtab !== 'renters' && document.getElementById('rental-page').style.display === 'block') showRentalSubtab('renters');
     }
-    function deleteRenter(renterId) {
+    async function deleteRenter(renterId) {
       if (rentalData.rentals.some(r => r.renterId === renterId) || rentalData.purchases.some(p => p.renterId === renterId)) {
         alert('這位租借人還有租借或預繳紀錄，不能刪除。'); return;
       }
-      if (!confirm('確定要刪除這位租借人嗎？')) return;
+      if (!await smConfirm('確定要刪除這位租借人嗎？')) return;
       rentalData.renters = rentalData.renters.filter(x => x.id !== renterId);
       saveRentalToMemory(); renderRentersList();
     }
@@ -9875,9 +10055,9 @@
       saveRentalToMemory(); closeRenterPurchase(); afterRentalChange(); renderRentersList();
       alert('✅ 已記錄預繳！收入算在 ' + date.slice(0, 7) + '。');
     }
-    function deleteRenterPurchase(purchaseId) {
+    async function deleteRenterPurchase(purchaseId) {
       let pu = rentalData.purchases.find(x => x.id === purchaseId); if (!pu) return;
-      if (!confirm('確定要刪除這筆預繳（' + pu.date + '，' + pu.hours + ' 小時，NT$ ' + pu.amount + '）嗎？\n\n刪除後時數和收入都會跟著拿掉。')) return;
+      if (!await smConfirm('確定要刪除這筆預繳（' + pu.date + '，' + pu.hours + ' 小時，NT$ ' + pu.amount + '）嗎？\n\n刪除後時數和收入都會跟著拿掉。')) return;
       rentalData.purchases = rentalData.purchases.filter(x => x.id !== purchaseId);
       saveRentalToMemory(); renderRentersList(); afterRentalChange();
     }
@@ -10251,6 +10431,8 @@
       let subs = (await loadPushSubs(true)).filter(s => s.endpoint !== j.endpoint && s.deviceId !== pushDeviceId());
       subs.push({ endpoint: j.endpoint, p256dh: j.keys.p256dh, auth: j.keys.auth, label: pushDeviceLabel(), deviceId: pushDeviceId(), addedAt: Date.now() });
       await savePushSubs(subs);
+      showPushLostBanner(false);
+      if (appSettings && !appSettings.pushEverOn) { appSettings.pushEverOn = true; saveSettingsToMemory(); } // 記住這個帳號有在用通知（換手機、重新加入主畫面時才會提醒）
       await syncReminderQueue(true);
     }
     // 按「開啟這台的通知」：一定要直接從按鈕觸發，iPhone 才會跳出允許通知的視窗
@@ -10267,6 +10449,7 @@
         let old = await reg.pushManager.getSubscription();
         if (old && old.options && old.options.applicationServerKey && !sameKey(old.options.applicationServerKey, pushVapidKey)) { await old.unsubscribe(); old = null; }
         let sub = old || await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: smB64uDec(pushVapidKey) });
+        try { localStorage.removeItem('sm_push_banner_off'); } catch (e) {}
         await registerPushSubscription(sub);
         alert('✅ 這台裝置已經開啟通知！\n\n可以按「傳送測試通知」試試看。');
       } catch (err) {
@@ -10276,12 +10459,13 @@
       renderNotifyModal();
     }
     async function disablePushOnThisDevice() {
-      if (!confirm('確定要關掉這台裝置的通知嗎？')) return;
+      if (!await smConfirm('確定要關掉這台裝置的通知嗎？')) return;
       try {
         let reg = swRegistration || (navigator.serviceWorker && await navigator.serviceWorker.ready);
         let sub = reg ? await reg.pushManager.getSubscription() : null;
         let ep = sub ? sub.endpoint : null;
         if (sub) await sub.unsubscribe();
+        try { localStorage.setItem('sm_push_banner_off', '1'); } catch (e) {} // 自己關掉的，就不要再跳「通知沒有開啟」的提醒
         let subs = (await loadPushSubs(true)).filter(s => s.deviceId !== pushDeviceId() && s.endpoint !== ep);
         await savePushSubs(subs);
         await syncReminderQueue(true);
@@ -10291,7 +10475,7 @@
     async function removePushDevice(idx) {
       let subs = await loadPushSubs(true);
       let s = subs[idx];
-      if (!s || !confirm('確定不再傳通知到「' + (s.label || '這台裝置') + '」嗎？')) return;
+      if (!s || !await smConfirm('確定不再傳通知到「' + (s.label || '這台裝置') + '」嗎？')) return;
       subs.splice(idx, 1);
       await savePushSubs(subs);
       await syncReminderQueue(true);
@@ -10300,21 +10484,40 @@
     // 打開 App 時：這台已經允許通知的話，確認訂閱還在、有登記到清單裡；雲端回報送不到的裝置就移除
     async function refreshPushSubscriptionState() {
       if (!pushCloudReady()) return;
+      let thisOn = false, everUsed = false;
       try {
         let subs = await loadPushSubs(true);
         let q = await cloudFns.getDoc(pushQueueDocRef());
-        let dead = (q.exists() && q.data().status && Array.isArray(q.data().status.dead)) ? q.data().status.dead : [];
+        let qs = q.exists() ? (q.data().status || null) : null;
+        let dead = (qs && Array.isArray(qs.dead)) ? qs.dead : [];
+        everUsed = !!(appSettings && appSettings.pushEverOn) || subs.length > 0 || dead.length > 0 || !!(qs && qs.lastSentAt); // 這個帳號有在用通知
         if (dead.length && subs.some(s => dead.includes(s.endpoint))) { subs = subs.filter(s => !dead.includes(s.endpoint)); await savePushSubs(subs); }
-        if (pushSupportState() !== 'ok' || Notification.permission !== 'granted') return;
-        let reg = swRegistration || await navigator.serviceWorker.ready;
-        swRegistration = reg;
-        let sub = await reg.pushManager.getSubscription();
-        if (!pushVapidKey) await loadPushVapidKey();
-        if (sub && pushVapidKey && sub.options && sub.options.applicationServerKey && !sameKey(sub.options.applicationServerKey, pushVapidKey)) { await sub.unsubscribe(); sub = null; }
-        let mine = subs.find(s => s.deviceId === pushDeviceId());
-        if (!sub && mine && pushVapidKey) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: smB64uDec(pushVapidKey) }); // 已經允許過，重新訂閱不用再問
-        if (sub && !subs.some(s => s.endpoint === sub.endpoint)) await registerPushSubscription(sub);
-      } catch (err) { console.warn('檢查通知訂閱失敗：', err); }
+        if (pushSupportState() === 'ok' && Notification.permission === 'granted') {
+          let reg = swRegistration || await navigator.serviceWorker.ready;
+          swRegistration = reg;
+          let sub = await reg.pushManager.getSubscription();
+          if (!pushVapidKey) await loadPushVapidKey();
+          if (sub && pushVapidKey && sub.options && sub.options.applicationServerKey && !sameKey(sub.options.applicationServerKey, pushVapidKey)) { await sub.unsubscribe(); sub = null; }
+          let mine = subs.find(s => s.deviceId === pushDeviceId());
+          if (!sub && mine && pushVapidKey) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: smB64uDec(pushVapidKey) }); // 已經允許過，重新訂閱不用再問
+          if (sub && !subs.some(s => s.endpoint === sub.endpoint)) await registerPushSubscription(sub);
+          thisOn = !!sub;
+        }
+      } catch (err) { console.warn('檢查通知訂閱失敗：', err); return; }
+      showPushLostBanner(everUsed && !thisOn && shouldOfferPushHere());
+    }
+    // 「這台裝置的通知沒有開啟」提示條：只在加到主畫面的 App 裡、這個帳號有在用通知、這台卻沒開的時候出現
+    function shouldOfferPushHere() {
+      if (!isStandaloneApp()) return false; // 一般瀏覽器分頁不提醒
+      try { if (localStorage.getItem('sm_push_banner_off') === '1') return false; } catch (e) {}
+      let st = pushSupportState();
+      return st === 'ok' || st === 'denied';
+    }
+    function showPushLostBanner(show) { let el = document.getElementById('push-lost-banner'); if (el) el.style.display = show ? 'flex' : 'none'; }
+    function dismissPushLostBanner() { try { localStorage.setItem('sm_push_banner_off', '1'); } catch (e) {} showPushLostBanner(false); }
+    function pushLostEnable() {
+      if (pushSupportState() !== 'ok') { openNotifyModal(); return; } // 之前按過「不允許」：打開通知視窗，裡面有說明怎麼改
+      enablePushOnThisDevice(); // 一定要直接從按鈕觸發，iPhone 才會問要不要允許通知
     }
     let reminderBootDone = false;
     function onCloudDataReadyForReminders() {
@@ -10450,11 +10653,43 @@
         if (qs && qs.lastError) { lines.push('⚠️ 上次失敗原因：' + escHTML(qs.lastError)); warn = true; }
         cloud.className = 'nt-status ' + (warn ? 'nt-warn' : 'nt-ok');
         cloud.innerHTML = lines.join('<br>');
+        renderNotifyLog(qs && Array.isArray(qs.log) ? qs.log : []);
       } catch (err) {
         console.error(err);
         cloud.className = 'nt-status nt-warn';
         cloud.innerText = '讀取雲端狀態失敗：' + ((err && err.code) || (err && err.message) || err) + '（如果是 permission-denied，代表 Firestore 安全規則還沒更新）';
       }
+    }
+    // 發送紀錄：雲端提醒小幫手最近送了哪些通知、有沒有送到（只有種類和時間，沒有內容）
+    function pushLogKind(id) {
+      id = String(id || '');
+      if (id.startsWith('m-')) return '☀️ 早安摘要';
+      if (id.startsWith('n-')) return '📋 晚上點名提醒';
+      if (id.startsWith('r-')) return '📤 傳密碼提醒';
+      if (id.startsWith('td-')) return '📝 待辦提醒';
+      if (id.startsWith('test-')) return '🔔 測試通知';
+      return '🔔 通知';
+    }
+    function pushLogResult(e) {
+      let ok = Number(e.ok) || 0, failed = Number(e.failed) || 0, err = String(e.err || '');
+      if (err === 'late') return ['nt-log-skip', '太晚了沒送'];
+      if (!ok && !failed) return ['nt-log-skip', '沒有開啟通知的裝置'];
+      if (!failed) return ['nt-log-ok', '已送出' + (ok > 1 ? ' ' + ok + ' 台' : '')];
+      let why = (err === '410' || err === '404') ? '裝置的通知已失效' : '失敗';
+      return ['nt-log-bad', ok ? '送出 ' + ok + ' 台・' + failed + ' 台' + why : why];
+    }
+    function renderNotifyLog(log) {
+      let wrap = document.getElementById('notify-log-wrap'), box = document.getElementById('notify-log');
+      if (!wrap || !box) return;
+      if (!log.length) { wrap.style.display = 'none'; return; } // 雲端提醒小幫手還沒更新、或還沒送過：先不顯示
+      let fmt = ms => { let d = new Date(Number(ms)); return (d.getMonth() + 1) + '/' + d.getDate() + ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); };
+      box.innerHTML = log.map(e => {
+        let res = pushLogResult(e);
+        let delay = Math.round((Number(e.sentAt) - Number(e.at)) / 60000);
+        let late = (res[0] !== 'nt-log-skip' && delay >= 3) ? '<span class="nt-log-late">晚 ' + delay + ' 分鐘送出</span>' : '';
+        return '<div class="nt-log-row"><span><span class="nt-log-when">' + fmt(e.at) + '</span>' + pushLogKind(e.id) + '</span><span class="nt-log-res ' + res[0] + '">' + res[1] + late + '</span></div>';
+      }).join('');
+      wrap.style.display = 'block';
     }
     function renderNotifyPreview() {
       let box = document.getElementById('notify-preview');
@@ -10491,7 +10726,7 @@
 
     // ============ 版本更新檢查 ============
     // 每次修改程式、上傳新檔案時，要把這個版本號改掉（任何不一樣的字都可以），手機才會知道有新版本。
-    const APP_VERSION = 'sm-2026.10.21-7';
+    const APP_VERSION = 'sm-2026.10.21-9';
 
     // 加入主畫面的 App 常常直接拿手機裡存的舊檔案，而且沒有重新整理按鈕。
     // 做法：去網路上抓一份「現在的這個網頁」（網址加上時間，強迫不能用舊的），比對裡面寫的版本號，不一樣就提示更新。
@@ -10537,6 +10772,8 @@
     }, 8000);
     if (window.innerWidth <= 700) {
       document.body.classList.add('mobile-tabs');
+      document.documentElement.classList.add('mobile-shell'); // 整頁不捲、只捲內容區（底部分頁列才不會被帶著跑）
+      watchModalsForScrollLock();
     } else {
       document.body.classList.add('desktop-layout');
     }
