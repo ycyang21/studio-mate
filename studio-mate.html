@@ -112,6 +112,9 @@
     /* App 自己的提示框、確認框、下方小提示（取代手機原生跳窗） */
     .sm-dialog-ov { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 100002; background: var(--c-overlay); display: flex; align-items: center; justify-content: center; padding: 24px; box-sizing: border-box; animation: smFadeIn .15s ease-out; }
     .sm-dialog { background: var(--c-surface); color: var(--c-text); border-radius: var(--c-r-modal); width: 100%; max-width: 360px; max-height: 80vh; max-height: 80dvh; padding: 22px 18px 14px; box-sizing: border-box; box-shadow: 0 16px 48px var(--c-shadow); text-align: left; display: flex; flex-direction: column; animation: smPopIn .18s ease-out; }
+    .sm-dialog-title { font-size: 17px; font-weight: 800; line-height: 1.4; margin-bottom: 10px; color: var(--c-text); }
+    .sm-dialog-title.sm-warn { color: var(--c-danger-text); }
+    .sm-dialog.sm-dialog-warn { border-top: 5px solid var(--c-danger); }
     .sm-dialog-msg { white-space: pre-wrap; word-break: break-word; font-size: 15px; line-height: 1.65; overflow-y: auto; min-height: 0; }
     .sm-dialog-input { margin: 12px 0 0 0 !important; width: 100% !important; box-sizing: border-box; font-size: 16px !important; }
     textarea.sm-dialog-input { min-height: 120px; font-size: 14px !important; resize: vertical; }
@@ -343,8 +346,6 @@
     body.desktop-layout #app-root > #calendar-page { max-width: 1200px; }
     body.desktop-layout #calendar-layout { width: 90%; margin: 0 auto; }
     body.desktop-layout #announcement-bar { max-width: 1000px !important; width: auto !important; margin: 0 auto 16px auto !important; }
-    /* 左側選單已經可以切換所有頁面，各頁的「返回首頁」按鈕在電腦版就不需要了 */
-    body.desktop-layout #app-root [onclick="goHome()"] { display: none !important; }
     /* 首頁：今日課程（左）＋待辦事項（右）兩欄 */
     body.desktop-layout .dash-columns { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 16px; width: 90%; margin: 0 auto; align-items: start; }
     body.desktop-layout .dash-columns > .card { width: auto !important; margin: 0 !important; }
@@ -845,7 +846,6 @@
   <div id="more-page" style="display: none;">
     <h2 style="font-weight: 300;" class="mobile-only">⚙️ 更多</h2>
     <h2 style="font-weight: 300;" class="desktop-only">⚙️ 設定與備份</h2>
-    <button class="small-btn" style="width:90%; margin:0 auto 15px auto; display:block; padding:10px; background-color:var(--c-sand); color:var(--c-text);" onclick="goHome()">‹ 返回首頁</button>
     <button class="small-btn mobile-only" style="width:90%; margin:0 auto 15px auto; display:block; padding:10px; background-color:var(--c-accent); color:white;" onclick="openInventoryPage()">📦 進銷存管理</button>
     <button class="small-btn mobile-only rental-feature" style="width:90%; margin:0 auto 15px auto; padding:10px; background-color:var(--c-gold); color:white;" onclick="openRentalPage()">🔑 琴房租借</button>
     <button class="small-btn mobile-only" style="width:90%; margin:0 auto 15px auto; display:block; padding:10px; background-color:var(--c-accent); color:white;" onclick="openExpensePage()">💸 支出紀錄</button>
@@ -1485,7 +1485,6 @@
 
   <div id="manage-page" style="display: none;">
     <h2 style="font-weight: 300;">👥 學生名單管理</h2>
-    <button class="small-btn" style="width:90%; margin:0 auto 15px auto; display:block; padding:10px; background-color:var(--c-sand); color:var(--c-text);" onclick="goHome()">返回首頁</button>
     <div class="card" style="background-color: var(--c-tint); border: 1px solid var(--c-primary-line);">
       <h3 style="margin-top:0; font-size: 16px; cursor:pointer; display:flex; justify-content:space-between; align-items:center;" onclick="toggleAddStudentForm()">➕ 新增學生資料 <span id="add-student-toggle-arrow" style="font-size:13px; color:var(--c-primary-text);">▸ 展開</span></h3>
       <div id="add-student-form-body" style="display:none;">
@@ -1672,7 +1671,6 @@
 
   <div id="salary-page" style="display: none;">
     <h2 style="font-weight: 300;">📊 自動結算系統</h2>
-    <button class="small-btn" style="width:90%; margin:0 auto 15px auto; display:block; padding:10px; background-color:var(--c-sand); color:var(--c-text);" onclick="goHome()">返回首頁</button>
     <div style="width: 90%; margin: 0 auto;">
       <div class="form-group">
         <label>選擇結算月份</label>
@@ -1702,7 +1700,6 @@
 
   <div id="inventory-page" style="display: none;">
     <h2 style="font-weight: 300;">📦 進銷存管理</h2>
-    <button class="small-btn" style="width:90%; margin:0 auto 15px auto; display:block; padding:10px; background-color:var(--c-sand); color:var(--c-text);" onclick="goHome()">返回首頁</button>
 
     <h3 style="font-size: 16px; text-align: left; padding-left: 20px; margin-top: 10px;">📊 目前庫存</h3>
     <div id="inventory-stock-overview" style="width:90%; margin:0 auto;"></div>
@@ -1728,7 +1725,6 @@
 
   <div id="expense-page" style="display: none;">
     <h2 style="font-weight: 300;">💸 支出紀錄</h2>
-    <button class="small-btn" style="width:90%; margin:0 auto 15px auto; display:block; padding:10px; background-color:var(--c-sand); color:var(--c-text);" onclick="goHome()">返回首頁</button>
     <div style="width: 90%; margin: 0 auto; text-align:left;">
       <div class="card" style="width:100%; box-sizing:border-box;">
         <div class="form-group"><label>日期</label><input type="date" id="expense-date" class="form-control"></div>
@@ -1757,7 +1753,6 @@
 
   <div id="unmarked-page" style="display: none;">
     <h2 style="font-weight: 300;">🔍 未點名檢查</h2>
-    <button class="small-btn" style="width:90%; margin:0 auto 15px auto; display:block; padding:10px; background-color:var(--c-sand); color:var(--c-text);" onclick="goHome()">返回首頁</button>
     <div style="width: 90%; margin: 0 auto; text-align:left;">
       <div class="form-group">
         <label>檢查月份</label>
@@ -1770,7 +1765,6 @@
 
   <div id="rental-page" style="display: none;">
     <h2 style="font-weight: 300;">🔑 琴房租借</h2>
-    <button class="small-btn" style="width:90%; margin:0 auto 15px auto; display:block; padding:10px; background-color:var(--c-sand); color:var(--c-text);" onclick="goHome()">返回首頁</button>
     <div style="display:flex; gap:8px; width:90%; margin:0 auto 12px auto;">
       <button class="small-btn" style="flex:1; padding:10px; background-color:var(--c-gold); color:white;" onclick="openRentalModal()">➕ 新增租借</button>
       <button class="small-btn" style="flex:1; padding:10px; background-color:var(--c-sand); color:var(--c-text);" onclick="openRenterModal()">👤 新增租借人</button>
@@ -1803,7 +1797,6 @@
 
   <div id="todo-page" style="display: none;">
     <h2 style="font-weight: 300;">📝 待辦事項</h2>
-    <button class="small-btn" style="width:90%; margin:0 auto 15px auto; display:block; padding:10px; background-color:var(--c-sand); color:var(--c-text);" onclick="goHome()">返回首頁</button>
     <div class="card" style="background-color: var(--c-tint); border: 1px solid var(--c-primary-line);">
       <h3 style="margin-top:0; font-size: 16px;">➕ 新增待辦事項</h3>
       <div class="form-group">
@@ -2222,7 +2215,13 @@
       setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, ms || Math.min(5000, 1800 + msg.length * 40));
     }
     // opts: { msg, buttons: [{ label, value, kind: 'primary' | 'danger' | 'cancel' }], input: { value, multiline, readonly } }
+    // opts.title：粗體標題；opts.tone = 'warn'：標題用醒目的警示顏色
     function smDialog(opts) {
+      if (SM_NATIVE_DIALOGS && !opts.input) { // 自動測試：用原生跳窗代替（按「確定」= 最後一個按鈕）
+        let bs = opts.buttons || [{ value: true }], text = (opts.title ? opts.title + '\n\n' : '') + opts.msg;
+        if (bs.length === 1) { smNativeAlert(text); return Promise.resolve(bs[0].value); }
+        return Promise.resolve(smNativeConfirm(text) ? bs[bs.length - 1].value : (bs.find(b => b.kind === 'cancel') || bs[0]).value);
+      }
       return new Promise(resolve => { smDialogQueue.push({ opts: opts, resolve: resolve }); smNextDialog(); });
     }
     function smNextDialog() {
@@ -2232,6 +2231,8 @@
       let prevFocus = document.activeElement;
       let ov = document.createElement('div'); ov.className = 'sm-dialog-ov';
       let card = document.createElement('div'); card.className = 'sm-dialog'; card.setAttribute('role', 'alertdialog'); card.setAttribute('aria-modal', 'true');
+      if (opts.title) { let t = document.createElement('div'); t.className = 'sm-dialog-title' + (opts.tone === 'warn' ? ' sm-warn' : ''); t.textContent = opts.title; card.appendChild(t); }
+      if (opts.tone === 'warn') card.classList.add('sm-dialog-warn');
       let msg = document.createElement('div'); msg.className = 'sm-dialog-msg'; msg.textContent = String(opts.msg == null ? '' : opts.msg);
       card.appendChild(msg);
       let input = null;
@@ -3505,7 +3506,7 @@
 
     // 底部分頁列的燈號要跟目前顯示的頁面對起來；不在對照表裡的頁面（例如待辦事項）就先不亮任何一個分頁
     function updateBottomTabHighlight(pageId) {
-      const tabMap = { 'main-menu': 'home', 'dashboard-page': 'home', 'manage-page': 'students', 'student-detail-page': 'students', 'calendar-page': 'calendar', 'salary-page': 'salary', 'more-page': 'more' };
+      const tabMap = { 'main-menu': 'home', 'dashboard-page': 'home', 'todo-page': 'home', 'manage-page': 'students', 'student-detail-page': 'students', 'calendar-page': 'calendar', 'salary-page': 'salary', 'more-page': 'more', 'inventory-page': 'more', 'expense-page': 'more', 'unmarked-page': 'more', 'rental-page': 'more' };
       let activeTab = tabMap[pageId] || null;
       document.querySelectorAll('.bottom-tab-btn').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.tab === activeTab);
@@ -8289,6 +8290,14 @@
 
     function closePlanChangeModal() { document.getElementById('plan-change-modal').style.display = 'none'; planChangingStudentId = null; refreshDayPanelIfNeeded(); }
 
+    // 某位學生從某天起「已經點過名」的課（出席、延期、缺席收費、轉補課、已調課）
+    function getMarkedLessonsFrom(s, fromDate) {
+      let out = [];
+      [['attendedDates', '出席'], ['canceledDates', '延期'], ['absentChargedDates', '缺席收費'], ['makeupConvertedDates', '轉補課'], ['rescheduledDates', '已調課']].forEach(kl => {
+        (s[kl[0]] || []).forEach(d => { if (d >= fromDate) out.push({ date: d, label: kl[1] }); });
+      });
+      return out.sort((a, b) => a.date.localeCompare(b.date));
+    }
     async function submitPlanChange() {
       let oldS = students.find(x => x.id === planChangingStudentId);
       if (!oldS) return;
@@ -8320,6 +8329,25 @@
         } else {
           anchorDate = '';
         }
+      }
+
+      // 生效日之後已經點過名的課：直接異動的話，新方案會把它們當成還沒點名，重新點名就會重複計算學費。
+      // 所以只給兩個選擇：取消（先回月曆恢復為未點名），或把生效日改到最後一次點名的隔天
+      let marked = getMarkedLessonsFrom(oldS, effectiveDate);
+      if (marked.length) {
+        let md = d => Number(d.slice(5, 7)) + '/' + Number(d.slice(8, 10));
+        let suggest = addDaysStr(marked[marked.length - 1].date, 1);
+        let shown = marked.slice(0, 6).map(m => md(m.date) + ' ' + m.label).join('・') + (marked.length > 6 ? '…等 ' + marked.length + ' 堂' : '');
+        let useSuggest = await smDialog({
+          title: '⚠️ 生效日之後有已經點名的課', tone: 'warn',
+          msg: md(effectiveDate) + ' 之後已經點過名的有 ' + marked.length + ' 堂：\n' + shown +
+            '\n\n直接異動的話，這幾堂會變回「未點名」，重新點名會重複計算學費。' +
+            '\n\n你可以：\n• 改成 ' + md(suggest) + ' 生效（這幾堂維持原方案，不用重新點名）\n• 或先回月曆把這幾堂恢復為未點名，再來異動',
+          buttons: [{ label: '取消', value: false, kind: 'cancel' }, { label: '改成 ' + md(suggest) + ' 生效', value: true, kind: 'primary' }]
+        });
+        if (!useSuggest) return;
+        effectiveDate = suggest;
+        document.getElementById('plan-change-effective-date').value = suggest;
       }
 
       if (!await checkDuplicateNameWarning(oldS.name, instrument, oldS.id)) return;
@@ -10726,7 +10754,7 @@
 
     // ============ 版本更新檢查 ============
     // 每次修改程式、上傳新檔案時，要把這個版本號改掉（任何不一樣的字都可以），手機才會知道有新版本。
-    const APP_VERSION = 'sm-2026.10.21-9';
+    const APP_VERSION = 'sm-2026.10.23-1';
 
     // 加入主畫面的 App 常常直接拿手機裡存的舊檔案，而且沒有重新整理按鈕。
     // 做法：去網路上抓一份「現在的這個網頁」（網址加上時間，強迫不能用舊的），比對裡面寫的版本號，不一樣就提示更新。
