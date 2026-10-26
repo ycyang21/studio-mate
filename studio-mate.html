@@ -1376,11 +1376,13 @@
             <input type="checkbox" id="modal-makeup-mark-paid" onchange="checkPaidCheckboxWarning(this)"> 出席的同時，登記已收費
           </label>
           <button class="modal-btn" style="background-color: var(--c-primary);" onclick="markMakeupStatus('attended')">✅ 補課出席 (紀錄學費)</button>
-          <button class="modal-btn" style="background-color: var(--c-blue);" onclick="openEditMakeupScheduleModalFromEvent()">✏️ 編輯補課時間</button>
-          <button class="modal-btn" style="background-color: var(--c-danger);" onclick="markMakeupStatus('canceled')">❌ 取消排課 (退回存摺)</button>
+          <button class="modal-btn" id="modal-makeup-absent-btn" style="display:none; background-color: var(--c-danger);" onclick="markMakeupStatus('absent_charged')">💸 缺席（照收）</button>
+          <button class="modal-btn" id="modal-makeup-edit-btn" style="background-color: var(--c-blue);" onclick="openEditMakeupScheduleModalFromEvent()">✏️ 編輯補課時間</button>
+          <button class="modal-btn" id="modal-makeup-cancel-btn" style="background-color: var(--c-danger);" onclick="markMakeupStatus('canceled')">❌ 取消排課 (退回存摺)</button>
+          <div id="modal-makeup-group-note"></div>
         </div>
         <div id="modal-makeup-done" style="display: none;">
-          <p style="font-size:13px; color:var(--c-muted); margin-bottom:15px;">✅ 這堂補課已完成並計入學費，如需更正請先恢復狀態。</p>
+          <p id="modal-makeup-done-text" style="font-size:13px; color:var(--c-muted); margin-bottom:15px;">✅ 這堂補課已完成並計入學費，如需更正請先恢復狀態。</p>
           <button class="modal-btn" style="background-color: var(--c-sand); color:var(--c-text);" onclick="markMakeupStatus('revert')">↩️ 恢復為「尚未出席」</button>
         </div>
       </div>
@@ -1969,7 +1971,7 @@
       <p id="group-modal-note" style="text-align:center; color:var(--c-violet-text); font-size:13px; margin:0 0 6px 0; display:none;"></p>
       <div id="group-modal-members"></div>
       <div id="group-modal-actions" style="margin-top:12px;"></div>
-      <p style="font-size:11px; color:var(--c-faint); line-height:1.6; margin:10px 0 0 0;">按「⋯」可以單獨處理某一位同學：轉補課、調課、課堂記錄、待辦、學生異動。</p>
+      <p id="group-modal-hint" style="font-size:11px; color:var(--c-faint); line-height:1.6; margin:10px 0 0 0;">按「⋯」可以單獨處理某一位同學：轉補課、調課、課堂記錄、待辦、學生異動。</p>
       <button class="button btn-secondary" style="width:100%; margin:10px 0 0 0;" onclick="closeGroupModal()">關閉</button>
     </div>
   </div>
@@ -3666,12 +3668,12 @@
           if (sch.date !== dateStr) return;
           let displayTitle = '[補課] ' + record.studentName;
           let eventClass = 'event-makeup';
-          if (sch.attended) { displayTitle = '✅ [補] ' + record.studentName; eventClass = 'event-attended'; }
+          if (sch.attended) { displayTitle = sch.absent ? '💸 [補] ' + record.studentName + ' (缺席)' : '✅ [補] ' + record.studentName; eventClass = sch.absent ? 'event-absent-charged' : 'event-attended'; }
           if (getStudentBalance(record.studentId) > 0) { displayTitle = '💰 ' + displayTitle; }
           let makeupStu = students.find(x => x.id === record.studentId);
           let shortTitle = displayTitle + ((makeupStu && makeupStu.location) ? '・' + (makeupStu.locationAbbr || makeupStu.location) : '');
           if (makeupStu && makeupStu.location) { displayTitle += '・' + makeupStu.location; }
-          items.push({ title: displayTitle, shortTitle: shortTitle, className: eventClass, time: sch.time, allDay: !sch.time, name: record.studentName, locationAbbr: (makeupStu && makeupStu.locationAbbr) || '', props: { type: 'makeup', recordId: record.id, schIdx: schIdx, dateStr: dateStr } });
+          items.push({ title: displayTitle, shortTitle: shortTitle, className: eventClass, time: sch.time, allDay: !sch.time, name: record.studentName, locationAbbr: (makeupStu && makeupStu.locationAbbr) || '', props: { type: 'makeup', recordId: record.id, schIdx: schIdx, dateStr: dateStr, groupMakeupId: isGroupMakeupRecord(record) ? record.groupMakeupId : undefined } });
         });
       });
 
@@ -3939,7 +3941,7 @@
 
     function openModalForCalendarEvent(props, title, dateStr, timeStr, allDay) {
       if (props && props.type === 'rental') { openRentalDetail(props.rentalId); return; } // 琴房租借不是課，打開租借自己的視窗
-      if (props && props.type === 'group') { openGroupModal(props.groupId, props.dateStr, props.time || timeStr || ''); return; } // 團體課：開一起點名的視窗
+      if (props && props.type === 'group') { openGroupModal(props.groupId, props.dateStr, props.time || timeStr || '', props.kind, props.groupMakeupId); return; } // 團體課：開一起點名的視窗
       lastAttendanceArgs = [props, title, dateStr, timeStr, allDay];
       currentModalEvent = props;
 
@@ -3969,7 +3971,7 @@
           document.getElementById('modal-convert-actions').style.display = 'block';
           let record = makeupBank.find(r => r.studentId === s.id && r.dateGen === props.dateStr && !r.fromTempId && r.status === 'active');
           document.getElementById('modal-convert-record-container').innerHTML = record
-            ? buildMakeupScheduleHTML(record, 'cal_')
+            ? (isGroupMakeupRecord(record) ? groupMakeupMemberHTML(record) : buildMakeupScheduleHTML(record, 'cal_'))
             : '<p style="color:var(--c-muted); font-size:13px;">找不到對應的補課紀錄，可能已經排課完成，請到「補課存摺管理」查看。</p>';
           document.getElementById('modal-convert-student-wrap').innerHTML = modalStudentInlineHTML();
         } else if (st === 'none') {
@@ -4007,6 +4009,14 @@
         let isDone = !!(sch && sch.attended);
         document.getElementById('modal-makeup-pending').style.display = isDone ? 'none' : 'block';
         document.getElementById('modal-makeup-done').style.display = isDone ? 'block' : 'none';
+        document.getElementById('modal-makeup-done-text').innerText = (sch && sch.absent) ? '💸 這堂補課缺席（照收），已計入學費，如需更正請先恢復狀態。' : '✅ 這堂補課已完成並計入學費，如需更正請先恢復狀態。';
+        // 整團補課：時間要整團一起改／取消，這裡只能點名，或把這位同學拿出來自己另外補
+        let isGroupRec = isGroupMakeupRecord(record);
+        document.getElementById('modal-makeup-edit-btn').style.display = isGroupRec ? 'none' : '';
+        document.getElementById('modal-makeup-cancel-btn').style.display = isGroupRec ? 'none' : '';
+        document.getElementById('modal-makeup-absent-btn').style.display = isGroupRec ? '' : 'none';
+        document.getElementById('modal-makeup-group-note').innerHTML = (isGroupRec && !isDone) ? groupMakeupMemberHTML(record) : '';
+        if (isGroupRec) kindNote = '👥 整團補課';
         balanceStudentId = record ? record.studentId : null;
       } else if (props.type === 'temp') {
         let t = tempLessons.find(x => x.id === props.tempId);
@@ -4027,7 +4037,7 @@
             document.getElementById('modal-convert-student-wrap').innerHTML = '';
             let record = makeupBank.find(r => r.fromTempId === t.id && r.status === 'active');
             document.getElementById('modal-convert-record-container').innerHTML = record
-              ? buildMakeupScheduleHTML(record, 'cal_')
+              ? (isGroupMakeupRecord(record) ? groupMakeupMemberHTML(record) : buildMakeupScheduleHTML(record, 'cal_'))
               : '<p style="color:var(--c-muted); font-size:13px;">找不到對應的補課紀錄，可能已經排課完成，請到「補課存摺管理」查看。</p>';
           } else {
             document.getElementById('modal-temp-actions').style.display = 'block';
@@ -4202,7 +4212,7 @@
           if (reopenArgs && top.id !== 'attendance-modal') setModalBack(top.id, () => { groupModalReturn = back; openModalForCalendarEvent.apply(null, reopenArgs); });
           return;
         }
-        if (back) openGroupModal(back.groupId, back.dateStr, back.time);
+        if (back) openGroupModal(back.groupId, back.dateStr, back.time, back.kind, back.gmId);
       }, 0);
     }
 
@@ -4388,7 +4398,7 @@
         if (status === 'canceled') {
           if (!await smConfirm("確定要取消這堂補課嗎？時數將退回給學生。")) { closeModal(); return; }
         }
-        if (status === 'attended' && sch.date > formatDate(new Date())) {
+        if ((status === 'attended' || status === 'absent_charged') && sch.date > formatDate(new Date())) {
           if (!await smConfirm('⚠️ ' + sch.date + ' 這天還沒到，出席狀況應該還未確定，確定要現在標記嗎？')) return;
         }
 
@@ -4398,8 +4408,9 @@
         paymentRecords = paymentRecords.filter(p => !(p.studentId === record.studentId && p.date === sch.date && p.note === '補課點名時登記'));
         if (paymentRecords.length !== beforeLen2) paymentChanged = true;
 
-        if (status === 'attended') {
+        if (status === 'attended' || status === 'absent_charged') {
           sch.attended = true;
+          if (status === 'absent_charged') sch.absent = true; else delete sch.absent;
           if (record.remaining === 0 && record.schedules.every(s => s.attended)) { record.status = 'history'; }
           let payCheckbox = document.getElementById('modal-makeup-mark-paid');
           if (payCheckbox && payCheckbox.checked) {
@@ -4407,7 +4418,7 @@
             paymentChanged = true;
           }
         } else if (status === 'revert') {
-          sch.attended = false;
+          sch.attended = false; delete sch.absent;
           record.status = 'active';
         } else if (status === 'canceled') {
           record.remaining = Number((record.remaining + sch.amount).toFixed(2));
@@ -5368,8 +5379,8 @@
 
     // 月曆上直接新增補課：一步到位，同時建立「欠一筆補課」跟「排定時間」，不用先去學生詳細頁補記錄、再另外排時間
     // 算出這位學生目前「所有還在欠、還沒排完時間」的補課堂數加總（可能不只一筆紀錄）
-    function getStudentRemainingMakeup(studentId) {
-      let total = makeupBank.filter(r => r.studentId === studentId && r.status === 'active').reduce((sum, r) => sum + (Number(r.remaining) || 0), 0);
+    function getStudentRemainingMakeup(studentId) { // 只算自己的補課；整團補課要在團體裡一起排
+      let total = makeupBank.filter(r => r.studentId === studentId && r.status === 'active' && !isGroupMakeupRecord(r)).reduce((sum, r) => sum + (Number(r.remaining) || 0), 0);
       return Number(total.toFixed(2));
     }
 
@@ -5394,14 +5405,40 @@
       let dropdown = document.getElementById('newmakeup-student-dropdown');
       let q = input.value.trim().toLowerCase();
       let eligible = students.filter(s => !s.endDate && (!q || s.name.toLowerCase().includes(q)) && getStudentRemainingMakeup(s.id) > 0);
-      if (eligible.length === 0) {
+      let units = getGroupMakeupUnits(true).filter(u => !q || groupMakeupUnitName(u).toLowerCase().includes(q));
+      if (eligible.length === 0 && units.length === 0) {
         dropdown.innerHTML = '<div class="searchable-dropdown-empty">目前沒有還欠補課的學生</div>';
       } else {
-        dropdown.innerHTML = eligible.map(s => `<div class="searchable-dropdown-item" onclick="selectNewMakeupStudentPicker('${s.id}')">${s.name}（還剩 ${getStudentRemainingMakeup(s.id)} 堂）</div>`).join('');
+        dropdown.innerHTML = units.map(u => `<div class="searchable-dropdown-item" onclick="selectNewMakeupGroupUnit('${u.id}')">👥 ${escHTML(groupMakeupUnitName(u))}・整團補課・原 ${formatReportDate(u.dateGen)}</div>`).join('') +
+          eligible.map(s => `<div class="searchable-dropdown-item" onclick="selectNewMakeupStudentPicker('${s.id}')">${s.name}（還剩 ${getStudentRemainingMakeup(s.id)} 堂）</div>`).join('');
       }
       dropdown.style.display = 'block';
     }
 
+    // 選了整團補課：一次幫全團排同一個時間
+    function selectNewMakeupGroupUnit(gmId) {
+      let u = getGroupMakeupUnits(true).find(x => x.id === gmId);
+      if (!u) return;
+      let names = groupMakeupUnitStudents(u).map(s => s.name);
+      document.getElementById('newmakeup-student-input').value = '👥 ' + groupMakeupUnitName(u) + '・原 ' + formatReportDate(u.dateGen) + ' 的課';
+      document.getElementById('newmakeup-student-value').value = 'gm:' + gmId;
+      document.getElementById('newmakeup-student-dropdown').style.display = 'none';
+      let info = document.getElementById('newmakeup-remaining-info');
+      info.innerText = '👥 整團補課：' + names.join('、') + '（' + names.length + ' 位）一起排，還剩 ' + u.remaining + ' 堂';
+      info.style.display = 'block';
+      document.getElementById('newmakeup-amt').value = Math.min(1, u.remaining);
+      syncNewMakeupAmountDuration('amount');
+    }
+    function newMakeupBaseDuration() {
+      let v = document.getElementById('newmakeup-student-value').value;
+      if (v.startsWith('gm:')) {
+        let u = getGroupMakeupUnits().find(x => x.id === v.slice(3));
+        let ds = u ? groupMakeupUnitStudents(u).map(s => s.duration || 60) : [];
+        return ds.length ? Math.max(...ds) : 60;
+      }
+      let s = v ? students.find(x => x.id === v) : null;
+      return (s && s.duration) || 60;
+    }
     function selectNewMakeupStudentPicker(studentId) {
       let s = students.find(x => x.id === studentId);
       if (!s) return;
@@ -5420,9 +5457,7 @@
 
     // 堂數跟時長互相換算，以這位學生自己的一堂課時長為基準（例如 50 分鐘的學生，0.5 堂 = 25 分鐘）；跟臨時課表單同一套規則
     function syncNewMakeupAmountDuration(source) {
-      let studentId = document.getElementById('newmakeup-student-value').value;
-      let s = studentId ? students.find(x => x.id === studentId) : null;
-      let base = (s && s.duration) || 60;
+      let base = newMakeupBaseDuration();
       let amtEl = document.getElementById('newmakeup-amt');
       let durEl = document.getElementById('newmakeup-duration');
       if (source === 'duration') {
@@ -5437,7 +5472,7 @@
     // 從這位學生「所有還在欠、還沒排完」的補課紀錄裡，照產生時間先後（舊的先扣）把這次要排的堂數扣掉；
     // 同一次排課有可能同時扣到不只一筆舊紀錄，這是正常的，代表這一次補課同時抵掉好幾筆舊的欠款。
     function scheduleAgainstActiveMakeupRecords(studentId, amt, date, time, duration) {
-      let records = makeupBank.filter(r => r.studentId === studentId && r.status === 'active' && r.remaining > 0).sort((a, b) => a.dateGen.localeCompare(b.dateGen));
+      let records = makeupBank.filter(r => r.studentId === studentId && r.status === 'active' && r.remaining > 0 && !isGroupMakeupRecord(r)).sort((a, b) => a.dateGen.localeCompare(b.dateGen));
       let left = amt;
       records.forEach(record => {
         if (left <= 0) return;
@@ -5452,6 +5487,7 @@
     async function submitNewMakeupFromCalendar() {
       let studentId = document.getElementById('newmakeup-student-value').value;
       if (!studentId) { alert('請先選擇學生！'); return; }
+      if (studentId.startsWith('gm:')) { await submitGroupMakeupSchedule(studentId.slice(3)); return; }
       let s = students.find(x => x.id === studentId);
       if (!s) { alert('找不到這位學生，請重新整理頁面再試一次！'); return; }
 
@@ -5478,6 +5514,40 @@
       if (calendar) calendar.refetchEvents();
       refreshDayPanelIfNeeded();
       alert('✅ 已排定補課！');
+    }
+
+    // 整團補課排時間：全團同一個時間，每位同學各扣自己的那筆
+    async function submitGroupMakeupSchedule(gmId) {
+      let u = getGroupMakeupUnits(true).find(x => x.id === gmId);
+      if (!u) { alert('這次整團補課已經排好了，或找不到了，請重新整理再試一次！'); return; }
+      let amt = Number(document.getElementById('newmakeup-amt').value);
+      let date = document.getElementById('newmakeup-date').value;
+      let timeInput = getTimeValue('newmakeup-time');
+      let duration = Number(document.getElementById('newmakeup-duration').value) || 60;
+      if (!amt || amt <= 0 || amt > u.remaining) { alert(`❌ 輸入錯誤！最多只能排 ${u.remaining} 堂`); return; }
+      if (!date || !timeInput) { alert('❌ 請完整選擇補課的日期與時間！'); return; }
+      let members = groupMakeupUnitStudents(u, date);
+      if (!members.length) { alert('這次整團補課的同學在 ' + date + ' 之前都已經退班了。'); return; }
+      let conflictName = findScheduleConflict(date, timeInput, duration);
+      if (conflictName) {
+        let ok = await smConfirm('⚠️ 這個時段（' + date + ' ' + timeInput + '）已經有 ' + conflictName + ' 排課了，確定還要排在這裡嗎？');
+        if (!ok) return;
+      }
+      if (!await confirmRentalClash(date, timeInput, duration, members[0].location)) return; // 這個時段這間工作室已經租給別人的話，先提醒
+      let ids = members.map(s => s.id);
+      u.records.forEach(rec => {
+        if (rec.status !== 'active' || !(rec.remaining > 0) || !ids.includes(rec.studentId)) return;
+        let draw = Math.min(rec.remaining, amt);
+        rec.remaining = Number((rec.remaining - draw).toFixed(2));
+        rec.schedules.push({ date: date, time: timeInput, amount: draw, duration: duration, attended: false });
+      });
+      saveMakeupToMemory();
+      closeNewMakeupModal();
+      if (calendar) calendar.refetchEvents();
+      refreshDayPanelIfNeeded();
+      if (document.getElementById('dashboard-page').style.display === 'block') renderDashboardCounts();
+      if (document.getElementById('manage-page').style.display === 'block') renderManageList();
+      alert('✅ 已排好整團補課！');
     }
 
     // 切換「選擇已有學生」／「直接輸入新的人」：後者用於還沒想正式建檔的體驗課學生
@@ -5629,7 +5699,7 @@
             // 轉為補課產生的紀錄，dateGen 就是原本那堂課的日期（學生的轉補紀錄裡查得到）；手動新增的補課紀錄沒有對應的課，只寫「補課」
             let originDate = getMakeupRecordOrigin(record);
             let origin = originDate ? '（原' + originDate.slice(5).replace('-', '/') + '）' : '';
-            teachingRows.push({ date: sch.date, time: sch.time || '', duration: sch.duration || 60, name: record.studentName, note: '補課' + origin + (amt !== 1 ? ' ' + amt + '堂' : ''), fee: fee * sch.amount });
+            teachingRows.push({ date: sch.date, time: sch.time || '', duration: sch.duration || 60, name: record.studentName, note: '補課' + origin + (amt !== 1 ? ' ' + amt + '堂' : '') + (sch.absent ? '・缺席收費' : ''), fee: fee * sch.amount });
           }
         });
       });
@@ -6024,7 +6094,8 @@
     function buildMakeupScheduleHTML(record, idPrefix, hideForm) {
       let schList = record.schedules.map((sch, idx) => {
         let statusIcon = sch.attended ? '✅已上' : '⏳待上';
-        let editBtn = sch.attended ? '' : ` <button class="small-btn" style="padding:1px 6px; font-size:10px; background-color:var(--c-sand); color:var(--c-text);" onclick="openEditMakeupScheduleModal('${record.id}', ${idx})">✏️編輯</button>`;
+        let editBtn = (sch.attended || isGroupMakeupRecord(record)) ? '' : ` <button class="small-btn" style="padding:1px 6px; font-size:10px; background-color:var(--c-sand); color:var(--c-text);" onclick="openEditMakeupScheduleModal('${record.id}', ${idx})">✏️編輯</button>`;
+        if (sch.attended && sch.absent) statusIcon = '💸缺席照收';
         return `<div style="font-size:12px; color:var(--c-accent-text); margin-top:5px;">↳ ${statusIcon} ${sch.date} ${sch.time} (扣 ${sch.amount} 堂)${editBtn}</div>`;
       }).join('');
 
@@ -6704,19 +6775,134 @@
     function getGroups() { return Array.isArray(appSettings.groups) ? appSettings.groups : []; }
     function getGroupById(id) { return id ? (getGroups().find(g => g.id === id) || null) : null; }
     function getGroupMembers(groupId, includeEnded) { return students.filter(s => s.groupId === groupId && (includeEnded || !s.endDate)); }
+
+    // ---- 整團補課 ----
+    // 整團轉補課時，每位同學各自有一筆補課紀錄（學費、預繳才算得對），用同一個 groupMakeupId 綁在一起，
+    // 畫面上當成「整團一筆」：一起排時間、補課那天合併成一格一起點名。團體被刪掉的話，就當成各自的補課。
+    function isGroupMakeupRecord(r) { return !!(r && r.groupMakeupId && getGroupById(r.groupId)); }
+    function getGroupMakeupUnits(onlyPending) {
+      let byId = {};
+      makeupBank.forEach(r => { if (isGroupMakeupRecord(r)) (byId[r.groupMakeupId] = byId[r.groupMakeupId] || []).push(r); });
+      let units = Object.keys(byId).map(id => {
+        let recs = byId[id];
+        // 已經退班的同學不算（退班那天之後就不會再排他了）
+        let today = formatDate(new Date());
+        let active = recs.filter(r => { let st = students.find(x => x.id === r.studentId); return r.status === 'active' && st && (!st.endDate || st.endDate >= today); });
+        let remaining = active.length ? Math.max(...active.map(r => Number(r.remaining) || 0)) : 0;
+        return { id: id, groupId: recs[0].groupId, dateGen: recs.map(r => r.dateGen).sort()[0], records: recs, remaining: remaining };
+      });
+      if (onlyPending) units = units.filter(u => u.remaining > 0);
+      return units.sort((a, b) => a.dateGen.localeCompare(b.dateGen));
+    }
+    function groupMakeupUnitName(u) { let g = getGroupById(u.groupId); return (g ? g.name : '團體課'); }
+    // 還在這次整團補課裡、而且還沒退班（或退班日在補課之後）的同學
+    function groupMakeupUnitStudents(u, onDate) {
+      let d = onDate || formatDate(new Date());
+      return u.records.map(r => students.find(s => s.id === r.studentId)).filter(s => s && (!s.endDate || s.endDate >= d));
+    }
+    // 已經排好的整團補課時間（還沒上的）
+    function groupMakeupScheduleText(u) {
+      let seen = {};
+      u.records.forEach(r => r.schedules.forEach(sch => { if (!sch.attended) seen[sch.date + ' ' + (sch.time || '')] = formatReportDate(sch.date) + (sch.time ? ' ' + sch.time : ''); }));
+      return Object.keys(seen).sort().map(k => seen[k]).join('、');
+    }
+    // 團體點名視窗裡某位同學，那堂轉補課對應的補課紀錄
+    function findMemberMakeupRecord(dateStr, m) {
+      if (m.temp) return makeupBank.find(r => r.fromTempId === m.temp.id) || null;
+      return m.s ? (makeupBank.find(r => r.studentId === m.s.id && r.dateGen === dateStr && !r.fromTempId) || null) : null;
+    }
+    // 取消整團轉補課：整團問一次（不是每個人各問一次），已經排好的整團補課一起取消，這堂變回未點名
+    async function cancelGroupMakeupConversion() {
+      let ctx = currentGroupCtx; if (!ctx) return;
+      let ms = getGroupLessonMembers(ctx).filter(m => m.st === 'converted' && isGroupMakeupRecord(findMemberMakeupRecord(ctx.dateStr, m)));
+      if (!ms.length) return;
+      let recs = ms.map(m => findMemberMakeupRecord(ctx.dateStr, m));
+      let doneDates = [...new Set([].concat(...recs.map(r => r.schedules.filter(sch => sch.attended).map(sch => formatReportDate(sch.date)))))];
+      if (doneDates.length) {
+        alert('這次整團補課已經在 ' + doneDates.join('、') + ' 上過了，所以不能直接取消轉補課。\n\n請先到那堂補課把點名恢復為「未點名」，再回來取消。');
+        return;
+      }
+      let when = groupMakeupScheduleText({ records: recs });
+      if (!await smConfirm(when
+        ? '這次整團補課已經排在 ' + when + '。\n\n取消整團轉補課，會把那堂補課一起取消，這堂變回一般課（未點名）。確定嗎？'
+        : '確定要取消整團轉補課嗎？這堂會變回一般課（未點名）。')) return;
+      let ids = recs.map(r => r.id);
+      makeupBank = makeupBank.filter(r => !ids.includes(r.id)); // 先拿掉紀錄，下面恢復時就不會每個人再問一次
+      saveMakeupToMemory();
+      let all = getGroupLessonMembers(ctx);
+      for (const m of ms) await applyGroupMember(m, 'reset', all.findIndex(x => x.props === m.props));
+      afterGroupChange();
+    }
+    // 取消這一次整團補課（還沒點名的）：大家退回「整團待補」，之後再重新排時間
+    async function cancelGroupMakeupSession() {
+      let ctx = currentGroupCtx; if (!ctx || ctx.kind !== 'makeup') return;
+      let ms = getGroupLessonMembers(ctx);
+      if (!ms.length || ms.some(m => m.sch && m.sch.attended)) return;
+      if (!await smConfirm('要取消 ' + formatReportDate(ctx.dateStr) + (ctx.time ? ' ' + ctx.time : '') + ' 這次整團補課嗎？\n\n大家會退回「整團待補」，之後再重新排時間。')) return;
+      ms.forEach(m => {
+        let r = m.record, idx = r.schedules.indexOf(m.sch);
+        if (idx < 0) return;
+        r.remaining = Number((r.remaining + (Number(m.sch.amount) || 0)).toFixed(2));
+        r.schedules.splice(idx, 1);
+        r.status = 'active';
+      });
+      saveMakeupToMemory();
+      closeGroupModal();
+      if (calendar) calendar.refetchEvents();
+      renderDashboardCounts && renderDashboardCounts();
+      alert('✅ 已取消這次整團補課，可以再重新排時間。');
+    }
+    // 從團體點名視窗打開「排整團補課時間」
+    function openGroupMakeupSchedule(gmId) {
+      if (document.getElementById('group-modal').style.display === 'flex') closeGroupModal();
+      openNewMakeupModal();
+      selectNewMakeupGroupUnit(gmId);
+    }
+    // 某位同學從整團補課拿出來，變成他自己的補課（例如那天沒辦法跟大家一起補）
+    async function splitGroupMakeupRecord(recordId) {
+      let r = makeupBank.find(x => x.id === recordId);
+      if (!isGroupMakeupRecord(r)) return;
+      let gname = groupMakeupUnitName({ groupId: r.groupId });
+      if (r.schedules.some(sch => sch.attended)) { alert('「' + r.studentName + '」已經上過這次整團補課了，不能再拆開。'); return; }
+      let pending = r.schedules.filter(sch => !sch.attended);
+      let when = pending.map(sch => formatReportDate(sch.date) + (sch.time ? ' ' + sch.time : '')).join('、');
+      if (!await smConfirm('要讓「' + r.studentName + '」自己另外補嗎？\n\n他會從「' + gname + '」這次整團補課拿出來，變成他自己的補課，之後再幫他另外排時間。' +
+        (when ? '\n\n原本排好的 ' + when + ' 整團補課，他就不在名單裡了。' : ''), { ok: '自己另外補' })) return;
+      pending.forEach(sch => { r.remaining = Number((r.remaining + (Number(sch.amount) || 0)).toFixed(2)); });
+      r.schedules = r.schedules.filter(sch => sch.attended);
+      r.status = 'active';
+      delete r.groupMakeupId; delete r.groupId;
+      saveMakeupToMemory();
+      if (document.getElementById('attendance-modal').style.display === 'flex') closeModal();
+      if (calendar) calendar.refetchEvents();
+      if (document.getElementById('student-detail-page').style.display === 'block' && currentDetailStudentId === r.studentId) renderStudentDetailMakeup();
+      refreshDayPanelIfNeeded();
+      alert('✅ 「' + r.studentName + '」改成自己另外補了，可以在「新增補課」或他的補課頁幫他排時間。');
+    }
+    // 點名視窗、學生補課頁：這筆是整團補課時顯示的說明（不給個別排時間）
+    function groupMakeupMemberHTML(record) {
+      let u = getGroupMakeupUnits().find(x => x.id === record.groupMakeupId);
+      let when = u ? groupMakeupScheduleText(u) : '';
+      let canSplit = !record.schedules.some(sch => sch.attended);
+      return `<div style="font-size:13px; color:var(--c-text2); background:var(--c-accent-soft); border-radius:8px; padding:10px 12px; margin:6px 0 10px 0; text-align:left; line-height:1.6;">👥 這是「${escHTML(groupMakeupUnitName({ groupId: record.groupId }))}」整團補課，${when ? '排在 ' + when : '補課時間請在團體裡一起排'}。</div>` +
+        (canSplit ? `<button class="modal-btn" style="background-color:var(--c-surface); color:var(--c-text); border:1px solid var(--c-line);" onclick="splitGroupMakeupRecord('${record.id}')">👤 改成自己另外補</button>` : '');
+    }
     function getItemGroupId(it) {
       let p = (it && it.props) || {};
       if (p.type === 'normal') { let s = students[p.stuIdx]; return (s && getGroupById(s.groupId)) ? s.groupId : null; }
+      if (p.type === 'makeup') { let r = makeupBank.find(x => x.id === p.recordId); return isGroupMakeupRecord(r) ? r.groupId : null; }
       if (p.type === 'temp') { let t = tempLessons.find(x => x.id === p.tempId); return (t && getGroupById(t.groupId)) ? t.groupId : null; }
       return null;
     }
     function getMemberStatus(mp) {
       if (mp.type === 'normal') { let s = students[mp.stuIdx]; return s ? getNormalLessonStatus(s, mp.dateStr) : 'none'; }
+      if (mp.type === 'makeup') { let r = makeupBank.find(x => x.id === mp.recordId); let sch = r && r.schedules[mp.schIdx]; return !sch ? 'none' : (sch.attended ? (sch.absent ? 'absent' : 'attended') : 'none'); }
       let t = tempLessons.find(x => x.id === mp.tempId);
       return t ? getTempLessonStatus(t) : 'none';
     }
     function getMemberStudent(mp) {
       if (mp.type === 'normal') return students[mp.stuIdx] || null;
+      if (mp.type === 'makeup') { let r = makeupBank.find(x => x.id === mp.recordId); return r ? (students.find(s => s.id === r.studentId) || null) : null; }
       let t = tempLessons.find(x => x.id === mp.tempId);
       return t ? (students.find(s => s.id === t.studentId) || null) : null;
     }
@@ -6728,7 +6914,7 @@
       items.forEach(it => {
         let gid = getItemGroupId(it);
         if (!gid) { out.push(it); return; }
-        let key = gid + '|' + (it.time || '');
+        let key = gid + '|' + (it.time || '') + (it.props.type === 'makeup' ? '|mk|' + it.props.groupMakeupId : '');
         if (!byKey[key]) { byKey[key] = { __group: gid, its: [] }; out.push(byKey[key]); }
         byKey[key].its.push(it);
       });
@@ -6739,11 +6925,16 @@
       let members = its.map(it => it.props);
       let sts = members.map(getMemberStatus);
       let isTemp = members.every(m => m.type === 'temp');
+      let isMakeup = members.every(m => m.type === 'makeup');
       let active = sts.filter(st => !MEMBER_INACTIVE.includes(st));
       let done = active.filter(st => st === 'attended' || st === 'absent');
       let label = '👥 ' + g.name;
       let className, title;
-      if (active.length === 0) {
+      if (isMakeup) {
+        // 整團補課：一次補課一格
+        if (done.length === active.length) { className = 'event-attended'; title = '✅ [補] ' + label; }
+        else { className = 'event-makeup'; title = '[補課] ' + label + (done.length > 0 ? '（' + done.length + '/' + active.length + ' 已點名）' : '（' + active.length + '人）'); }
+      } else if (active.length === 0) {
         if (sts.every(st => st === 'rescheduled')) { className = 'event-rescheduled'; title = '🔀 ' + label + ' (已調課)'; }
         else if (sts.every(st => st === 'converted')) { className = 'event-makeup-conv'; title = '🔄 ' + label + ' (轉補)'; }
         else { className = 'event-canceled'; title = '❌ ' + label + ' (延期)'; }
@@ -6762,17 +6953,22 @@
       let duration = Math.max(...its.map(it => getDurationForProps(it.props)));
       return { title, shortTitle, className, time: first.time, allDay: first.allDay, name: g.name, locationAbbr: abbr,
         endTime: first.allDay ? '' : computeEndTime(first.time, duration),
-        props: { type: 'group', groupId: gid, dateStr: first.props.dateStr, time: first.time || '', duration, members } };
+        props: { type: 'group', groupId: gid, dateStr: first.props.dateStr, time: first.time || '', duration, members, kind: isMakeup ? 'makeup' : '', groupMakeupId: isMakeup ? first.props.groupMakeupId : undefined } };
     }
 
     // ---- 一起點名的視窗 ----
     function getGroupLessonMembers(ctx) {
+      let mk = ctx.kind === 'makeup';
       return getEventsForDate(ctx.dateStr)
-        .filter(it => getItemGroupId(it) === ctx.groupId && (it.time || '') === (ctx.time || ''))
-        .map(it => ({ it, props: it.props, s: getMemberStudent(it.props), st: getMemberStatus(it.props), temp: it.props.type === 'temp' ? tempLessons.find(x => x.id === it.props.tempId) : null }));
+        .filter(it => getItemGroupId(it) === ctx.groupId && (it.time || '') === (ctx.time || '') && ((it.props.type === 'makeup') === mk) && (!mk || it.props.groupMakeupId === ctx.gmId))
+        .map(it => {
+          let record = it.props.type === 'makeup' ? (makeupBank.find(r => r.id === it.props.recordId) || null) : null;
+          return { it, props: it.props, s: getMemberStudent(it.props), st: getMemberStatus(it.props), temp: it.props.type === 'temp' ? tempLessons.find(x => x.id === it.props.tempId) : null, record: record, sch: record ? record.schedules[it.props.schIdx] : null };
+        });
     }
-    function openGroupModal(groupId, dateStr, time) {
-      currentGroupCtx = { groupId, dateStr, time: time || '' };
+    // kind = 'makeup' 是整團補課那一格（gmId 是哪一次整團轉補課）
+    function openGroupModal(groupId, dateStr, time, kind, gmId) {
+      currentGroupCtx = { groupId, dateStr, time: time || '', kind: kind || '', gmId: gmId || '' };
       if (!renderGroupModal()) return;
       lockBodyScroll();
       document.getElementById('group-modal').style.display = 'flex';
@@ -6801,7 +6997,18 @@
       document.getElementById('group-modal-date').innerText = ctx.dateStr + '（' + getDayName(String(d.getDay())) + '）' + (ctx.time ? ' ' + ctx.time + '–' + computeEndTime(ctx.time, dur) : '') + (loc ? '・' + loc : '');
 
       let note = '';
-      if (isTemp) {
+      let gmUnit = null; // 這堂已經整團轉補課的話：那一次整團補課
+      if (ctx.kind !== 'makeup' && ms.every(m => m.st === 'converted')) {
+        let rec0 = findMemberMakeupRecord(ctx.dateStr, ms[0]);
+        if (isGroupMakeupRecord(rec0)) gmUnit = getGroupMakeupUnits().find(u => u.id === rec0.groupMakeupId) || null;
+      }
+      if (ctx.kind === 'makeup') {
+        let u = getGroupMakeupUnits().find(x => x.id === ctx.gmId);
+        note = '🔄 整團補課' + (u ? '・原本 ' + formatReportDate(u.dateGen) + ' 的課' : '');
+      } else if (gmUnit) {
+        let when = groupMakeupScheduleText(gmUnit);
+        note = '🔄 已整團轉補課' + (when ? '・補課排在 ' + when : (gmUnit.remaining > 0 ? '・還沒排補課時間' : ''));
+      } else if (isTemp) {
         let from = ms[0].temp.rescheduledFrom;
         note = '🔀 整團調課' + (from ? '・原本 ' + formatReportDate(from) + ' 的課' : '');
       } else if (ms.every(m => m.st === 'rescheduled')) {
@@ -6824,19 +7031,35 @@
         btns += `<button class="gm-btn gm-more" onclick="openGroupMemberFull(${i})" title="更多">⋯</button>`;
         let paid = (m.st === 'none' && m.s && m.s.singleLessonPay) ? `<label class="gm-paid"><input type="checkbox" id="gm-paid-${i}" checked> 單堂繳費：已收費</label>` : '';
         let st = ST_LABEL[m.st] || '';
+        if (m.st === 'converted' && isGroupMakeupRecord(findMemberMakeupRecord(ctx.dateStr, m))) st = '🔄 整團轉補課';
         return `<div class="gm-row"><div class="gm-info"><div class="gm-name">${escHTML(name)}${balTag}</div>${st ? `<div class="gm-st">${st}</div>` : ''}${paid}</div><div class="gm-btns">${btns}</div></div>`;
       }).join('');
 
       let none = ms.filter(m => m.st === 'none');
       let acts = '';
       if (none.length > 0) acts += modalBtn('✅ 全部出席' + (none.length < ms.length ? '（還沒點名的 ' + none.length + ' 位）' : '（' + ms.length + ' 位）'), "groupApplyAll('attended')", 'background-color:var(--c-primary);');
+      document.getElementById('group-modal-hint').innerText = ctx.kind === 'makeup'
+        ? '某位同學沒辦法跟大家一起補的話，按他的「⋯」選「改成自己另外補」。'
+        : '按「⋯」可以單獨處理某一位同學：轉補課、調課、課堂記錄、待辦、學生異動。';
+      if (ctx.kind === 'makeup') {
+        // 整團補課那一格：還沒點名的話，可以取消這次補課（大家退回「整團待補」，之後再排）
+        if (none.length === ms.length) acts += modalBtn('❌ 取消這次補課（退回待補）', 'cancelGroupMakeupSession()', 'background-color:var(--c-sand); color:var(--c-text);');
+        document.getElementById('group-modal-actions').innerHTML = acts;
+        return true;
+      }
       if (none.length === ms.length) {
         acts += modalBtn(isTemp ? '❌ 整團延期' : '❌ 整團延期（這次不上，不收費）', "groupApplyAll('canceled')", 'background-color:var(--c-sand); color:var(--c-text);');
+        acts += modalBtn('🔄 整團轉補課（存入補課存摺）', "groupApplyAll('makeup')", 'background-color:var(--c-accent);');
         if (!isTemp) acts += modalBtn('🔀 整團調課（換到別天）', 'openGroupReschedule()', 'background-color:var(--c-violet);');
       }
       if (ms.every(m => m.st === 'canceled')) {
         acts += modalBtn('↩️ 取消整團延期', "groupApplyAll('reset')", MODAL_UNDO_STYLE);
+        acts += modalBtn('🔄 改成整團轉補課', "groupApplyAll('makeup')", 'background-color:var(--c-accent);');
         if (!isTemp) acts += modalBtn('🔀 改成整團調課', 'openGroupReschedule()', 'background-color:var(--c-violet);');
+      }
+      if (gmUnit) {
+        if (gmUnit.remaining > 0) acts += modalBtn('📅 排整團補課時間', "openGroupMakeupSchedule('" + gmUnit.id + "')", 'background-color:var(--c-accent);');
+        acts += modalBtn('↩️ 取消整團轉補課', 'cancelGroupMakeupConversion()', MODAL_UNDO_STYLE);
       }
       if (!isTemp && ms.every(m => m.st === 'rescheduled')) acts += modalBtn('↩️ 取消整團調課，恢復這堂', 'cancelGroupReschedule()', 'background-color:var(--c-danger);');
       if (isTemp && ms.every(m => m.st === 'none' || m.st === 'canceled')) acts += modalBtn('↩️ 取消整團調課，恢復原本那堂', 'cancelGroupReschedule()', 'background-color:var(--c-danger);');
@@ -6852,7 +7075,32 @@
     async function applyGroupMember(m, status, idx) {
       let paidEl = document.getElementById('gm-paid-' + idx);
       let markPaid = !!(paidEl && paidEl.checked);
+      if (m.record) return applyGroupMakeupMember(m, status, markPaid);
       return m.temp ? applyTempLessonStatus(m.temp, status, markPaid) : applyNormalLessonStatus(m.s, currentGroupCtx.dateStr, status, markPaid);
+    }
+    // 整團補課那一格的點名：出席、缺席（照收，跟平常團體課一樣）、恢復未點名
+    function applyGroupMakeupMember(m, status, markPaid) {
+      let r = m.record, sch = m.sch;
+      if (!r || !sch) return false;
+      let before = paymentRecords.length;
+      paymentRecords = paymentRecords.filter(p => !(p.studentId === r.studentId && p.date === sch.date && p.note === '補課點名時登記'));
+      let paymentChanged = paymentRecords.length !== before;
+      if (status === 'attended' || status === 'absent_charged') {
+        sch.attended = true;
+        if (status === 'absent_charged') sch.absent = true; else delete sch.absent;
+        if (r.remaining === 0 && r.schedules.every(x => x.attended)) r.status = 'history';
+        if (markPaid) {
+          let stu = students.find(x => x.id === r.studentId);
+          paymentRecords.push({ id: generateId(), studentId: r.studentId, studentName: r.studentName, date: sch.date, lessons: Number(sch.amount) || 1, note: '補課點名時登記', amount: autoPayAmount(stu, Number(sch.amount) || 1) });
+          paymentChanged = true;
+        }
+      } else if (status === 'reset') {
+        sch.attended = false; delete sch.absent;
+        r.status = 'active';
+      }
+      if (paymentChanged) savePaymentToMemory();
+      saveMakeupToMemory();
+      return true;
     }
     async function groupMemberStatus(idx, status) {
       let ctx = currentGroupCtx; if (!ctx) return;
@@ -6867,13 +7115,25 @@
     async function groupApplyAll(status) {
       let ctx = currentGroupCtx; if (!ctx) return;
       let ms = getGroupLessonMembers(ctx);
-      let targets = status === 'reset' ? ms.filter(m => m.st === 'canceled') : ms.filter(m => m.st === 'none');
+      let targets = status === 'reset' ? ms.filter(m => m.st === 'canceled')
+        : status === 'makeup' ? ms.filter(m => m.st === 'none' || m.st === 'canceled')
+        : ms.filter(m => m.st === 'none');
       if (!targets.length) return;
       if (status === 'attended' && ctx.dateStr > formatDate(new Date())) {
         if (!await smConfirm('⚠️ ' + ctx.dateStr + ' 這天還沒到，出席狀況應該還未確定，確定要現在標記嗎？')) return;
       }
       for (const m of targets) await applyGroupMember(m, status, ms.indexOf(m));
+      // 整團轉補課：每位同學各有一筆補課紀錄（學費才算得對），用同一個代號綁在一起，之後整團一起排、一起點名
+      if (status === 'makeup') {
+        let gmId = 'gm' + generateId();
+        targets.forEach(m => {
+          let rec = findMemberMakeupRecord(ctx.dateStr, m);
+          if (rec && !rec.groupMakeupId) { rec.groupMakeupId = gmId; rec.groupId = ctx.groupId; }
+        });
+        saveMakeupToMemory();
+      }
       afterGroupChange();
+      if (status === 'makeup') alert('✅ 已整團轉補課！');
     }
     function openGroupMemberFull(idx) {
       let ctx = currentGroupCtx; if (!ctx) return;
@@ -7769,7 +8029,8 @@
 
     function renderDashboardCounts() {
       let owedCount = students.filter(s => !s.endDate && getStudentBalance(s.id) > 0).length;
-      let makeupCount = students.filter(s => !s.endDate && makeupBank.some(r => r.studentId === s.id && r.status === 'active' && r.remaining > 0)).length;
+      let makeupCount = students.filter(s => !s.endDate && makeupBank.some(r => r.studentId === s.id && r.status === 'active' && r.remaining > 0 && !isGroupMakeupRecord(r))).length
+        + getGroupMakeupUnits(true).length; // 整團補課整團算 1 筆
       document.getElementById('dashboard-owed-count').innerText = owedCount;
       document.getElementById('dashboard-makeup-count').innerText = makeupCount;
     }
@@ -7875,7 +8136,7 @@
         if (manageFilters.payment === 'settled' && balance !== 0) return false;
       }
       if (manageFilters.makeup) {
-        let hasUnscheduled = makeupBank.some(r => r.studentId === s.id && r.status === 'active' && r.remaining > 0);
+        let hasUnscheduled = makeupBank.some(r => r.studentId === s.id && r.status === 'active' && r.remaining > 0 && !isGroupMakeupRecord(r));
         if (!hasUnscheduled) return false;
       }
       if (manageFilters.todo) {
@@ -7932,7 +8193,7 @@
         let startNote = s.startDate ? (' <br> 🌱 開始上課：' + s.startDate) : '';
         let locationNote = s.location ? (' <br> 📍 ' + s.location) : '';
         let hasOwed = getStudentBalance(s.id) > 0;
-        let hasUnscheduledMakeup = makeupBank.some(r => r.studentId === s.id && r.status === 'active' && r.remaining > 0);
+        let hasUnscheduledMakeup = makeupBank.some(r => r.studentId === s.id && r.status === 'active' && r.remaining > 0 && !isGroupMakeupRecord(r));
         let statusBadges = (hasOwed ? '⚠️ ' : '') + (hasUnscheduledMakeup ? '🔄 ' : '');
         let pauseNote = getPauseLabel(s) ? `<div style="font-size:12px; color:var(--c-text2); background:var(--c-blue-soft); border-radius:4px; padding:3px 8px; margin:2px 0 6px 0; display:inline-block;">${getPauseLabel(s)}</div>` : '';
         let grp = s.groupId ? getGroupById(s.groupId) : null;
@@ -7940,7 +8201,19 @@
         return `<div class="card"><div class="student-title" style="font-size: 16px;">${statusBadges}${s.name} (${s.instrument})</div>${pauseNote}<div class="student-detail">🕒 ${displayTime}${locationNote}${startNote} <br> 💰 ${s.fee}元 / 堂 <br> 📞 ${s.phone}</div><div style="display:flex; flex-wrap:wrap; gap:6px;"><button class="small-btn" style="background-color:var(--c-primary); color:white;" onclick="openStudentDetail('${s.id}')">📋 詳細資料</button><button class="small-btn" style="background-color:var(--c-sand); color:var(--c-text);" onclick="openEditModal(${i})">編輯</button><button class="small-btn" style="background-color:var(--c-blue); color:white;" onclick="openPlanChangeModal('${s.id}')">🔁 課程方案異動</button><button class="small-btn" style="background-color:var(--c-slate); color:white;" onclick="openPauseModal('${s.id}')">⏸️ 停課</button><button class="small-btn" style="background-color:var(--c-rose); color:white;" onclick="openWithdrawModal('${s.id}')">退班</button><button class="small-btn del-btn" onclick="deleteStudent(${i})">刪除</button></div></div>`;
       }).join('');
 
-      document.getElementById('manage-list').innerHTML = listHTML || (query ? '<p style="color:var(--c-muted);">沒有符合搜尋／篩選條件的在學學生。</p>' : '<p style="color:var(--c-muted);">沒有符合篩選條件的在學學生。</p>');
+      // 「需要排補課」：整團待補的，整團一張卡，按一下就能排時間
+      let groupHTML = '';
+      if (manageFilters.makeup) {
+        groupHTML = getGroupMakeupUnits(true).filter(u => {
+          if (!query) return true;
+          return groupMakeupUnitName(u).toLowerCase().includes(query) || groupMakeupUnitStudents(u).some(st => st.name.toLowerCase().includes(query));
+        }).map(u => {
+          let names = groupMakeupUnitStudents(u).map(st => escHTML(st.name)).join('、');
+          let when = groupMakeupScheduleText(u);
+          return `<div class="card"><div class="student-title" style="font-size: 16px;">🔄 👥 ${escHTML(groupMakeupUnitName(u))}・整團補課</div><div class="student-detail">原本 ${formatReportDate(u.dateGen)} 的課・還剩 ${u.remaining} 堂${when ? '<br>已排：' + when : ''}<br>同學：${names}</div><div style="display:flex; flex-wrap:wrap; gap:6px;"><button class="small-btn" style="background-color:var(--c-accent); color:white;" onclick="openGroupMakeupSchedule('${u.id}')">📅 排整團補課時間</button></div></div>`;
+        }).join('');
+      }
+      document.getElementById('manage-list').innerHTML = (groupHTML + listHTML) || (query ? '<p style="color:var(--c-muted);">沒有符合搜尋／篩選條件的在學學生。</p>' : '<p style="color:var(--c-muted);">沒有符合篩選條件的在學學生。</p>');
       document.getElementById('manage-withdrawn-list').innerHTML = withdrawnCount === 0 ? '<p style="color:var(--c-faint); font-size:12px;">尚無已退班學生</p>' : withdrawnHTML;
     }
     
@@ -8393,6 +8666,7 @@
         let doneAmt = Number(done.reduce((t, sch) => t + (Number(sch.amount) || 0), 0).toFixed(2));
         let moved = { id: generateId(), studentId: newId, studentName: oldS.name, dateGen: r.dateGen, totalOwed: Number((Number(r.totalOwed) - doneAmt).toFixed(2)), remaining: r.remaining, status: 'active', schedules: todo };
         if (r.fromTempId) moved.fromTempId = r.fromTempId;
+        if (r.groupMakeupId) { moved.groupMakeupId = r.groupMakeupId; moved.groupId = r.groupId; }
         splitMakeups.push(moved);
         r.schedules = done; r.totalOwed = doneAmt; r.remaining = 0; r.status = 'history';
       });
@@ -8884,7 +9158,7 @@
       let activeHTML = ''; let historyHTML = ''; let activeCount = 0; let historyCount = 0;
 
       // 還欠的紀錄照「先有的先清掉」的順序排：最上面那筆會最先被扣
-      let activeOrdered = records.filter(r => r.status === 'active').sort((a, b) => a.dateGen.localeCompare(b.dateGen));
+      let activeOrdered = records.filter(r => r.status === 'active').sort((a, b) => (isGroupMakeupRecord(a) - isGroupMakeupRecord(b)) || a.dateGen.localeCompare(b.dateGen));
       let totalRemaining = getStudentRemainingMakeup(s.id);
       let formHTML = '';
       if (totalRemaining > 0) {
@@ -8913,6 +9187,10 @@
         activeCount++;
         let originDate = getMakeupRecordOrigin(record);
         let originLabel = originDate ? `原本 ${formatReportDate(originDate)} 的課` : `手動新增於 ${record.dateGen}`;
+        if (isGroupMakeupRecord(record)) {
+          activeHTML += `<div class="card makeup-card"><div style="font-size:12px; color:var(--c-group-text); font-weight:bold;">👥 ${escHTML(groupMakeupUnitName({ groupId: record.groupId }))}・整團補課</div><div style="font-size:12px; color:var(--c-muted);">${originLabel}</div>${buildMakeupScheduleHTML(record, 'detail_', true)}${groupMakeupMemberHTML(record)}</div>`;
+          return;
+        }
         activeHTML += `<div class="card makeup-card"><div style="font-size:12px; color:var(--c-muted);">${originLabel}</div>${buildMakeupScheduleHTML(record, 'detail_', true)}<button class="small-btn" style="margin-top:10px; color:var(--c-muted); background:transparent; text-decoration:underline;" onclick="cancelMakeupRecord('${record.id}')">取消這筆紀錄</button></div>`;
       });
 
@@ -10211,7 +10489,7 @@
     const PUSH_TTL = { todo: 2 * 3600, rental: 0, test: 3600 };
     function reminderLessonLine(it) {
       let p = it.props, name = it.name || '';
-      if (p.type === 'group') name = '👥' + name;
+      if (p.type === 'group') name = (p.kind === 'makeup' ? '補課 ' : '') + '👥' + name;
       else if (p.type === 'makeup') name = '補課 ' + name;
       else if (p.type === 'temp') { let t = tempLessons.find(x => x.id === p.tempId); name = (t && isRescheduleTemp(t) ? '調課 ' : '臨時課 ') + name; }
       let abbr = it.locationAbbr || '';
@@ -10754,7 +11032,7 @@
 
     // ============ 版本更新檢查 ============
     // 每次修改程式、上傳新檔案時，要把這個版本號改掉（任何不一樣的字都可以），手機才會知道有新版本。
-    const APP_VERSION = 'sm-2026.10.23-1';
+    const APP_VERSION = 'sm-2026.10.26-1';
 
     // 加入主畫面的 App 常常直接拿手機裡存的舊檔案，而且沒有重新整理按鈕。
     // 做法：去網路上抓一份「現在的這個網頁」（網址加上時間，強迫不能用舊的），比對裡面寫的版本號，不一樣就提示更新。
