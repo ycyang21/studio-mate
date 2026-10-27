@@ -8207,7 +8207,7 @@
         if (s.endDate) {
           withdrawnCount++;
           let reasonNote = (s.endReason === 'planChanged')
-            ? ('🔁 已於 ' + s.endDate + ' 異動為新方案')
+            ? ('🔁 ' + addDaysStr(s.endDate, 1) + ' 起改用新方案') // 舊方案上到 endDate，隔天就是當初填的生效日期
             : ('🚪 退班日期：' + s.endDate);
           let balance = getStudentBalance(s.id);
           let balanceNote = (s.endReason !== 'planChanged' && balance > 0) ? ('<br> ⚠️ 呆帳未收：' + balance + ' 堂') : '';
@@ -11068,7 +11068,7 @@
 
     // ============ 版本更新檢查 ============
     // 每次修改程式、上傳新檔案時，要把這個版本號改掉（任何不一樣的字都可以），手機才會知道有新版本。
-    const APP_VERSION = 'sm-2026.10.27-5';
+    const APP_VERSION = 'sm-2026.10.27-6';
 
     // 加入主畫面的 App 常常直接拿手機裡存的舊檔案，而且沒有重新整理按鈕。
     // 做法：去網路上抓一份「現在的這個網頁」（網址加上時間，強迫不能用舊的），比對裡面寫的版本號，不一樣就提示更新。
