@@ -2465,46 +2465,6 @@
     function tempLockedUndoLabel(t) { return t.attended ? '↩️ 取消出席' : t.absentCharged ? '↩️ 取消缺席收費' : '↩️ 取消轉補課'; }
     function tempLockedWord(t) { return t.attended ? '點名出席' : t.absentCharged ? '記為缺席收費' : '轉為補課'; }
 
-    // 「已調課」卻找不到調過去的那堂時，可能是那堂被改成臨時課、或是以前的版本調的：
-    // 列出這位學生前後兩個月、還沒有對到別堂的臨時課（近的排前面），讓她挑出是哪一堂
-    function findOrphanRescheduleCandidates(s, dateStr) {
-      let d0 = new Date(dateStr + 'T00:00:00');
-      return tempLessons.filter(t => {
-        if (t.studentId !== s.id && t.studentName !== s.name) return false;
-        // 已經是別堂（真的有標「已調課」的那天）調過去的，不列出來
-        if (isRescheduleTemp(t) && t.rescheduledFrom && t.rescheduledFrom !== dateStr && (s.rescheduledDates || []).includes(t.rescheduledFrom)) return false;
-        return Math.abs((new Date(t.date + 'T00:00:00') - d0) / 86400000) <= 62;
-      }).sort((a, b) => Math.abs(new Date(a.date + 'T00:00:00') - d0) - Math.abs(new Date(b.date + 'T00:00:00') - d0) || (a.date + (a.time || '')).localeCompare(b.date + (b.time || '')));
-    }
-    function orphanRescheduleHTML(s, dateStr) {
-      let cands = findOrphanRescheduleCandidates(s, dateStr);
-      let box = 'font-size:13px; color:var(--c-text2); background:var(--c-violet-soft, var(--c-fill1)); border-radius:8px; padding:10px 12px; margin:0 0 10px 0; text-align:left; line-height:1.6;';
-      if (!cands.length) {
-        return `<div style="${box}">找不到調過去的那堂，${escHTML(s.name)}前後兩個月也沒有其他臨時課，調過去那堂應該已經被刪掉了。<br>可以「重新選調到哪一天」，或「取消調課」讓這堂恢復成未點名。</div>`;
-      }
-      let rows = cands.map(t => {
-        let label = isRescheduleTemp(t) ? '調課' : '臨時課';
-        let st = { attended: '・已出席', absent: '・缺席收費', canceled: '・已取消', converted: '・已轉補課' }[getTempLessonStatus(t)] || '';
-        return `<div style="display:flex; align-items:center; justify-content:space-between; gap:8px; padding:6px 0; border-top:1px solid var(--c-divider);"><span>📌 ${formatReportDate(t.date)}${t.time ? ' ' + t.time : ''}・${label}${st}</span><button class="small-btn" style="flex-shrink:0; background-color:var(--c-violet); color:white;" onclick="linkOrphanReschedule('${t.id}')">就是這堂</button></div>`;
-      }).join('');
-      return `<div style="${box}">找不到調過去的那堂。可能是那堂後來被改成「臨時課」。<br>下面是${escHTML(s.name)}前後兩個月的臨時課，如果其中一堂就是調過去的，按「就是這堂」接回來：${rows}</div>`;
-    }
-    async function linkOrphanReschedule(tempId) {
-      let ev = currentModalEvent;
-      let s = ev && ev.type === 'normal' ? students[ev.stuIdx] : null;
-      let t = tempLessons.find(x => x.id === tempId);
-      if (!s || !t) return;
-      if (!await smConfirm('把 ' + formatReportDate(t.date) + (t.time ? ' ' + t.time : '') + ' 那堂接回來，標成「原本 ' + formatReportDate(ev.dateStr) + ' 的課調過去」嗎？\n\n學費不會變，只是月曆和收支總表會改寫成「調課」。')) return;
-      t.kind = 'reschedule';
-      t.rescheduledFrom = ev.dateStr;
-      saveTempToMemory();
-      if (calendar) calendar.refetchEvents();
-      refreshDayPanelIfNeeded();
-      let args = lastAttendanceArgs;
-      if (args) openModalForCalendarEvent.apply(null, args);
-      alert('✅ 已接回來！');
-    }
-
     // 有對到原本那堂的調課：不能在編輯裡改成「臨時課」（一改兩堂就對不起來了），要取消就用「取消調課」，兩邊一起處理
     function isLinkedReschedule(t) { return isRescheduleTemp(t) && !!t.rescheduledFrom && !!findRescheduleOriginStudent(t); }
 
@@ -4039,16 +3999,10 @@
             btns = modalBtn('↩️ 取消缺席收費', "markStatus('reset')", MODAL_UNDO_STYLE);
           } else if (st === 'rescheduled') {
             let linked = getLinkedRescheduleLessons(s, props.dateStr);
-            if (linked.length > 0) {
-              kindNote = '🔀 這堂已調到 ' + linked.map(t => formatReportDate(t.date) + (t.time ? ' ' + t.time : '')).join('、');
-              btns = modalBtn('↩️ 取消調課，恢復這堂', 'cancelRescheduleFromOriginal()', 'background-color:var(--c-danger);');
-            } else {
-              // 找不到調過去的那堂：列出這位學生前後兩個月的臨時課，讓她指出是哪一堂；都不是的話可以重新選日期
-              kindNote = '🔀 這堂已調課，但找不到調到哪一天';
-              btns = orphanRescheduleHTML(s, props.dateStr) +
-                modalBtn('🔀 重新選調到哪一天', 'openRescheduleModalFromEvent()', 'background-color:var(--c-violet);') +
-                modalBtn('↩️ 取消調課，恢復這堂', 'cancelRescheduleFromOriginal()', 'background-color:var(--c-danger);');
-            }
+            kindNote = linked.length > 0
+              ? '🔀 這堂已調到 ' + linked.map(t => formatReportDate(t.date) + (t.time ? ' ' + t.time : '')).join('、')
+              : '🔀 這堂已調課';
+            btns = modalBtn('↩️ 取消調課，恢復這堂', 'cancelRescheduleFromOriginal()', 'background-color:var(--c-danger);');
           }
           let done = document.getElementById('modal-normal-done-actions');
           done.innerHTML = btns + modalStudentInlineHTML();
@@ -11090,7 +11044,7 @@
 
     // ============ 版本更新檢查 ============
     // 每次修改程式、上傳新檔案時，要把這個版本號改掉（任何不一樣的字都可以），手機才會知道有新版本。
-    const APP_VERSION = 'sm-2026.10.27-3';
+    const APP_VERSION = 'sm-2026.10.27-4';
 
     // 加入主畫面的 App 常常直接拿手機裡存的舊檔案，而且沒有重新整理按鈕。
     // 做法：去網路上抓一份「現在的這個網頁」（網址加上時間，強迫不能用舊的），比對裡面寫的版本號，不一樣就提示更新。
