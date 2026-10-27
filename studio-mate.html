@@ -471,6 +471,12 @@
     /* ===================== 外觀主題 ===================== */
     /* 所有顏色都用「顏色角色」（--c-xxx），每個主題在上面替這些角色配一組值；換主題 = 換 <html data-theme="..."> */
     body { font-family: var(--c-font); background-color: var(--c-bg); color: var(--c-text); -webkit-font-smoothing: antialiased; }
+    /* 手機、平板：長按畫面上的字（名字、按鈕、清單…）不會反白、不會跳出「拷貝」選單；
+       自己打字的地方（輸入框、文字框、複製用的框）照常可以長按選取、拷貝、貼上 */
+    @media (hover: none) and (pointer: coarse) {
+      html, body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+      input, textarea, [contenteditable="true"] { -webkit-user-select: text; user-select: text; -webkit-touch-callout: default; }
+    }
     button, input, select, textarea { font-family: inherit; }
     h1 { font-family: var(--c-font-display); font-weight: var(--c-display-weight); letter-spacing: 0; color: var(--c-text); }
     #app-root h2 { font-weight: 700 !important; font-size: 22px; letter-spacing: 0; color: var(--c-text); }
@@ -11068,7 +11074,7 @@
 
     // ============ 版本更新檢查 ============
     // 每次修改程式、上傳新檔案時，要把這個版本號改掉（任何不一樣的字都可以），手機才會知道有新版本。
-    const APP_VERSION = 'sm-2026.10.27-6';
+    const APP_VERSION = 'sm-2026.10.27-7';
 
     // 加入主畫面的 App 常常直接拿手機裡存的舊檔案，而且沒有重新整理按鈕。
     // 做法：去網路上抓一份「現在的這個網頁」（網址加上時間，強迫不能用舊的），比對裡面寫的版本號，不一樣就提示更新。
