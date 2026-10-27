@@ -3748,13 +3748,15 @@
             successCallback(events);
           },
           dateClick: function(info) {
+            if (!isRealTap()) return; // 滑動月曆時不要打開那天
             selectCalendarDay(info.dateStr); // 手機版在月曆下方、電腦版在右邊列出這一天的課
           },
           moreLinkClick: function(info) {
-            selectCalendarDay(formatDate(info.date));
+            if (isRealTap()) selectCalendarDay(formatDate(info.date));
             return 'none'; // 不跳出 FullCalendar 內建的彈出清單，改成在下方展開
           },
           eventClick: function(info) {
+            if (!isRealTap()) return;
             if (isMobileCalendarMode) {
               // 手機版：點小色塊也是選這一天，不直接跳點名視窗，避免色塊太小點錯人
               selectCalendarDay(info.event.extendedProps.dateStr);
@@ -3887,6 +3889,28 @@
     // 比較可靠的做法是：開視窗的當下，直接把整個 body 釘死在目前這個捲動位置（用 position:fixed + 負的 top 位移模擬），
     // 讓背景畫面在視窗開著的期間根本不會被瀏覽器誤判成「可以滑動、可以跳位置」；關視窗時再放開、還原回原本的位置。
     // 手機版的內容是在 #app-root 裡面捲（整頁不捲）；電腦版還是整頁捲
+    // ---- 滑動時不要誤判成「點一下」 ----
+    // 手指碰到螢幕時記下來，這次只要有下面任何一種情況，就不算點一下（月曆不會打開那天）：
+    //   1. 手指移動超過一點點（在滑，不是在點）
+    //   2. 手指放著的期間，畫面有捲動
+    //   3. 碰下去的那一刻畫面還在滑（那一下是為了讓它停下來）——iPhone 在這種時候常常會順便送出「點一下」
+    const TAP_SLOP_PX = 10, FLING_STOP_MS = 150;
+    let touchTap = { at: 0, x: 0, y: 0, moved: false, scrolled: false, stopFling: false };
+    let lastScrollAt = 0;
+    document.addEventListener('touchstart', function(e) {
+      let t = e.touches[0]; if (!t) return;
+      touchTap = { at: performance.now(), x: t.clientX, y: t.clientY, moved: e.touches.length > 1, scrolled: false, stopFling: performance.now() - lastScrollAt < FLING_STOP_MS };
+    }, { capture: true, passive: true });
+    document.addEventListener('touchmove', function(e) {
+      let t = e.touches[0]; if (!t) return;
+      if (e.touches.length > 1 || Math.abs(t.clientX - touchTap.x) > TAP_SLOP_PX || Math.abs(t.clientY - touchTap.y) > TAP_SLOP_PX) touchTap.moved = true;
+    }, { capture: true, passive: true });
+    window.addEventListener('scroll', function() { lastScrollAt = performance.now(); if (touchTap.at) touchTap.scrolled = true; }, { capture: true, passive: true });
+    function isRealTap() {
+      if (!touchTap.at || performance.now() - touchTap.at > 2000) return true; // 用滑鼠點、或不是剛剛的觸控：照常
+      return !touchTap.moved && !touchTap.scrolled && !touchTap.stopFling;
+    }
+
     function appScroller() { return document.documentElement.classList.contains('mobile-shell') ? document.getElementById('app-root') : null; }
     function scrollAppBy(dy) { let sc = appScroller(); if (sc) sc.scrollTop += dy; else window.scrollBy(0, dy); }
     // 手機版：只要有任何視窗開著，後面的內容區就不能捲（捲動位置保留，關掉視窗後回到原位）
@@ -11044,7 +11068,7 @@
 
     // ============ 版本更新檢查 ============
     // 每次修改程式、上傳新檔案時，要把這個版本號改掉（任何不一樣的字都可以），手機才會知道有新版本。
-    const APP_VERSION = 'sm-2026.10.27-4';
+    const APP_VERSION = 'sm-2026.10.27-5';
 
     // 加入主畫面的 App 常常直接拿手機裡存的舊檔案，而且沒有重新整理按鈕。
     // 做法：去網路上抓一份「現在的這個網頁」（網址加上時間，強迫不能用舊的），比對裡面寫的版本號，不一樣就提示更新。
