@@ -594,10 +594,13 @@
     .fc .fc-day-today .fc-daygrid-day-number { background: var(--c-primary); color: #FFFFFF; border-radius: 999px; min-width: 22px; text-align: center; padding: 1px 6px; margin: 3px; font-weight: 700; }
     /* 今天的日期（例如「21日」）一定排成一行，不會被窄格子擠成兩行；手機的格子比較窄，左右留白縮小一點 */
     .fc .fc-day-today .fc-daygrid-day-number { white-space: nowrap; flex-shrink: 0; }
-    #calendar.calendar-compact .fc-day-today .fc-daygrid-day-number { padding: 1px 4px; margin: 2px 1px; min-width: 0; letter-spacing: -0.2px; }
+    /* 手機版：今天的日期要跟同一排其他日期一樣高——文字的位置、留白跟其他日期完全相同，
+       深色圓角底另外畫在文字後面（往下 1px，對準字的正中間；數字和「日」在行高裡本來就偏下一點） */
+    #calendar.calendar-compact .fc-day-today .fc-daygrid-day-number { background: none; border-radius: 0; padding: 4px; margin: 0; min-width: 0; letter-spacing: -0.2px; }
+    #calendar.calendar-compact .fc-day-today .fc-daygrid-day-number::before { content: ''; position: absolute; left: 0; right: 0; top: 4px; bottom: 2px; background: var(--c-primary); border-radius: 999px; z-index: -1; }
     @media (max-width: 374px) {
       #calendar.calendar-compact .fc-daygrid-day-number { font-size: 12px; }
-      #calendar.calendar-compact .fc-day-today .fc-daygrid-day-number { padding: 1px 3px; margin: 2px 0; letter-spacing: -0.4px; }
+      #calendar.calendar-compact .fc-day-today .fc-daygrid-day-number { padding: 4px 3px; letter-spacing: -0.4px; }
     }
     /* 月曆左上角的「‹」「›」：兩顆分開，各自是完整的圓角按鈕（FullCalendar 預設會把它們黏成一組） */
     .fc .fc-button-group { gap: 8px; }
@@ -11116,7 +11119,7 @@
 
     // ============ 版本更新檢查 ============
     // 每次修改程式、上傳新檔案時，要把這個版本號改掉（任何不一樣的字都可以），手機才會知道有新版本。
-    const APP_VERSION = 'sm-2026.10.27-8';
+    const APP_VERSION = 'sm-2026.10.28-1';
 
     // 加入主畫面的 App 常常直接拿手機裡存的舊檔案，而且沒有重新整理按鈕。
     // 做法：去網路上抓一份「現在的這個網頁」（網址加上時間，強迫不能用舊的），比對裡面寫的版本號，不一樣就提示更新。
