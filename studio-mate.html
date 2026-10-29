@@ -493,12 +493,10 @@
     /* ===================== 外觀主題 ===================== */
     /* 所有顏色都用「顏色角色」（--c-xxx），每個主題在上面替這些角色配一組值；換主題 = 換 <html data-theme="..."> */
     body { font-family: var(--c-font); background-color: var(--c-bg); color: var(--c-text); -webkit-font-smoothing: antialiased; }
-    /* 手機、平板：長按畫面上的字（名字、按鈕、清單…）不會反白、不會跳出「拷貝」選單；
-       自己打字的地方（輸入框、文字框、複製用的框）照常可以長按選取、拷貝、貼上 */
-    @media (hover: none) and (pointer: coarse) {
-      html, body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
-      input, textarea, [contenteditable="true"] { -webkit-user-select: text; user-select: text; -webkit-touch-callout: default; }
-    }
+    /* 畫面上的字（名字、按鈕、清單…）不能選取：手機長按不會反白、不會跳出「拷貝」選單，電腦用滑鼠也拖不出反白；
+       自己打字的地方（輸入框、文字框、複製用的框）照常可以選取、拷貝、貼上 */
+    html, body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+    input, textarea, [contenteditable="true"] { -webkit-user-select: text; user-select: text; -webkit-touch-callout: default; }
     button, input, select, textarea { font-family: inherit; }
     h1 { font-family: var(--c-font-display); font-weight: var(--c-display-weight); letter-spacing: 0; color: var(--c-text); }
     #app-root h2 { font-weight: 700 !important; font-size: 22px; letter-spacing: 0; color: var(--c-text); }
@@ -1856,8 +1854,8 @@
         <input type="text" id="todo-text" class="form-control" placeholder="例如：準備下週的教材">
       </div>
       <div class="form-group searchable-select" id="todo-student-picker">
-        <label>綁定學生（選填）</label>
-        <input type="text" id="todo-student-input" class="form-control" placeholder="點一下搜尋 / 選擇學生（可留空）" autocomplete="off" oninput="filterStudentPicker('todo-student', true)" onfocus="filterStudentPicker('todo-student', true)">
+        <label>綁定學生／團體課（選填）</label>
+        <input type="text" id="todo-student-input" class="form-control" placeholder="點一下搜尋 / 選擇學生或團體課（可留空）" autocomplete="off" oninput="filterTodoTargetPicker('todo-student')" onfocus="filterTodoTargetPicker('todo-student')">
         <input type="hidden" id="todo-student-value">
         <div id="todo-student-dropdown" class="searchable-dropdown" style="display:none;"></div>
       </div>
@@ -2022,6 +2020,7 @@
       <p id="group-modal-note" style="text-align:center; color:var(--c-violet-text); font-size:13px; margin:0 0 6px 0; display:none;"></p>
       <div id="group-modal-members"></div>
       <div id="group-modal-actions" style="margin-top:12px;"></div>
+      <div id="group-modal-todos"></div>
       <p id="group-modal-hint" style="font-size:11px; color:var(--c-faint); line-height:1.6; margin:10px 0 0 0;">按「⋯」可以單獨處理某一位同學：轉補課、調課、課堂記錄、待辦、學生異動。</p>
       <button class="button btn-secondary" style="width:100%; margin:10px 0 0 0;" onclick="closeGroupModal()">關閉</button>
     </div>
@@ -2085,8 +2084,8 @@
       <h3 id="edit-todo-title" style="margin-top: 0; font-size: 18px; color: var(--c-text); text-align:center;">✏️ 編輯待辦事項</h3>
       <div class="form-group"><input type="text" id="edit-todo-text" class="form-control" placeholder="待辦內容"></div>
       <div class="form-group searchable-select" id="edit-todo-student-picker">
-        <label>綁定學生（選填，留空表示不綁定）</label>
-        <input type="text" id="edit-todo-student-input" class="form-control" placeholder="點一下搜尋 / 選擇學生（可留空）" autocomplete="off" oninput="filterStudentPicker('edit-todo-student', true)" onfocus="filterStudentPicker('edit-todo-student', true)">
+        <label>綁定學生／團體課（選填）</label>
+        <input type="text" id="edit-todo-student-input" class="form-control" placeholder="點一下搜尋 / 選擇學生或團體課（可留空）" autocomplete="off" oninput="filterTodoTargetPicker('edit-todo-student')" onfocus="filterTodoTargetPicker('edit-todo-student')">
         <input type="hidden" id="edit-todo-student-value">
         <div id="edit-todo-student-dropdown" class="searchable-dropdown" style="display:none;"></div>
         <button type="button" class="small-btn" style="margin-top:6px; background:transparent; color:var(--c-muted); text-decoration:underline; padding:2px 6px;" onclick="resetStudentPicker('edit-todo-student')">清除綁定</button>
@@ -7122,6 +7121,7 @@
         return `<div class="gm-row"><div class="gm-info"><div class="gm-name">${escHTML(name)}${balTag}</div>${st ? `<div class="gm-st">${st}</div>` : ''}${paid}</div><div class="gm-btns">${btns}</div></div>`;
       }).join('');
 
+      renderGroupModalTodos();
       let none = ms.filter(m => m.st === 'none');
       let acts = '';
       if (none.length > 0) acts += modalBtn('✅ 全部出席' + (none.length < ms.length ? '（還沒點名的 ' + none.length + ' 位）' : '（' + ms.length + ' 位）'), "groupApplyAll('attended')", 'background-color:var(--c-primary);');
@@ -8152,7 +8152,7 @@
         return;
       }
       let shown = pending.slice(0, 5);
-      let html = shown.map(t => `<div class="dashboard-todo-row"><span title="${TODO_QUADRANTS[getTodoQuadrant(t)].label}">${TODO_QUADRANTS[getTodoQuadrant(t)].short}</span> ${t.dueDate ? '<span class="dashboard-todo-date">' + todoWhenText(t) + '</span> ' : ''}${t.text}${t.studentName ? ' <span style="color:var(--c-faint);">(' + t.studentName + ')</span>' : ''}</div>`).join('');
+      let html = shown.map(t => `<div class="dashboard-todo-row"><span title="${TODO_QUADRANTS[getTodoQuadrant(t)].label}">${TODO_QUADRANTS[getTodoQuadrant(t)].short}</span> ${t.dueDate ? '<span class="dashboard-todo-date">' + todoWhenText(t) + '</span> ' : ''}${t.text}${todoTargetLabel(t) ? ' <span style="color:var(--c-faint);">(' + escHTML(todoTargetLabel(t)) + ')</span>' : ''}</div>`).join('');
       if (pending.length > shown.length) { html += `<p style="font-size:12px; color:var(--c-primary-text); margin-top:6px;">還有 ${pending.length - shown.length} 筆，點下方查看全部</p>`; }
       content.innerHTML = html;
     }
@@ -8862,7 +8862,8 @@
         let q = TODO_QUADRANTS[getTodoQuadrant(t)];
         let priorityTag = (opts.hideQuadrant ? '' : `<span style="font-size:11px; margin-right:6px; color:${q.color}; font-weight:bold;">${q.label}</span>`) +
           (t.category ? `<span style="font-size:11px; background:var(--c-fill2); color:var(--c-gold-text); padding:2px 6px; border-radius:4px; margin-right:6px;">${escHTML(t.category)}</span>` : '');
-        let studentTag = t.studentName ? `<span style="font-size:11px; background:var(--c-tint); color:var(--c-primary-text); padding:2px 6px; border-radius:4px; margin-right:6px;">${t.studentName}</span>` : '';
+        let target = opts.hideTarget ? '' : todoTargetLabel(t);
+        let studentTag = target ? `<span style="font-size:11px; background:${t.groupId ? 'var(--c-group-soft)' : 'var(--c-tint)'}; color:${t.groupId ? 'var(--c-group-text)' : 'var(--c-primary-text)'}; padding:2px 6px; border-radius:4px; margin-right:6px;">${escHTML(target)}</span>` : '';
         let dueTag = t.dueDate ? `<span style="font-size:11px; color:var(--c-accent-text);">⏰ ${todoWhenText(t)}</span>` : '';
         let tagRow = `<div style="margin-bottom:3px;">${priorityTag}${studentTag}${dueTag}</div>`;
         let textStyle = t.done ? 'text-decoration:line-through; color:var(--c-faint);' : '';
@@ -8876,6 +8877,70 @@
           <button class="small-btn del-btn" style="padding:2px 8px; font-size:11px; margin-left:4px; flex-shrink:0;" onclick="deleteTodo('${t.id}')">刪除</button>
         </div>`;
       }).join('');
+    }
+
+    // ---- 待辦可以綁學生，也可以綁團體課（存 groupId，團名也存一份，團體被刪掉後還認得出來）----
+    function todoTargetLabel(t) {
+      if (t.groupId) { let g = getGroupById(t.groupId); return '👥 ' + (g ? g.name : (t.groupName || '團體課')); }
+      return t.studentName || '';
+    }
+    // 選單：團體課排最上面，下面是在學學生；選到團體時，隱藏欄位存 'g:團體代號'
+    function filterTodoTargetPicker(prefix) {
+      let input = document.getElementById(prefix + '-input');
+      let dropdown = document.getElementById(prefix + '-dropdown');
+      let q = input.value.replace(/^👥\s*/, '').trim().toLowerCase();
+      let gs = getGroups().filter(g => !q || g.name.toLowerCase().includes(q));
+      let ss = students.filter(x => !x.endDate && (!q || x.name.toLowerCase().includes(q)));
+      dropdown.innerHTML = (gs.length + ss.length === 0) ? '<div class="searchable-dropdown-empty">找不到符合的學生或團體課</div>'
+        : gs.map(g => `<div class="searchable-dropdown-item" onclick="selectTodoGroupPicker('${prefix}', '${g.id}')">👥 ${escHTML(g.name)}</div>`).join('') +
+          ss.map(x => `<div class="searchable-dropdown-item" onclick="selectStudentPicker('${prefix}', '${x.id}')">${escHTML(x.name)}</div>`).join('');
+      dropdown.style.display = 'block';
+    }
+    function selectTodoGroupPicker(prefix, groupId) {
+      let g = getGroupById(groupId); if (!g) return;
+      document.getElementById(prefix + '-input').value = '👥 ' + g.name;
+      document.getElementById(prefix + '-value').value = 'g:' + g.id;
+      document.getElementById(prefix + '-dropdown').style.display = 'none';
+    }
+    function readTodoTarget(prefix) {
+      let v = document.getElementById(prefix + '-value').value || '';
+      if (v.startsWith('g:')) {
+        let g = getGroupById(v.slice(2));
+        return g ? { studentId: null, studentName: null, groupId: g.id, groupName: g.name } : { studentId: null, studentName: null };
+      }
+      let stu = v ? students.find(x => x.id === v) : null;
+      return { studentId: stu ? stu.id : null, studentName: stu ? stu.name : null };
+    }
+    function applyTodoTarget(t, target) {
+      t.studentId = target.studentId; t.studentName = target.studentName;
+      if (target.groupId) { t.groupId = target.groupId; t.groupName = target.groupName; } else { delete t.groupId; delete t.groupName; }
+    }
+    function fillTodoTargetPicker(prefix, t) {
+      if (t && t.groupId) {
+        document.getElementById(prefix + '-input').value = todoTargetLabel(t);
+        document.getElementById(prefix + '-value').value = 'g:' + t.groupId;
+        document.getElementById(prefix + '-dropdown').style.display = 'none';
+      } else if (t && t.studentId) {
+        document.getElementById(prefix + '-input').value = t.studentName || '';
+        document.getElementById(prefix + '-value').value = t.studentId;
+        document.getElementById(prefix + '-dropdown').style.display = 'none';
+      } else resetStudentPicker(prefix);
+    }
+    // 團體點名視窗下面：這團還沒完成的待辦，可以直接新增
+    function renderGroupModalTodos() {
+      let box = document.getElementById('group-modal-todos');
+      let ctx = currentGroupCtx;
+      if (!box || !ctx) return;
+      let list = todos.filter(t => t.groupId === ctx.groupId && !t.done).sort(compareTodos);
+      box.innerHTML = `<div style="display:flex; align-items:center; justify-content:space-between; margin-top:14px; padding-top:10px; border-top:1px solid var(--c-divider);">` +
+        `<span style="font-size:14px; font-weight:bold; color:var(--c-text2);">📝 這團的待辦${list.length ? '（' + list.length + '）' : ''}</span>` +
+        `<button class="small-btn" style="padding:4px 10px; font-size:12px; background-color:var(--c-sand); color:var(--c-text);" onclick="addGroupTodo()">➕ 新增</button></div>` +
+        (list.length ? renderTodoItems(list, { hideTarget: true }) : '');
+    }
+    function addGroupTodo() {
+      let ctx = currentGroupCtx; if (!ctx) return;
+      let g = getGroupById(ctx.groupId); if (!g) return;
+      openAddTodoModal({ groupId: g.id, groupName: g.name, date: ctx.dateStr, fromLesson: ctx.dateStr });
     }
 
     function toggleTodoDone(id) {
@@ -8898,6 +8963,7 @@
       if (document.getElementById('todo-page').style.display === 'block') renderTodoPage();
       if (document.getElementById('student-detail-page').style.display === 'block' && currentDetailStudentId) renderStudentDetailTodos();
       if (document.getElementById('dashboard-page').style.display === 'block') renderDashboardTodos();
+      if (document.getElementById('group-modal').style.display === 'flex') renderGroupModalTodos();
     }
 
     // ---- 四象限（輕重緩急）＋ 類別 ----
@@ -9070,11 +9136,11 @@
     function submitTodo() {
       let text = document.getElementById('todo-text').value.trim();
       if (!text) { alert('請輸入待辦內容！'); return; }
-      let studentId = document.getElementById('todo-student-value').value || null;
-      let stu = studentId ? students.find(s => s.id === studentId) : null;
+      let target = readTodoTarget('todo-student');
       let when = readTodoWhen('todo-due', 'todo-remind');
       let quadrant = document.querySelector('input[name="todo-priority"]:checked').value;
-      todos.push({ id: generateId(), text: text, studentId: stu ? stu.id : null, studentName: stu ? stu.name : null, dueDate: when.dueDate, remindTime: when.remindTime, quadrant: quadrant, category: document.getElementById('todo-category').value, done: false, createdAt: new Date().toISOString() });
+      todos.push({ id: generateId(), text: text, studentId: target.studentId, studentName: target.studentName, groupId: target.groupId, groupName: target.groupName, dueDate: when.dueDate, remindTime: when.remindTime, quadrant: quadrant, category: document.getElementById('todo-category').value, done: false, createdAt: new Date().toISOString() });
+      let added = todos[todos.length - 1]; if (!added.groupId) { delete added.groupId; delete added.groupName; }
       saveTodosToMemory();
       document.getElementById('todo-text').value = '';
       resetStudentPicker('todo-student');
@@ -9146,10 +9212,7 @@
       document.querySelector('input[name="edit-todo-priority"][value="q2"]').checked = true;
       renderTodoCategorySelects();
       document.getElementById('edit-todo-category').value = '';
-      if (o.studentId) {
-        document.getElementById('edit-todo-student-input').value = o.studentName || '';
-        document.getElementById('edit-todo-student-value').value = o.studentId;
-      } else resetStudentPicker('edit-todo-student');
+      fillTodoTargetPicker('edit-todo-student', o); // 從團體視窗打開的，先帶入那一團
       document.getElementById('edit-todo-modal').style.display = 'flex';
     }
     function openEditTodoModal(id) {
@@ -9166,12 +9229,7 @@
       let catSel = document.getElementById('edit-todo-category');
       if (t.category && !getTodoCategories().includes(t.category)) catSel.insertAdjacentHTML('beforeend', '<option value="' + escHTML(t.category) + '">' + escHTML(t.category) + '</option>'); // 類別後來被刪掉也還能保留
       catSel.value = t.category || '';
-      if (t.studentId) {
-        document.getElementById('edit-todo-student-input').value = t.studentName || '';
-        document.getElementById('edit-todo-student-value').value = t.studentId;
-      } else {
-        resetStudentPicker('edit-todo-student');
-      }
+      fillTodoTargetPicker('edit-todo-student', t);
       document.getElementById('edit-todo-modal').style.display = 'flex';
     }
 
@@ -9183,12 +9241,8 @@
       if (!t) return;
       let text = document.getElementById('edit-todo-text').value.trim();
       if (!text) { alert('請輸入待辦內容！'); return; }
-      let studentId = document.getElementById('edit-todo-student-value').value || null;
-      let stu = studentId ? students.find(s => s.id === studentId) : null;
-
       t.text = text;
-      t.studentId = stu ? stu.id : null;
-      t.studentName = stu ? stu.name : null;
+      applyTodoTarget(t, readTodoTarget('edit-todo-student'));
       let when = readTodoWhen('edit-todo-due', 'edit-todo-remind');
       t.dueDate = when.dueDate;
       if (when.remindTime) t.remindTime = when.remindTime; else delete t.remindTime;
@@ -9205,12 +9259,12 @@
     function submitAddTodoFromModal() {
       let text = document.getElementById('edit-todo-text').value.trim();
       if (!text) { alert('請輸入待辦內容！'); return; }
-      let studentId = document.getElementById('edit-todo-student-value').value || null;
-      let stu = studentId ? students.find(s => s.id === studentId) : null;
+      let target = readTodoTarget('edit-todo-student');
       let when = readTodoWhen('edit-todo-due', 'edit-todo-remind');
-      let t = { id: generateId(), text: text, studentId: stu ? stu.id : null, studentName: stu ? stu.name : (addingTodoCtx.studentId ? null : (addingTodoCtx.studentName || null)),
+      let t = { id: generateId(), text: text, studentId: target.studentId, studentName: target.studentName || ((target.groupId || addingTodoCtx.studentId) ? null : (addingTodoCtx.studentName || null)),
         dueDate: when.dueDate, quadrant: document.querySelector('input[name="edit-todo-priority"]:checked').value, category: document.getElementById('edit-todo-category').value, done: false, createdAt: new Date().toISOString() };
       if (when.remindTime) t.remindTime = when.remindTime;
+      if (target.groupId) { t.groupId = target.groupId; t.groupName = target.groupName; }
       if (addingTodoCtx.fromLesson) t.fromLesson = addingTodoCtx.fromLesson; // 記住是哪一堂課記的，點名視窗的按鈕才數得到
       todos.push(t);
       saveTodosToMemory();
@@ -9304,7 +9358,9 @@
 
     // 待辦分頁：邏輯跟原本學生卡片上「📝 待辦」那個彈出視窗一樣，只是整合進詳細頁裡，不用再另外開視窗
     function renderStudentDetailTodos() {
-      let sorted = todos.filter(t => t.studentId === currentDetailStudentId).sort(compareTodos);
+      let me = students.find(x => x.id === currentDetailStudentId);
+      let myGroup = me && getGroupById(me.groupId) ? me.groupId : null;
+      let sorted = todos.filter(t => t.studentId === currentDetailStudentId || (myGroup && t.groupId === myGroup)).sort(compareTodos);
       document.getElementById('student-detail-todo-pending').innerHTML = renderTodoItems(sorted.filter(t => !t.done));
       document.getElementById('student-detail-todo-done').innerHTML = renderTodoItems(sorted.filter(t => t.done));
     }
@@ -10694,7 +10750,7 @@
           if (t.done || !t.dueDate || !t.remindTime || t.dueDate < today || t.dueDate > lastDay) return;
           let at = reminderAtMs(t.dueDate, t.remindTime);
           if (at <= now) return;
-          items.push({ id: 'td-' + t.id, at, ttl: PUSH_TTL.todo, t: '📝 待辦提醒', b: t.text + (t.studentName ? '（' + t.studentName + '）' : ''), u: 'studio-mate.html?open=todo&id=' + encodeURIComponent(t.id), g: 'todo-' + t.id });
+          items.push({ id: 'td-' + t.id, at, ttl: PUSH_TTL.todo, t: '📝 待辦提醒', b: t.text + (todoTargetLabel(t) ? '（' + todoTargetLabel(t) + '）' : ''), u: 'studio-mate.html?open=todo&id=' + encodeURIComponent(t.id), g: 'todo-' + t.id });
         });
       }
       // 🔔 測試通知：按下去之後 10 分鐘內都放在清單裡（雲端送過一次就不會再送）
@@ -11119,7 +11175,7 @@
 
     // ============ 版本更新檢查 ============
     // 每次修改程式、上傳新檔案時，要把這個版本號改掉（任何不一樣的字都可以），手機才會知道有新版本。
-    const APP_VERSION = 'sm-2026.10.28-1';
+    const APP_VERSION = 'sm-2026.10.29-1';
 
     // 加入主畫面的 App 常常直接拿手機裡存的舊檔案，而且沒有重新整理按鈕。
     // 做法：去網路上抓一份「現在的這個網頁」（網址加上時間，強迫不能用舊的），比對裡面寫的版本號，不一樣就提示更新。
