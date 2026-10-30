@@ -3246,6 +3246,44 @@
       alert('✅ 已儲存設定！');
     }
 
+    // 把雲端那一份資料換到這台（畫面、本機都更新）
+    function applyCloudData(data) {
+      if (data.updatedAt) lsSet('sm_sync_base', data.updatedAt);
+      students = data.students ? JSON.parse(data.students) : [];
+      makeupBank = data.makeupBank ? JSON.parse(data.makeupBank) : [];
+      paymentRecords = data.payments ? JSON.parse(data.payments) : [];
+      tempLessons = data.tempLessons ? JSON.parse(data.tempLessons) : [];
+      extraIncome = data.extraIncome ? JSON.parse(data.extraIncome) : [];
+      badDebt = data.badDebt ? JSON.parse(data.badDebt) : [];
+      todos = data.todos ? JSON.parse(data.todos) : [];
+      lessonNotes = data.lessonNotes ? JSON.parse(data.lessonNotes) : [];
+      progressNotes = data.progressNotes ? JSON.parse(data.progressNotes) : [];
+      achievements = data.achievements ? JSON.parse(data.achievements) : [];
+      materialPurchases = data.materialPurchases ? JSON.parse(data.materialPurchases) : [];
+      materialSales = data.materialSales ? JSON.parse(data.materialSales) : [];
+      expenses = data.expenses ? JSON.parse(data.expenses) : [];
+      appSettings = data.settings ? JSON.parse(data.settings) : { studioName: '', locations: [] };
+      rentalData = normalizeRentalData(data.rental ? JSON.parse(data.rental) : null);
+      lsSet('sm_rental_v1', JSON.stringify(rentalData));
+      lsSet('sm_settings_v1', JSON.stringify(appSettings));
+      applySettingsToUI();
+      lsSet('jess_students_v4', JSON.stringify(students));
+      lsSet('jess_makeup_v2', JSON.stringify(makeupBank));
+      lsSet('jess_payments_v1', JSON.stringify(paymentRecords));
+      lsSet('jess_temp_v1', JSON.stringify(tempLessons));
+      lsSet('jess_extra_income_v1', JSON.stringify(extraIncome));
+      lsSet('jess_bad_debt_v1', JSON.stringify(badDebt));
+      lsSet('jess_todos_v1', JSON.stringify(todos));
+      lsSet('jess_lessonnotes_v1', JSON.stringify(lessonNotes));
+      lsSet('jess_progressnotes_v1', JSON.stringify(progressNotes));
+      lsSet('jess_achievements_v1', JSON.stringify(achievements));
+      lsSet('jess_material_purchases_v1', JSON.stringify(materialPurchases));
+      lsSet('jess_material_sales_v1', JSON.stringify(materialSales));
+      lsSet('jess_expenses_v1', JSON.stringify(expenses));
+      refreshCurrentView();
+      onCloudDataReadyForReminders();
+    }
+
     // 監聽雲端資料庫的即時變化：只要有任何裝置更新過資料，這裡就會自動收到最新版本
     function startCloudListener() {
       if (!cloudDb) return;
@@ -3261,41 +3299,7 @@
           return;
         }
         if (snap.exists()) {
-          let data = snap.data();
-          if (data.updatedAt) lsSet('sm_sync_base', data.updatedAt);
-          students = data.students ? JSON.parse(data.students) : [];
-          makeupBank = data.makeupBank ? JSON.parse(data.makeupBank) : [];
-          paymentRecords = data.payments ? JSON.parse(data.payments) : [];
-          tempLessons = data.tempLessons ? JSON.parse(data.tempLessons) : [];
-          extraIncome = data.extraIncome ? JSON.parse(data.extraIncome) : [];
-          badDebt = data.badDebt ? JSON.parse(data.badDebt) : [];
-          todos = data.todos ? JSON.parse(data.todos) : [];
-          lessonNotes = data.lessonNotes ? JSON.parse(data.lessonNotes) : [];
-          progressNotes = data.progressNotes ? JSON.parse(data.progressNotes) : [];
-          achievements = data.achievements ? JSON.parse(data.achievements) : [];
-          materialPurchases = data.materialPurchases ? JSON.parse(data.materialPurchases) : [];
-          materialSales = data.materialSales ? JSON.parse(data.materialSales) : [];
-          expenses = data.expenses ? JSON.parse(data.expenses) : [];
-          appSettings = data.settings ? JSON.parse(data.settings) : { studioName: '', locations: [] };
-          rentalData = normalizeRentalData(data.rental ? JSON.parse(data.rental) : null);
-          lsSet('sm_rental_v1', JSON.stringify(rentalData));
-          lsSet('sm_settings_v1', JSON.stringify(appSettings));
-          applySettingsToUI();
-          lsSet('jess_students_v4', JSON.stringify(students));
-          lsSet('jess_makeup_v2', JSON.stringify(makeupBank));
-          lsSet('jess_payments_v1', JSON.stringify(paymentRecords));
-          lsSet('jess_temp_v1', JSON.stringify(tempLessons));
-          lsSet('jess_extra_income_v1', JSON.stringify(extraIncome));
-          lsSet('jess_bad_debt_v1', JSON.stringify(badDebt));
-          lsSet('jess_todos_v1', JSON.stringify(todos));
-          lsSet('jess_lessonnotes_v1', JSON.stringify(lessonNotes));
-          lsSet('jess_progressnotes_v1', JSON.stringify(progressNotes));
-          lsSet('jess_achievements_v1', JSON.stringify(achievements));
-          lsSet('jess_material_purchases_v1', JSON.stringify(materialPurchases));
-          lsSet('jess_material_sales_v1', JSON.stringify(materialSales));
-          lsSet('jess_expenses_v1', JSON.stringify(expenses));
-          refreshCurrentView();
-          onCloudDataReadyForReminders();
+          applyCloudData(snap.data());
         } else {
           // 雲端還沒有資料：把這台裝置現有的資料（例如你原本存在這台裝置的學生名單）當作起點推上雲端
           pushToCloud();
@@ -3366,12 +3370,23 @@
       let dirty = getSyncDirty();
       let ref = userDataDocRef();
       try {
-        let otherDeviceAt = null;
-        if (reconnect && dirty) {
+        // 這台有還沒上傳的修改：先看雲端現在是哪一版。
+        // 雲端已經不是「這台開始改之前看到的那一版」，也不是這台上次送出去的那一版 → 中間有別台裝置改過。
+        // 這時候以雲端（比較新）為準，不拿這台的整份資料去蓋掉；這台沒上傳的那份先存成一筆歷史版本，需要的話可以找回來。
+        // （以前是反過來以這台為準：一台很久沒開、留著沒上傳記號的裝置一打開，就會把別台比較新的資料整個蓋掉）
+        if (dirty && dirty.base) {
           let snap = await withTimeout(cloudFns.getDoc(ref), 15000);
           let serverAt = snap.exists() ? (snap.data().updatedAt || '') : '';
-          // 雲端的版本不是「開始離線前看到的那份」，也不是這台上次試著上傳的那份 → 中間有別台裝置改過
-          if (serverAt && dirty.base && serverAt !== dirty.base && serverAt !== dirty.lastTry) otherDeviceAt = serverAt;
+          if (serverAt && serverAt !== dirty.base && serverAt !== dirty.lastTry) {
+            let mine = Object.assign({}, buildCloudPayload(), { savedAt: Date.now(), note: 'unsynced', since: dirty.since || null });
+            delete mine.updatedAt;
+            await withTimeout(cloudFns.addDoc(userBackupsColRef(), mine), 15000); // 確定存好了，才換掉這台的資料
+            trimOldBackups();
+            setSyncDirty(null);
+            applyCloudData(snap.data());
+            syncNotice = { kind: 'conflict', at: mine.savedAt };
+            return;
+          }
         }
         let payload = buildCloudPayload();
         if (dirty) { dirty.lastTry = payload.updatedAt; setSyncDirty(dirty); }
@@ -3379,7 +3394,7 @@
         lsSet('sm_sync_base', payload.updatedAt);
         if (seq === syncSeq) setSyncDirty(null); // 上傳途中又有新的修改，就留著記號，等下一次一起上傳
         if (dirty && (dirty.offline || reconnect)) {
-          syncNotice = otherDeviceAt ? { kind: 'conflict', at: otherDeviceAt } : { kind: 'done', until: Date.now() + 6000 };
+          syncNotice = { kind: 'done', until: Date.now() + 6000 };
         }
         let backup = Object.assign({}, payload, { savedAt: Date.now() });
         delete backup.updatedAt;
@@ -3415,7 +3430,7 @@
         let d = new Date(syncNotice.at);
         let when = isNaN(d) ? '' : (d.getMonth() + 1) + '/' + d.getDate() + ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
         el.className = 'sync-conflict';
-        el.innerHTML = '⚠️ 你離線的時候，另一台裝置也改過資料。已經用<b>這台</b>的資料為準。<br>另一台改的內容如果要找回來：更多 →「🕐 歷史版本」' + (when ? '，選 ' + when + ' 左右的那一份' : '') + '。' +
+        el.innerHTML = '⚠️ 這台有修改還沒上傳，但另一台裝置已經更新過資料。為了不蓋掉比較新的資料，這台已經換成<b>雲端最新的版本</b>。<br>這台沒上傳的那份存在：更多 →「🕐 歷史版本」' + (when ? '裡 ' + when + ' 那一筆' : '') + '（標「這台沒上傳的修改」）。' +
           '<span class="sync-x" onclick="dismissSyncNotice()">✕</span>';
         el.style.display = 'block';
         return;
@@ -3484,7 +3499,7 @@
           try { studentCount = JSON.parse(data.students).length; } catch (e) {}
           html += '<div class="card" style="padding:10px; margin:8px 0;">' +
             '<div style="font-size:14px;">' + label + '</div>' +
-            '<div style="font-size:12px; color:var(--c-muted); margin-bottom:8px;">' + studentCount + ' 位學生</div>' +
+            '<div style="font-size:12px; color:var(--c-muted); margin-bottom:8px;">' + studentCount + ' 位學生' + (data.note === 'unsynced' ? '・<b style="color:var(--c-accent-text);">某台裝置沒上傳的修改</b>' : '') + '</div>' +
             '<button class="small-btn" style="background-color:var(--c-primary); color:white;" onclick="restoreBackup(\'' + docSnap.id + '\')">還原到這個版本</button>' +
             '</div>';
         });
@@ -11175,7 +11190,7 @@
 
     // ============ 版本更新檢查 ============
     // 每次修改程式、上傳新檔案時，要把這個版本號改掉（任何不一樣的字都可以），手機才會知道有新版本。
-    const APP_VERSION = 'sm-2026.10.29-2';
+    const APP_VERSION = 'sm-2026.10.30-1';
 
     // 加入主畫面的 App 常常直接拿手機裡存的舊檔案，而且沒有重新整理按鈕。
     // 做法：去網路上抓一份「現在的這個網頁」（網址加上時間，強迫不能用舊的），比對裡面寫的版本號，不一樣就提示更新。
