@@ -382,6 +382,9 @@
     .rental-badge { display: inline-block; font-size: 11px; padding: 1px 6px; border-radius: 8px; margin-left: 4px; }
     .rental-subtab-btn { flex: 1; padding: 8px 0; background: none; border: none; border-bottom: 3px solid transparent; font-size: 14px; color: var(--c-muted2); cursor: pointer; }
     .rental-subtab-btn.active { color: var(--c-gold-text); border-bottom-color: var(--c-gold-text); font-weight: bold; }
+    /* 當天視窗最下面：新增臨時課／補課／租借／繳費（放在課表後面，不會擠到點名的空間） */
+    .day-add-row { display: flex; gap: 6px; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--c-divider); }
+    .day-add-row button { flex: 1; min-width: 0; padding: 8px 2px; font-size: 13px; border-radius: var(--c-r-small, 8px); border: 1px solid var(--c-line); background: var(--c-surface); color: var(--c-text2); cursor: pointer; white-space: nowrap; }
     /* 工作室使用表 */
     .usage-wrap { display: flex; overflow-x: auto; border: 1px solid var(--c-divider); border-radius: 8px; background: var(--c-surface); }
     .usage-times { flex: 0 0 44px; position: relative; border-right: 1px solid var(--c-divider); }
@@ -1994,6 +1997,12 @@
         <button type="button" class="small-btn" onclick="shiftDayModal(1)">後一天 ▶</button>
       </div>
       <div id="day-modal-list"></div>
+      <div class="day-add-row">
+        <button type="button" onclick="dayAdd('temp')">➕ 臨時課</button>
+        <button type="button" onclick="dayAdd('makeup')">🔄 補課</button>
+        <button type="button" class="rental-feature" onclick="dayAdd('rental')">🔑 租借</button>
+        <button type="button" onclick="dayAdd('pay')">💰 繳費</button>
+      </div>
       <button class="button btn-secondary" style="width:100%; margin:10px 0 0 0;" onclick="closeDayModal()">關閉</button>
     </div>
   </div>
@@ -3945,6 +3954,15 @@
       document.getElementById('day-modal').style.display = 'none';
       unlockBodyScroll();
     }
+    // 當天視窗最下面那排「新增」：跟月曆上方的按鈕一樣，只是日期直接帶入這一天（新增的視窗疊在上面，存好就回到這一天）
+    let qpPresetDate = null;
+    function dayAdd(kind) {
+      let d = selectedCalendarDate || formatDate(new Date());
+      if (kind === 'temp') { openTempLessonModal(); document.getElementById('temp-date').value = d; }
+      else if (kind === 'makeup') { openNewMakeupModal(); document.getElementById('newmakeup-date').value = d; }
+      else if (kind === 'rental') openRentalModal(undefined, d);
+      else if (kind === 'pay') { qpPresetDate = d; openQuickPay(); }
+    }
     // 視窗裡直接換到前一天／後一天，不用關掉再點月曆
     function shiftDayModal(n) {
       if (!selectedCalendarDate) return;
@@ -5808,6 +5826,7 @@
       saveTempToMemory();
       closeTempLessonModal();
       if (calendar) calendar.refetchEvents();
+      refreshDayPanelIfNeeded(); // 從當天視窗新增的，回到那一天馬上看得到
       alert('✅ 已新增臨時課！');
     }
 
@@ -6813,6 +6832,7 @@
     function closeQuickPay() {
       if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur();
       document.getElementById('quickpay-modal').style.display = 'none';
+      qpPresetDate = null;
       if (qpLocked) { unlockBodyScroll(); qpLocked = false; }
       qpStudentId = null;
     }
@@ -6843,7 +6863,7 @@
       document.getElementById('qp-name').innerText = s.name;
       qpFromPicker = !!fromPicker;
       renderQuickPayStatus(s);
-      document.getElementById('qp-date').value = formatDate(new Date());
+      document.getElementById('qp-date').value = qpPresetDate || formatDate(new Date()); // 從當天視窗打開的，帶入那一天
       resetPayPair('qp-lessons', 'qp-amount');
       document.getElementById('qp-note').value = '';
       renderPaySuggest('qp-suggest', s.id, 'qp-lessons', 'qp-amount');
@@ -11448,7 +11468,7 @@
 
     // ============ 版本更新檢查 ============
     // 每次修改程式、上傳新檔案時，要把這個版本號改掉（任何不一樣的字都可以），手機才會知道有新版本。
-    const APP_VERSION = 'sm-2026.11.02-2';
+    const APP_VERSION = 'sm-2026.11.02-3';
 
     // 加入主畫面的 App 常常直接拿手機裡存的舊檔案，而且沒有重新整理按鈕。
     // 做法：去網路上抓一份「現在的這個網頁」（網址加上時間，強迫不能用舊的），比對裡面寫的版本號，不一樣就提示更新。
