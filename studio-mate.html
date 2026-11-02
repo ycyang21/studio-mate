@@ -391,6 +391,20 @@
     .usage-slot-line { position: absolute; left: 0; right: 0; border-top: 1px solid var(--c-fill2); }
     .usage-time-label { position: absolute; right: 4px; font-size: 10px; color: var(--c-faint); transform: translateY(-6px); }
     .usage-block { position: absolute; left: 3px; right: 3px; border-radius: 5px; padding: 2px 5px; font-size: 11px; color: white; overflow: hidden; line-height: 1.3; box-sizing: border-box; cursor: pointer; text-align: left; }
+    /* 日／週切換 */
+    .usage-seg { display: inline-flex; border: 1px solid var(--c-line); border-radius: 8px; overflow: hidden; flex-shrink: 0; }
+    .usage-seg button { border: none; background: var(--c-surface); color: var(--c-muted2); padding: 7px 14px; font-size: 14px; cursor: pointer; }
+    .usage-seg button.active { background: var(--c-primary); color: #FFFFFF; font-weight: bold; }
+    /* 週：七天排在一起，手機也放得下 */
+    .usage-week .usage-times { flex: 0 0 28px; }
+    .usage-week .usage-col { flex: 1 1 0; min-width: 36px; }
+    .usage-week .usage-head { height: 36px; line-height: 1.25; font-size: 11px; padding-top: 3px; box-sizing: border-box; }
+    .usage-week .usage-head.is-today { color: var(--c-primary-text); background: var(--c-primary-soft); }
+    .usage-week .usage-block { left: 2px; right: 2px; padding: 1px 2px; font-size: 10px; line-height: 1.2; border-radius: 4px; }
+    .usage-week .usage-block .ub-t { font-size: 9px; opacity: 0.85; white-space: nowrap; overflow: hidden; }
+    .usage-week .usage-block .ub-n { font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .usage-week .usage-time-label { font-size: 9px; right: 3px; }
+    #avail-preview { -webkit-touch-callout: default; } /* 預覽圖可以長按存到相簿 */
 
     /* 待辦四象限 */
     .todo-quad-grid { display: grid; grid-template-columns: 1fr; gap: 10px; width: 90%; margin: 0 auto; }
@@ -1836,13 +1850,19 @@
       <div id="renters-list"></div>
     </div>
     <div id="rental-subtab-usage" class="card" style="display:none;">
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+        <div class="usage-seg"><button type="button" data-mode="day" class="active" onclick="setUsageMode('day')">日</button><button type="button" data-mode="week" onclick="setUsageMode('week')">週</button></div>
+        <select id="usage-scope" class="form-control" style="flex:1; display:none; padding:6px 8px;" onchange="renderStudioUsage()"></select>
+      </div>
       <div style="display:flex; align-items:center; gap:6px; margin-bottom:10px;">
         <button class="small-btn" style="padding:8px 12px; background-color:var(--c-sand); color:var(--c-text); margin:0;" onclick="shiftUsageDate(-1)">‹</button>
         <input type="date" id="usage-date" class="form-control" style="flex:1;" onchange="renderStudioUsage()">
         <button class="small-btn" style="padding:8px 12px; background-color:var(--c-sand); color:var(--c-text); margin:0;" onclick="shiftUsageDate(1)">›</button>
       </div>
+      <div id="usage-week-label" style="display:none; text-align:center; font-size:13px; font-weight:bold; color:var(--c-text2); margin:-2px 0 8px 0;"></div>
       <div id="usage-table"></div>
       <div id="usage-note" style="font-size:12px; color:var(--c-muted); margin-top:8px; line-height:1.6;"></div>
+      <button class="button" style="width:100%; margin:12px 0 0 0;" onclick="openAvailModal()">📤 匯出一週的空堂表（圖片）</button>
     </div>
   </div>
 
@@ -2010,6 +2030,25 @@
         <button class="button" style="width:100%; margin:0;" onclick="copyTuitionMessage(qpDoneStudentId, qpLastPayId)">📋 複製給家長</button>
       </div>
       </div>
+    </div>
+  </div>
+
+  <div id="avail-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--c-overlay); z-index: 9999; align-items: center; justify-content: center;">
+    <div class="modal-content" style="text-align: left;">
+      <h3 style="margin-top: 0; font-size: 18px; color: var(--c-text); text-align:center;">📤 匯出空堂表</h3>
+      <div style="display:flex; align-items:center; gap:6px; margin-bottom:12px;">
+        <button class="small-btn" style="padding:8px 12px; background-color:var(--c-sand); color:var(--c-text); margin:0;" onclick="shiftAvailWeek(-7)">‹</button>
+        <div id="avail-week-label" style="flex:1; text-align:center; font-weight:bold; color:var(--c-text);"></div>
+        <button class="small-btn" style="padding:8px 12px; background-color:var(--c-sand); color:var(--c-text); margin:0;" onclick="shiftAvailWeek(7)">›</button>
+      </div>
+      <div class="form-group"><label>內容</label><select id="avail-scope" class="form-control" onchange="renderAvailPreview()"></select></div>
+      <div class="form-group"><label>時間範圍</label>
+        <div style="display:flex; align-items:center; gap:6px;"><select id="avail-start" class="form-control" style="flex:1;" onchange="onAvailHoursChange()"></select><span>到</span><select id="avail-end" class="form-control" style="flex:1;" onchange="onAvailHoursChange()"></select></div>
+      </div>
+      <label style="display:flex; align-items:center; gap:6px; font-weight:normal; font-size:14px; margin-bottom:12px;"><input type="checkbox" id="avail-names" onchange="renderAvailPreview()"> 顯示學生名字（傳給家長時不要勾）</label>
+      <img id="avail-preview" alt="空堂表預覽" style="width:100%; border:1px solid var(--c-line); border-radius:8px; display:block; background:#fff;">
+      <button class="button" style="width:100%; margin:12px 0 0 0;" onclick="shareAvailImage()">📤 分享／儲存圖片</button>
+      <button class="button btn-secondary" style="width:100%; margin:10px 0 0 0;" onclick="closeAvailModal()">關閉</button>
     </div>
   </div>
 
@@ -10553,13 +10592,232 @@
 
     // ---- 工作室使用表：選一天，每間可出租的工作室一欄，看哪些時段有人用 ----
     function shiftUsageDate(delta) {
+      if (usageMode === 'week') delta *= 7;
       let el = document.getElementById('usage-date');
       let d = new Date((el.value || formatDate(new Date())) + 'T00:00:00');
       d.setDate(d.getDate() + delta);
       el.value = formatDate(d);
       renderStudioUsage();
     }
+    // ---- 週的使用表、匯出空堂表（圖片） ----
+    let usageMode = 'day';
+    function setUsageMode(m) {
+      usageMode = m;
+      document.querySelectorAll('.usage-seg button').forEach(b => b.classList.toggle('active', b.dataset.mode === m));
+      renderStudioUsage();
+    }
+    function weekStartOf(dateStr) { let d = new Date(dateStr + 'T00:00:00'); d.setDate(d.getDate() - (d.getDay() + 6) % 7); return formatDate(d); } // 週一開始
+    function weekDates(startStr) { return [0, 1, 2, 3, 4, 5, 6].map(i => addDaysStr(startStr, i)); }
+    function weekRangeLabel(startStr) { return formatReportDate(startStr) + ' – ' + formatReportDate(addDaysStr(startStr, 6)); }
+    function getUsageHours() {
+      let h = appSettings.usageHours || {};
+      let st = Number.isInteger(h.start) ? h.start : 9, en = Number.isInteger(h.end) ? h.end : 21;
+      if (en <= st) en = Math.min(24, st + 1);
+      return { start: st, end: en };
+    }
+    function usageLocationNames() {
+      let names = (appSettings.locations || []).filter(l => l && l.name).map(l => l.name);
+      getRentableLocations().forEach(n => { if (!names.includes(n)) names.push(n); });
+      return names;
+    }
+    // 一天裡佔用時間的東西。scope：'' 全部（上課＋租借）、'teacher' 只算你的課、'loc:地點' 那一間（上課＋租借）
+    // idx 是在「這天全部有時間、沒取消的項目」裡的位置，點色塊開點名視窗時才對得上（跟日的使用表一樣）
+    function usageItemsFor(dateStr, scope) {
+      return getDisplayItemsForDate(dateStr).filter(it => !it.allDay && !isInactiveEventItem(it)).map((it, idx) => {
+        let s0 = timeToMinutes(it.time);
+        return { it, idx, s0, e0: s0 + getDurationForProps(it.props), isRental: it.props.type === 'rental' };
+      }).filter(c => {
+        if (scope === 'teacher') return !c.isRental;
+        if (scope && scope.startsWith('loc:')) return getItemLocation(c.it) === scope.slice(4);
+        return true;
+      }).sort((a, b) => a.s0 - b.s0);
+    }
+    // 時間重疊的並排：每個項目分到第幾條（lane）、這一串總共幾條（lanes）
+    function layoutUsageLanes(col) {
+      let cluster = [], clusterEnd = -1;
+      let flush = () => { let lanes = Math.max(...cluster.map(c => c.lane + 1), 1); cluster.forEach(c => { c.lanes = lanes; }); cluster = []; };
+      col.forEach(c => {
+        if (c.s0 >= clusterEnd && cluster.length) flush();
+        let used = cluster.filter(o => o.e0 > c.s0).map(o => o.lane);
+        c.lane = 0; while (used.includes(c.lane)) c.lane++;
+        cluster.push(c); clusterEnd = Math.max(clusterEnd, c.e0);
+      });
+      if (cluster.length) flush();
+      return col;
+    }
+    function fillUsageScopeSelect() {
+      let sel = document.getElementById('usage-scope');
+      let cur = sel.value;
+      sel.innerHTML = '<option value="">全部（上課＋琴房出租）</option><option value="teacher">只看我的課</option>' +
+        usageLocationNames().map(n => '<option value="loc:' + escHTML(n) + '">' + escHTML(n) + '</option>').join('');
+      if (Array.from(sel.options).some(o => o.value === cur)) sel.value = cur;
+    }
+    function renderStudioUsageWeek() {
+      let dateStr = document.getElementById('usage-date').value || formatDate(new Date());
+      let ws = weekStartOf(dateStr), days = weekDates(ws), today = formatDate(new Date());
+      fillUsageScopeSelect();
+      let scope = document.getElementById('usage-scope').value;
+      let label = document.getElementById('usage-week-label');
+      label.innerText = weekRangeLabel(ws); label.style.display = 'block';
+      let per = days.map(d => layoutUsageLanes(usageItemsFor(d, scope)));
+      let hrs = getUsageHours(), startMin = hrs.start * 60, endMin = hrs.end * 60;
+      per.forEach(col => col.forEach(c => { startMin = Math.min(startMin, Math.floor(c.s0 / 60) * 60); endMin = Math.max(endMin, Math.ceil(c.e0 / 60) * 60); }));
+      const PX = 0.9;
+      let height = (endMin - startMin) * PX, lines = '', labels = '';
+      for (let m = startMin; m <= endMin; m += 60) {
+        let top = (m - startMin) * PX;
+        lines += '<div class="usage-slot-line" style="top:' + top + 'px;"></div>';
+        labels += '<div class="usage-time-label" style="top:' + top + 'px;">' + String(m / 60).padStart(2, '0') + '</div>';
+      }
+      let html = '<div class="usage-wrap usage-week"><div class="usage-times"><div class="usage-head"></div><div style="position:relative; height:' + height + 'px;">' + labels + '</div></div>';
+      days.forEach((d, i) => {
+        let dt = new Date(d + 'T00:00:00');
+        let blocks = per[i].map(c => {
+          let w = 100 / c.lanes;
+          let name = c.it.name; // 租借用金色區分，名字前面不再加圖示（週的格子很窄）
+          return '<div class="usage-block" style="top:' + ((c.s0 - startMin) * PX) + 'px; height:' + Math.max(16, (c.e0 - c.s0) * PX - 2) + 'px; left:calc(' + (w * c.lane) + '% + 2px); right:auto; width:calc(' + w + '% - 4px); background:' + (c.isRental ? 'var(--c-gold)' : 'var(--c-primary)') + ';" onclick="openUsageItem(\'' + d + '\',' + c.idx + ')">' +
+            '<div class="ub-t">' + c.it.time + '</div><div class="ub-n">' + escHTML(name) + '</div></div>';
+        }).join('');
+        html += '<div class="usage-col"><div class="usage-head' + (d === today ? ' is-today' : '') + '">' + (dt.getMonth() + 1) + '/' + dt.getDate() + '<br>' + '日一二三四五六'[dt.getDay()] + '</div><div style="position:relative; height:' + height + 'px;">' + lines + blocks + '</div></div>';
+      });
+      box_set(html);
+      document.getElementById('usage-note').innerHTML = '<span style="display:inline-block; width:10px; height:10px; background:var(--c-primary); border-radius:2px;"></span> 你的課　<span style="display:inline-block; width:10px; height:10px; background:var(--c-gold); border-radius:2px;"></span> 租借　點色塊可以開那堂課';
+    }
+    function box_set(html) { document.getElementById('usage-table').innerHTML = html; }
+
+    // 匯出空堂表：在手機上畫成一張圖片，可以直接分享到 LINE 或存到相簿
+    let availWeekStart = null, availBlob = null, availUrl = null;
+    function openAvailModal() {
+      availWeekStart = weekStartOf(document.getElementById('usage-date').value || formatDate(new Date()));
+      let sel = document.getElementById('avail-scope');
+      sel.innerHTML = '<option value="teacher">我的時間（所有地點的課）</option>' +
+        usageLocationNames().map(n => '<option value="loc:' + escHTML(n) + '">' + escHTML(n) + (getRentableLocations().includes(n) ? '（上課＋琴房出租）' : '（這個地點的課）') + '</option>').join('');
+      let hrs = getUsageHours();
+      let opts = (a, b, v) => { let h = ''; for (let i = a; i <= b; i++) h += '<option value="' + i + '"' + (i === v ? ' selected' : '') + '>' + String(i).padStart(2, '0') + ':00</option>'; return h; };
+      document.getElementById('avail-start').innerHTML = opts(5, 15, hrs.start);
+      document.getElementById('avail-end').innerHTML = opts(12, 24, hrs.end);
+      document.getElementById('avail-names').checked = false;
+      document.getElementById('avail-modal').style.display = 'flex';
+      renderAvailPreview();
+    }
+    function closeAvailModal() { document.getElementById('avail-modal').style.display = 'none'; }
+    function shiftAvailWeek(n) { availWeekStart = addDaysStr(availWeekStart, n); renderAvailPreview(); }
+    function onAvailHoursChange() {
+      let st = Number(document.getElementById('avail-start').value), en = Number(document.getElementById('avail-end').value);
+      if (en <= st) { en = Math.min(24, st + 1); document.getElementById('avail-end').value = String(en); }
+      appSettings = Object.assign({}, appSettings, { usageHours: { start: st, end: en } }); // 記住，下次（換手機也一樣）直接用
+      saveSettingsToMemory();
+      renderAvailPreview();
+      if (usageMode === 'week' && currentRentalSubtab === 'usage') renderStudioUsage();
+    }
+    function renderAvailPreview() {
+      document.getElementById('avail-week-label').innerText = weekRangeLabel(availWeekStart);
+      let cv = buildAvailCanvas();
+      availBlob = null;
+      let img = document.getElementById('avail-preview');
+      img.src = cv.toDataURL('image/png');
+      cv.toBlob(b => { availBlob = b; }, 'image/png'); // 先準備好，按分享時馬上就能分享
+    }
+    // 空堂表要畫的東西：「我的時間」也要算琴房出租——那間租出去的時候，你也沒辦法在那裡上課
+    function availItemsFor(dateStr, scope) { return usageItemsFor(dateStr, scope === 'teacher' ? '' : scope); }
+    function buildAvailCanvas() {
+      let days = weekDates(availWeekStart);
+      let scope = document.getElementById('avail-scope').value || 'teacher';
+      let showNames = document.getElementById('avail-names').checked;
+      let st = Number(document.getElementById('avail-start').value), en = Number(document.getElementById('avail-end').value);
+      if (!(en > st)) en = st + 1;
+      const W = 1080, M = 36, TCOL = 84, DCOL = (W - M * 2 - TCOL) / 7, HH = 76, TOP = 170, DAYH = 70, FOOT = 60;
+      let H = TOP + DAYH + (en - st) * HH + FOOT;
+      let cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+      let c = cv.getContext('2d');
+      const FONT = '"PingFang TC", "Noto Sans TC", "Microsoft JhengHei", "Helvetica Neue", Arial, sans-serif';
+      const INK = '#1E2A3A', MUTED = '#6B7280', LINE = '#E5E1D8', LESSON = '#1F3A5F', RENT = '#C08A1E';
+      c.fillStyle = '#FFFFFF'; c.fillRect(0, 0, W, H);
+      c.textBaseline = 'alphabetic';
+      c.fillStyle = INK; c.font = 'bold 40px ' + FONT; c.textAlign = 'left';
+      c.fillText(getStudioDisplayName(), M, 62);
+      let locName = scope.startsWith('loc:') ? scope.slice(4) : '';
+      c.fillStyle = MUTED; c.font = '28px ' + FONT;
+      c.fillText((locName ? locName + ' 使用時段' : '可上課時段') + '　' + weekRangeLabel(availWeekStart), M, 106);
+      // 圖例
+      let lx = M, ly = 136;
+      let legend = (fill, stroke, text) => {
+        c.fillStyle = fill; c.fillRect(lx, ly - 20, 26, 26); if (stroke) { c.strokeStyle = stroke; c.lineWidth = 2; c.strokeRect(lx, ly - 20, 26, 26); }
+        c.fillStyle = INK; c.font = '22px ' + FONT; c.fillText(text, lx + 34, ly); lx += 34 + c.measureText(text).width + 30;
+      };
+      legend('#FFFFFF', '#C9C2B4', '空白＝可以安排');
+      legend(LESSON, null, '已有課程');
+      legend(RENT, null, locName ? '琴房出租' : '琴房出租（那個地點不能上課）');
+      let x0 = M + TCOL, y0 = TOP + DAYH, gridH = (en - st) * HH;
+      // 星期
+      days.forEach((d, i) => {
+        let dt = new Date(d + 'T00:00:00'), cx = x0 + i * DCOL + DCOL / 2;
+        c.textAlign = 'center'; c.fillStyle = (dt.getDay() === 0 || dt.getDay() === 6) ? '#9E4422' : INK;
+        c.font = 'bold 26px ' + FONT; c.fillText((dt.getMonth() + 1) + '/' + dt.getDate(), cx, TOP + 30);
+        c.font = '22px ' + FONT; c.fillText('週' + '日一二三四五六'[dt.getDay()], cx, TOP + 58);
+      });
+      // 格線、時間
+      c.strokeStyle = LINE; c.lineWidth = 1.5;
+      for (let h = st; h <= en; h++) {
+        let y = y0 + (h - st) * HH;
+        c.beginPath(); c.moveTo(x0, y); c.lineTo(x0 + DCOL * 7, y); c.stroke();
+        c.textAlign = 'right'; c.fillStyle = MUTED; c.font = '20px ' + FONT;
+        c.fillText(String(h).padStart(2, '0') + ':00', x0 - 10, y + 7);
+      }
+      for (let i = 0; i <= 7; i++) { let x = x0 + i * DCOL; c.beginPath(); c.moveTo(x, y0); c.lineTo(x, y0 + gridH); c.stroke(); }
+      // 佔用的時段
+      let clipS = st * 60, clipE = en * 60;
+      let fit = (text, maxW) => { if (c.measureText(text).width <= maxW) return text; while (text.length > 1 && c.measureText(text + '…').width > maxW) text = text.slice(0, -1); return text + '…'; };
+      days.forEach((d, i) => {
+        let col = layoutUsageLanes(availItemsFor(d, scope).filter(o => o.e0 > clipS && o.s0 < clipE));
+        col.forEach(o => {
+          let s0 = Math.max(o.s0, clipS), e0 = Math.min(o.e0, clipE);
+          let w = (DCOL - 8) / o.lanes, x = x0 + i * DCOL + 4 + w * o.lane, y = y0 + (s0 - clipS) / 60 * HH + 2, h = Math.max(18, (e0 - s0) / 60 * HH - 4);
+          c.fillStyle = o.isRental ? RENT : LESSON;
+          c.beginPath(); if (c.roundRect) c.roundRect(x, y, w - 4, h, 8); else c.rect(x, y, w - 4, h); c.fill();
+          c.save(); c.beginPath(); c.rect(x, y, w - 4, h); c.clip();
+          c.fillStyle = '#FFFFFF'; c.textAlign = 'left';
+          let tw = w - 14, lines = [];
+          let range = o.it.time + '–' + computeEndTime(o.it.time, o.e0 - o.s0), tf = null;
+          for (const px of [19, 17, 15]) { c.font = 'bold ' + px + 'px ' + FONT; if (c.measureText(range).width <= tw) { tf = 'bold ' + px + 'px '; break; } }
+          lines.push(tf ? { t: range, f: tf } : { t: o.it.time, f: 'bold 17px ' });
+          let abbr = !locName ? getLocationAbbrByName(getItemLocation(o.it)) : ''; // 我的時間：寫出在哪裡（上課、出租都寫）
+          let what = showNames ? o.it.name + (abbr ? '・' + abbr : '')
+            : o.isRental ? (abbr ? abbr + '出租中' : '琴房出租') : '已排課' + (abbr ? '・' + abbr : '');
+          lines.push({ t: what, f: '18px ' });
+          let ty = y + 24;
+          lines.forEach(l => { if (ty > y + h - 2) return; c.font = l.f + FONT; c.fillText(fit(l.t, tw), x + 7, ty); ty += 24; });
+          c.restore();
+        });
+      });
+      // 下方：更新時間
+      let now = new Date();
+      c.textAlign = 'left'; c.fillStyle = '#9AA0A8'; c.font = '18px ' + FONT;
+      c.fillText('更新時間 ' + now.getFullYear() + '/' + (now.getMonth() + 1) + '/' + now.getDate() + ' ' + String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0'), M, H - 22);
+      return cv;
+    }
+    function shareAvailImage() {
+      if (!availBlob) { alert('圖片還在準備中，請再按一次。'); return; }
+      let fname = '空堂表_' + availWeekStart + '.png';
+      let file = null;
+      try { file = new File([availBlob], fname, { type: 'image/png' }); } catch (e) {}
+      if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+        navigator.share({ files: [file] }).catch(() => {}); // 手機：跳出分享選單，可以選 LINE 或「儲存影像」
+        return;
+      }
+      // 不能分享的裝置（例如電腦）：直接下載
+      let a = document.createElement('a');
+      if (availUrl) URL.revokeObjectURL(availUrl);
+      availUrl = URL.createObjectURL(availBlob);
+      a.href = availUrl; a.download = fname;
+      document.body.appendChild(a); a.click(); a.remove();
+    }
+
     function renderStudioUsage() {
+      let scopeSel = document.getElementById('usage-scope');
+      scopeSel.style.display = usageMode === 'week' ? '' : 'none';
+      if (usageMode === 'week') { renderStudioUsageWeek(); return; }
+      document.getElementById('usage-week-label').style.display = 'none';
       let dateStr = document.getElementById('usage-date').value || formatDate(new Date());
       let cols = getRentableLocations();
       rentalData.rentals.forEach(r => { if (r.date === dateStr && r.location && !cols.includes(r.location)) cols.push(r.location); });
@@ -11190,7 +11448,7 @@
 
     // ============ 版本更新檢查 ============
     // 每次修改程式、上傳新檔案時，要把這個版本號改掉（任何不一樣的字都可以），手機才會知道有新版本。
-    const APP_VERSION = 'sm-2026.10.30-1';
+    const APP_VERSION = 'sm-2026.11.02-2';
 
     // 加入主畫面的 App 常常直接拿手機裡存的舊檔案，而且沒有重新整理按鈕。
     // 做法：去網路上抓一份「現在的這個網頁」（網址加上時間，強迫不能用舊的），比對裡面寫的版本號，不一樣就提示更新。
