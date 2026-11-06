@@ -1551,6 +1551,15 @@
     </div>
   </div>
 
+  <div id="backup-diff-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--c-overlay); z-index: 10000; align-items: center; justify-content: center;">
+    <div class="modal-content" style="text-align: left;">
+      <h3 style="margin-top: 0; font-size: 18px; color: var(--c-text); text-align:center;">🔍 跟現在的資料比較</h3>
+      <p id="backup-diff-sub" style="font-size:13px; color:var(--c-muted); line-height:1.6; margin-top:0;"></p>
+      <div id="backup-diff-list"></div>
+      <button class="button btn-secondary" style="width:100%; margin:10px 0 0 0;" onclick="closeBackupDiff()">關閉</button>
+    </div>
+  </div>
+
   <div id="manage-page" style="display: none;">
     <h2 style="font-weight: 300;">👥 學生名單管理</h2>
     <div class="card" style="background-color: var(--c-tint); border: 1px solid var(--c-primary-line);">
@@ -3342,7 +3351,7 @@
         let dirty = getSyncDirty();
         if (dirty) {
           // 這台有還沒上傳的修改：雲端的版本比較舊（或是自己剛送出去的那份），不拿來蓋掉，改成把這台的補上傳
-          let own = snap.exists() && (snap.data().updatedAt === dirty.lastTry || (snap.metadata && snap.metadata.hasPendingWrites));
+          let own = snap.exists() && (snap.data().updatedAt === dirty.lastTry || snap.data().updatedAt === dirty.base || (snap.metadata && snap.metadata.hasPendingWrites));
           if (!own) flushPendingUpload();
           return;
         }
@@ -3441,6 +3450,12 @@
         await cloudFns.setDoc(ref, payload);
         lsSet('sm_sync_base', payload.updatedAt);
         if (seq === syncSeq) setSyncDirty(null); // 上傳途中又有新的修改，就留著記號，等下一次一起上傳
+        else {
+          // 還有新的修改要接著傳：雲端現在這一版是這台自己剛傳的，記成「這台的起點」。
+          // 不然下一次上傳如果剛好斷線失敗，再補傳時會把自己傳的這一版誤認成「別台裝置改的」
+          let d = getSyncDirty();
+          if (d) { d.base = payload.updatedAt; setSyncDirty(d); }
+        }
         if (dirty && (dirty.offline || reconnect)) {
           syncNotice = { kind: 'done', until: Date.now() + 6000 };
         }
@@ -3478,7 +3493,7 @@
         let d = new Date(syncNotice.at);
         let when = isNaN(d) ? '' : (d.getMonth() + 1) + '/' + d.getDate() + ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
         el.className = 'sync-conflict';
-        el.innerHTML = '⚠️ 這台有修改還沒上傳，但另一台裝置已經更新過資料。為了不蓋掉比較新的資料，這台已經換成<b>雲端最新的版本</b>。<br>這台沒上傳的那份存在：更多 →「🕐 歷史版本」' + (when ? '裡 ' + when + ' 那一筆' : '') + '（標「這台沒上傳的修改」）。' +
+        el.innerHTML = '⚠️ 這台有修改還沒上傳，但另一台裝置已經更新過資料。為了不蓋掉比較新的資料，這台已經換成<b>雲端最新的版本</b>。<br>這台沒上傳的那份存在：更多 →「🕐 歷史版本」' + (when ? '裡 ' + when + ' 那一筆' : '') + '（標「某台裝置沒上傳的修改」）。' +
           '<span class="sync-x" onclick="dismissSyncNotice()">✕</span>';
         el.style.display = 'block';
         return;
@@ -3548,6 +3563,7 @@
           html += '<div class="card" style="padding:10px; margin:8px 0;">' +
             '<div style="font-size:14px;">' + label + '</div>' +
             '<div style="font-size:12px; color:var(--c-muted); margin-bottom:8px;">' + studentCount + ' 位學生' + (data.note === 'unsynced' ? '・<b style="color:var(--c-accent-text);">某台裝置沒上傳的修改</b>' : '') + '</div>' +
+            '<button class="small-btn" style="background-color:var(--c-sand); color:var(--c-text); margin-right:6px;" onclick="compareBackup(\'' + docSnap.id + '\', \'' + label + '\')">🔍 跟現在比較</button>' +
             '<button class="small-btn" style="background-color:var(--c-primary); color:white;" onclick="restoreBackup(\'' + docSnap.id + '\')">還原到這個版本</button>' +
             '</div>';
         });
@@ -3559,6 +3575,95 @@
     }
 
     function closeHistoryModal() { document.getElementById('history-modal').style.display = 'none'; }
+
+    // ---- 歷史版本「跟現在比較」：列出這一份有、但現在的資料沒有（或不一樣）的地方，不用記得改過什麼，照著補就好 ----
+    function closeBackupDiff() { document.getElementById('backup-diff-modal').style.display = 'none'; }
+    async function compareBackup(backupId, label) {
+      let modal = document.getElementById('backup-diff-modal');
+      document.getElementById('backup-diff-sub').innerText = label + ' 這一份';
+      document.getElementById('backup-diff-list').innerHTML = '載入中…';
+      modal.style.display = 'flex';
+      try {
+        let snap = await cloudFns.getDoc(cloudFns.doc(cloudDb, 'users', cloudAuth.currentUser.uid, 'data', 'main', 'backups', backupId));
+        if (!snap.exists()) { document.getElementById('backup-diff-list').innerHTML = '<p style="color:var(--c-muted);">找不到這個版本，可能已經被自動清除了。</p>'; return; }
+        let diffs = diffBackupWithCurrent(snap.data());
+        document.getElementById('backup-diff-sub').innerText = label + ' 這一份裡，有、但現在的資料沒有或不一樣的地方。需要的話照著重做一次就好，不用還原。';
+        if (!diffs.length) { document.getElementById('backup-diff-list').innerHTML = '<p style="font-size:14px; color:var(--c-primary-text); line-height:1.6;">✅ 這一份裡的東西，現在的資料都有了，不用補任何東西。</p>'; return; }
+        let groups = {};
+        diffs.forEach(d => { (groups[d[0]] = groups[d[0]] || []).push(d[1]); });
+        document.getElementById('backup-diff-list').innerHTML = Object.keys(groups).map(k =>
+          '<div style="font-weight:bold; font-size:14px; color:var(--c-text); margin:12px 0 4px;">' + escHTML(k) + '（' + groups[k].length + '）</div>' +
+          groups[k].map(t => '<div style="font-size:13px; color:var(--c-text2); padding:6px 0; border-bottom:1px solid var(--c-divider); line-height:1.5;">' + escHTML(t) + '</div>').join('')).join('');
+      } catch (err) {
+        console.error(err);
+        document.getElementById('backup-diff-list').innerHTML = '<p style="color:var(--c-muted);">讀取失敗，請確認網路後再試一次。</p>';
+      }
+    }
+    function diffBackupWithCurrent(d) {
+      const P = k => { try { let v = JSON.parse(d[k] || 'null'); return Array.isArray(v) ? v : []; } catch (e) { return []; } };
+      const md = x => x ? Number(x.slice(5, 7)) + '/' + Number(x.slice(8, 10)) : '';
+      const show = v => (v === undefined || v === null || v === '') ? '（空白）' : String(v);
+      let out = [];
+      // 學生、點名
+      const ST = [['attendedDates', '出席'], ['absentChargedDates', '缺席收費'], ['canceledDates', '延期'], ['makeupConvertedDates', '轉補課'], ['rescheduledDates', '已調課']];
+      const stOf = (st, date) => { for (const [k, l] of ST) if ((st[k] || []).includes(date)) return l; return '未點名'; };
+      P('students').forEach(b => {
+        let c = students.find(x => x.id === b.id);
+        if (!c) { out.push(['學生', b.name + '：這一份有這位學生，現在沒有']); return; }
+        let dates = new Set();
+        ST.forEach(([k]) => (b[k] || []).forEach(x => dates.add(x)));
+        Array.from(dates).sort().forEach(date => { let x = stOf(b, date), y = stOf(c, date); if (x !== y) out.push(['點名', b.name + ' ' + md(date) + '：這一份是「' + x + '」，現在是「' + y + '」']); });
+        [['fee', '學費'], ['dayIndex', '上課星期'], ['timeVal', '上課時間'], ['duration', '時長'], ['location', '地點'], ['freq', '上課頻率'], ['endDate', '退班日期']].forEach(([k, l]) => {
+          if (String(b[k] === undefined || b[k] === null ? '' : b[k]) !== String(c[k] === undefined || c[k] === null ? '' : c[k])) out.push(['學生資料', b.name + ' 的' + l + '：這一份是 ' + show(b[k]) + '，現在是 ' + show(c[k])]);
+        });
+      });
+      // 繳費
+      P('payments').forEach(x => { if (!paymentRecords.some(y => y.id === x.id)) out.push(['繳費', (x.studentName || '') + ' ' + md(x.date) + ' ' + x.lessons + ' 堂' + (hasPayAmount(x) ? '・NT$ ' + Number(x.amount).toLocaleString() : '') + (x.note ? '（' + x.note + '）' : '')]); });
+      // 臨時課、調課
+      const tst = t => t.attended ? '出席' : t.absentCharged ? '缺席收費' : t.makeupConverted ? '轉補課' : t.canceled ? '取消' : '未點名';
+      P('tempLessons').forEach(t => {
+        let c = tempLessons.find(y => y.id === t.id), what = (isRescheduleTemp(t) ? '調課 ' : '臨時課 ') + t.studentName + ' ' + md(t.date) + ' ' + (t.time || '');
+        if (!c) out.push(['臨時課／調課', what + '：現在沒有這堂']);
+        else if (tst(t) !== tst(c)) out.push(['臨時課／調課', what + '：這一份是「' + tst(t) + '」，現在是「' + tst(c) + '」']);
+        else if (c.date !== t.date || (c.time || '') !== (t.time || '')) out.push(['臨時課／調課', what + '：現在改成 ' + md(c.date) + ' ' + (c.time || '')]);
+      });
+      // 補課
+      P('makeupBank').forEach(rec => {
+        let c = makeupBank.find(y => y.id === rec.id);
+        (rec.schedules || []).forEach(sch => {
+          let cs = c && (c.schedules || []).find(y => y.date === sch.date && y.time === sch.time);
+          let what = '補課 ' + rec.studentName + ' ' + md(sch.date) + ' ' + (sch.time || '');
+          if (!cs) out.push(['補課', what + '（' + (sch.attended ? '已上' : '已排') + '）：現在沒有這堂']);
+          else if (!!cs.attended !== !!sch.attended) out.push(['補課', what + '：這一份是「' + (sch.attended ? '已上' : '還沒上') + '」，現在是「' + (cs.attended ? '已上' : '還沒上') + '」']);
+        });
+        if (!c && !(rec.schedules || []).length) out.push(['補課', rec.studentName + ' 待補 ' + rec.remaining + ' 堂（原本 ' + md(rec.dateGen) + ' 的課）：現在沒有']);
+      });
+      // 待辦
+      P('todos').forEach(t => {
+        let c = todos.find(y => y.id === t.id);
+        if (!c) out.push(['待辦', t.text + '：現在沒有']);
+        else if (!!c.done !== !!t.done) out.push(['待辦', t.text + '：這一份是「' + (t.done ? '已完成' : '未完成') + '」，現在是「' + (c.done ? '已完成' : '未完成') + '」']);
+        else if (c.text !== t.text) out.push(['待辦', '「' + t.text + '」現在改成「' + c.text + '」']);
+      });
+      // 課堂記錄、學習進度、成就、支出、銷售、進貨、額外收入：這一份有、現在沒有的
+      [['lessonNotes', '課堂記錄', lessonNotes, x => (x.studentName || '') + ' ' + md(x.date) + '：' + (x.text || '')],
+       ['progressNotes', '學習進度', progressNotes, x => (x.studentName || '') + ' ' + md(x.date) + '：' + (x.text || '')],
+       ['achievements', '成就記錄', achievements, x => (x.studentName || '') + ' ' + md(x.date) + '：' + (x.name || '')],
+       ['expenses', '支出', expenses, x => md(x.date) + ' ' + (x.item || '') + ' NT$ ' + Number(x.amount || 0).toLocaleString()],
+       ['materialSales', '銷售', materialSales, x => md(x.date) + ' ' + (x.itemName || '') + ' ×' + x.quantity + '（' + (x.buyerName || '') + '）'],
+       ['materialPurchases', '進貨', materialPurchases, x => md(x.date) + ' ' + (x.itemName || '') + ' ×' + x.quantity],
+       ['extraIncome', '額外收入', extraIncome, x => md(x.date) + ' ' + (x.note || '') + ' NT$ ' + Number(x.amount || 0).toLocaleString()]
+      ].forEach(([k, l, cur, fmt]) => P(k).forEach(x => { if (!cur.some(y => y.id === x.id)) out.push([l, fmt(x) + '：現在沒有']); }));
+      // 琴房租借
+      let br = null; try { br = normalizeRentalData(JSON.parse(d.rental || 'null')); } catch (e) {}
+      if (br) br.rentals.forEach(x => {
+        let c = rentalData.rentals.find(y => y.id === x.id), what = '租借 ' + (x.renterName || '') + ' ' + md(x.date) + ' ' + (x.time || '');
+        if (!c) out.push(['琴房租借', what + '：現在沒有']);
+        else if (c.date !== x.date || c.time !== x.time) out.push(['琴房租借', what + '：現在改成 ' + md(c.date) + ' ' + (c.time || '')]);
+        else if (!!c.paid !== !!x.paid) out.push(['琴房租借', what + '：這一份是「' + (x.paid ? '已收款' : '未收款') + '」，現在是「' + (c.paid ? '已收款' : '未收款') + '」']);
+      });
+      return out;
+    }
 
     async function restoreBackup(backupId) {
       if (!await smConfirm('確定要還原到這個版本嗎？目前的資料會被取代。（放心，目前的狀態本身也已經是歷史版本清單裡最新的一筆，還原錯了還能再從清單挑回來。）')) return;
@@ -5025,13 +5130,27 @@
       refreshSaleBatch();
       if (focus) row.querySelector('.sbt-item').focus();
     }
+    // 同一張單裡，這一項上面幾項已經要賣掉的庫存數量（還沒存檔，但這一項能賣的要先扣掉）
+    function saleUsedAbove(row) {
+      let used = {};
+      for (let r of document.querySelectorAll('#sb-rows .bt-row')) {
+        if (r === row) break;
+        let name = r.querySelector('.sbt-item').value.trim(), qty = Number(r.querySelector('.sbt-qty').value);
+        if (name && qty > 0 && getAllItemNames().includes(name)) used[name] = (used[name] || 0) + qty;
+      }
+      return used;
+    }
     function onSaleRowItemInput(input) {
       let row = btRowOf(input);
       let q = input.value.trim().toLowerCase();
       let chips = row.querySelector('.sbt-item-chips');
       if (!q) { btShowChips(chips, ''); }
       else {
-        let inv = getAllItemNames().filter(n => n.toLowerCase().includes(q) && n.toLowerCase() !== q).slice(0, 8).map(n => ({ v: n, label: n + '（庫存 ' + getItemStock(n) + '）', fn: 'pickSaleRowItem' }));
+        let used = saleUsedAbove(row);
+        let left = n => Math.max(0, Number((getItemStock(n) - (used[n] || 0)).toFixed(2)));
+        let inv = getAllItemNames().filter(n => n.toLowerCase().includes(q) && n.toLowerCase() !== q)
+          .sort((a, b) => (left(a) > 0 ? 0 : 1) - (left(b) > 0 ? 0 : 1)).slice(0, 8) // 還有庫存的排前面
+          .map(n => ({ v: n, label: n + '（庫存 ' + left(n) + '）', fn: 'pickSaleRowItem' }));
         let other = otherSaleItemNames().filter(n => n.toLowerCase().includes(q) && n.toLowerCase() !== q).slice(0, 4).map(n => ({ v: n, label: n + '（其他）', fn: 'pickSaleRowItem' }));
         btShowChips(chips, btChipsHTML(inv.concat(other)));
       }
@@ -5075,9 +5194,9 @@
       if (!getAllItemNames().includes(name)) return { kind: 'other', name, qty };
       let before = usedBefore[name] || 0;
       let avail = Number((getItemStock(name) - before).toFixed(2));
-      if (qty > 0 && qty > avail + 1e-9) return { kind: 'short', name, qty, avail: Math.max(0, avail) };
+      if (qty > 0 && qty > avail + 1e-9) return { kind: 'short', name, qty, avail: Math.max(0, avail), before };
       let cost = qty > 0 ? Number((previewInventoryCost(name, before + qty) - previewInventoryCost(name, before)).toFixed(2)) : 0;
-      return { kind: 'inv', name, qty, avail, cost };
+      return { kind: 'inv', name, qty, avail, cost, before };
     }
     function refreshSaleBatch() {
       let box = document.getElementById('sb-rows');
@@ -5095,11 +5214,11 @@
         if (st.kind === 'inv') {
           used[st.name] = (used[st.name] || 0) + (st.qty || 0);
           status.className = 'bt-status sbt-status bt-ok';
-          status.innerText = '📦 庫存 ' + st.avail + (st.qty > 0 ? '・成本約 ' + st.cost + ' 元' : '');
+          status.innerText = '📦 庫存 ' + st.avail + (st.before ? '（上面已選 ' + st.before + ' 個）' : '') + (st.qty > 0 ? '・成本約 ' + st.cost + ' 元' : '');
           costWrap.style.display = 'none';
         } else if (st.kind === 'short') {
           status.className = 'bt-status sbt-status bt-warn';
-          status.innerText = '⚠️ 庫存只剩 ' + st.avail + '，不夠賣 ' + st.qty + ' 個（可能忘了登記進貨）。請填這一項的成本，這一項不會扣庫存。';
+          status.innerText = '⚠️ 庫存只剩 ' + st.avail + (st.before ? '（上面已選 ' + st.before + ' 個）' : '') + '，不夠賣 ' + st.qty + ' 個' + (st.before ? '' : '（可能忘了登記進貨）') + '。請填這一項的成本，這一項不會扣庫存。';
           costWrap.style.display = 'flex';
         } else {
           status.className = 'bt-status sbt-status bt-warn';
@@ -11468,7 +11587,7 @@
 
     // ============ 版本更新檢查 ============
     // 每次修改程式、上傳新檔案時，要把這個版本號改掉（任何不一樣的字都可以），手機才會知道有新版本。
-    const APP_VERSION = 'sm-2026.11.02-3';
+    const APP_VERSION = 'sm-2026.11.06-3';
 
     // 加入主畫面的 App 常常直接拿手機裡存的舊檔案，而且沒有重新整理按鈕。
     // 做法：去網路上抓一份「現在的這個網頁」（網址加上時間，強迫不能用舊的），比對裡面寫的版本號，不一樣就提示更新。
