@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>行程</title>
+<!-- 家人看行程：只能看行程（時間、名字、地點），看不到任何金額，也不能修改。資料是老師的 App 另外存的一份。 -->
+<link rel="manifest" href="manifest-family.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="行程">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<meta name="theme-color" content="#FAF7F2">
+<style>
+  :root { --bg: #FAF7F2; --card: #FFFFFF; --ink: #1E2A3A; --ink2: #3F4856; --muted: #6B7280; --faint: #9AA0A8; --line: #E8E1D6; --line2: #F1ECE4; --lesson: #1F3A5F; --rent: #C08A1E; --today: #E3EAF3; --sel: #1F3A5F; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", "Helvetica Neue", Arial, sans-serif; -webkit-text-size-adjust: 100%; }
+  body { padding: calc(14px + env(safe-area-inset-top)) 12px calc(24px + env(safe-area-inset-bottom)); max-width: 760px; margin: 0 auto; -webkit-user-select: none; user-select: none; }
+  h1 { font-size: 20px; margin: 4px 2px 2px; }
+  #updated { font-size: 12px; color: var(--faint); margin: 0 2px 12px; }
+  .nav { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; }
+  .nav button { border: 1px solid var(--line); background: var(--card); color: var(--ink); border-radius: 10px; padding: 8px 12px; font-size: 15px; cursor: pointer; }
+  .nav #range { flex: 1; text-align: center; font-weight: bold; font-size: 15px; }
+  .grid { display: flex; background: var(--card); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+  .times { flex: 0 0 30px; position: relative; border-right: 1px solid var(--line); }
+  .col { flex: 1 1 0; min-width: 0; position: relative; border-right: 1px solid var(--line2); }
+  .col:last-child { border-right: none; }
+  .head { height: 40px; text-align: center; font-size: 12px; line-height: 1.3; padding-top: 4px; border-bottom: 1px solid var(--line); background: #F8F5F0; cursor: pointer; }
+  .head .wd { color: var(--muted); font-size: 11px; }
+  .head.today { background: var(--today); color: var(--lesson); font-weight: bold; }
+  .head.sel { box-shadow: inset 0 -3px 0 var(--sel); }
+  .line { position: absolute; left: 0; right: 0; border-top: 1px solid var(--line2); }
+  .tl { position: absolute; right: 3px; font-size: 9px; color: var(--faint); transform: translateY(-6px); }
+  .blk { position: absolute; border-radius: 4px; padding: 1px 2px; color: #fff; overflow: hidden; font-size: 10px; line-height: 1.2; cursor: pointer; }
+  .blk .t { font-size: 9px; opacity: .85; white-space: nowrap; }
+  .blk .n { font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .blk.rent { background: var(--rent); }
+  .blk.lesson { background: var(--lesson); }
+  .legend { font-size: 12px; color: var(--muted); margin: 8px 2px 0; }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; vertical-align: -1px; margin: 0 4px 0 8px; }
+  .day { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; margin-top: 12px; }
+  .day h2 { font-size: 16px; margin: 0 0 8px; }
+  .row { display: flex; gap: 10px; padding: 8px 0; border-top: 1px solid var(--line2); font-size: 14px; line-height: 1.5; }
+  .row:first-of-type { border-top: none; }
+  .row .when { flex: 0 0 92px; font-weight: bold; font-variant-numeric: tabular-nums; }
+  .row .what .k { font-size: 12px; color: var(--muted); }
+  .row.rent .when { color: var(--rent); }
+  .empty { color: var(--faint); font-size: 14px; }
+  .msg { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 18px; font-size: 15px; line-height: 1.7; color: var(--ink2); }
+  .hint { font-size: 13px; color: var(--ink2); line-height: 1.7; background: #EEF2F8; border-radius: 12px; padding: 12px 14px; margin-top: 14px; }
+</style>
+</head>
+<body>
+  <h1 id="title">行程</h1>
+  <div id="updated">連線中…</div>
+  <div id="app"></div>
+  <div id="hint" class="hint" style="display:none;"></div>
+
+<script type="module">
+  const firebaseConfig = {
+    apiKey: "AIzaSyBu9tZV0VPHRPnsgnBYaoaMrK3E0_JPpZE",
+    authDomain: "studio-mate-5f28b.firebaseapp.com",
+    projectId: "studio-mate-5f28b",
+    storageBucket: "studio-mate-5f28b.firebasestorage.app",
+    messagingSenderId: "170037585014",
+    appId: "1:170037585014:web:2b9d2ea2da8b10ae22ab57"
+  };
+  const $ = id => document.getElementById(id);
+  const esc = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const pad = n => String(n).padStart(2, '0');
+  const fmt = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  const addDays = (s, n) => { let d = new Date(s + 'T00:00:00'); d.setDate(d.getDate() + n); return fmt(d); };
+  const weekStart = s => { let d = new Date(s + 'T00:00:00'); d.setDate(d.getDate() - (d.getDay() + 6) % 7); return fmt(d); };
+  const md = s => Number(s.slice(5, 7)) + '/' + Number(s.slice(8, 10));
+  const WD = '日一二三四五六';
+  const wd = s => WD[new Date(s + 'T00:00:00').getDay()];
+  const mins = t => { let [h, m] = String(t || '0:0').split(':').map(Number); return h * 60 + (m || 0); };
+
+  // 連結代碼：網址上的 k（第一次打開時記下來，萬一之後從主畫面打開時網址沒帶到）
+  let token = new URLSearchParams(location.search).get('k') || '';
+  try { if (token) localStorage.setItem('sm_family_k', token); else token = localStorage.getItem('sm_family_k') || ''; } catch (e) {}
+
+  let share = null, items = [], today = fmt(new Date()), ws = weekStart(today), sel = today;
+
+  function showMsg(html) { $('app').innerHTML = '<div class="msg">' + html + '</div>'; }
+
+  function render() {
+    if (!share) return;
+    today = fmt(new Date());
+    let days = [0, 1, 2, 3, 4, 5, 6].map(i => addDays(ws, i));
+    if (!days.includes(sel)) sel = days.includes(today) ? today : days[0];
+    let byDay = {};
+    items.forEach(it => { (byDay[it.d] = byDay[it.d] || []).push(it); });
+    // 時間範圍：至少 09–21，有更早／更晚的就往外延
+    let st = 9 * 60, en = 21 * 60;
+    days.forEach(d => (byDay[d] || []).forEach(it => { st = Math.min(st, Math.floor(mins(it.s) / 60) * 60); en = Math.max(en, Math.ceil(mins(it.e) / 60) * 60); }));
+    const PX = 0.75, H = (en - st) * PX;
+    let lines = '', labels = '';
+    for (let m = st; m <= en; m += 60) { let top = (m - st) * PX; lines += '<div class="line" style="top:' + top + 'px"></div>'; labels += '<div class="tl" style="top:' + top + 'px' + (m === st ? ';transform:none' : m === en ? ';transform:translateY(-100%)' : '') + '">' + pad(m / 60) + '</div>'; }
+    let html = '<div class="nav"><button id="prev" aria-label="上一週">‹</button><div id="range">' + md(days[0]) + '（一）– ' + md(days[6]) + '（日）</div><button id="next" aria-label="下一週">›</button><button id="thisweek">本週</button></div>';
+    html += '<div class="grid"><div class="times"><div class="head"></div><div style="position:relative;height:' + H + 'px">' + labels + '</div></div>';
+    days.forEach(d => {
+      let list = (byDay[d] || []).map(it => ({ it, s0: mins(it.s), e0: mins(it.e) })).sort((a, b) => a.s0 - b.s0);
+      // 時間重疊的並排
+      let cluster = [], end = -1;
+      const flush = () => { let n = Math.max(1, ...cluster.map(c => c.lane + 1)); cluster.forEach(c => c.lanes = n); cluster = []; };
+      list.forEach(c => { if (c.s0 >= end && cluster.length) flush(); let used = cluster.filter(o => o.e0 > c.s0).map(o => o.lane); c.lane = 0; while (used.includes(c.lane)) c.lane++; cluster.push(c); end = Math.max(end, c.e0); });
+      if (cluster.length) flush();
+      let blocks = list.map(c => {
+        let w = 100 / c.lanes;
+        return '<div class="blk ' + (c.it.r ? 'rent' : 'lesson') + '" data-d="' + d + '" style="top:' + ((c.s0 - st) * PX) + 'px;height:' + Math.max(14, (c.e0 - c.s0) * PX - 2) + 'px;left:calc(' + (w * c.lane) + '% + 2px);width:calc(' + w + '% - 4px)"><div class="t">' + esc(c.it.s) + '</div><div class="n">' + esc(c.it.n) + '</div></div>';
+      }).join('');
+      html += '<div class="col"><div class="head' + (d === today ? ' today' : '') + (d === sel ? ' sel' : '') + '" data-d="' + d + '">' + md(d) + '<br><span class="wd">' + wd(d) + '</span></div><div style="position:relative;height:' + H + 'px">' + lines + blocks + '</div></div>';
+    });
+    html += '</div><div class="legend"><i style="background:var(--lesson)"></i>上課<i style="background:var(--rent)"></i>琴房出租　點日期或色塊看那天的詳細</div>';
+    // 選到的那一天：完整列出
+    let dl = (byDay[sel] || []).slice().sort((a, b) => mins(a.s) - mins(b.s));
+    html += '<div class="day"><h2>' + md(sel) + '（' + wd(sel) + '）' + (sel === today ? '・今天' : '') + '</h2>' +
+      (dl.length ? dl.map(it => '<div class="row' + (it.r ? ' rent' : '') + '"><div class="when">' + esc(it.s) + '–' + esc(it.e) + '</div><div class="what">' + esc(it.n) + (it.l ? '・' + esc(it.l) : '') + '<div class="k">' + esc(it.k) + '</div></div></div>').join('')
+        : '<div class="empty">這天沒有安排。</div>') + '</div>';
+    if (sel < share.from || sel > share.to) html += '<p class="empty" style="margin:8px 2px;">（只看得到前一週到之後兩個月）</p>';
+    $('app').innerHTML = html;
+    $('prev').onclick = () => { ws = addDays(ws, -7); render(); };
+    $('next').onclick = () => { ws = addDays(ws, 7); render(); };
+    $('thisweek').onclick = () => { ws = weekStart(today); sel = today; render(); };
+    document.querySelectorAll('[data-d]').forEach(el => el.onclick = () => { sel = el.dataset.d; render(); });
+  }
+
+  // 加入主畫面的說明（已經是從主畫面打開的就不顯示）
+  (function installHint() {
+    let standalone = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone;
+    if (standalone) return;
+    let ua = navigator.userAgent || '', h = '📲 <b>加到主畫面，以後點圖示就能看：</b><br>';
+    if (/Line\//i.test(ua)) h += '現在是在 LINE 裡打開的，請先點右上角「⋯」→「用預設瀏覽器開啟」，再照下面做。<br>';
+    h += 'iPhone（Safari）：點下方「分享」→「加入主畫面」。<br>Android（Chrome）：點右上角「⋮」→「加到主畫面」。';
+    $('hint').innerHTML = h; $('hint').style.display = 'block';
+  })();
+
+  if (!token) {
+    showMsg('這個連結不完整，請跟老師要一次分享連結。');
+    $('updated').textContent = '';
+  } else {
+    try {
+      const { initializeApp } = await import('https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js');
+      const fs = await import('https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js');
+      const db = fs.getFirestore(initializeApp(firebaseConfig));
+      fs.onSnapshot(fs.doc(db, 'shares', token), snap => {
+        if (!snap.exists()) {
+          share = null;
+          showMsg('這個連結已經失效了，請跟老師要新的連結。');
+          $('updated').textContent = '';
+          return;
+        }
+        share = snap.data();
+        try { items = JSON.parse(share.items || '[]'); } catch (e) { items = []; }
+        $('title').textContent = (share.title || '') + ' 的行程';
+        document.title = (share.title || '') + ' 的行程';
+        let p = new Date(share.publishedAt || Date.now());
+        $('updated').textContent = '更新於 ' + (p.getMonth() + 1) + '/' + p.getDate() + ' ' + pad(p.getHours()) + ':' + pad(p.getMinutes()) + '（老師一改就會自動更新）';
+        render();
+      }, err => {
+        console.error(err);
+        showMsg('讀不到行程，請確認網路後再打開一次。');
+        $('updated').textContent = '';
+      });
+    } catch (err) {
+      console.error(err);
+      showMsg('沒有網路，連不上行程。請連上網路後再打開一次。');
+      $('updated').textContent = '';
+    }
+  }
+  // 從背景切回來、跨過一天，「今天」要跟著換
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && share) render(); });
+</script>
+</body>
+</html>

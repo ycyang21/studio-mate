@@ -854,6 +854,7 @@
     <div id="payment-badge" style="display:none; font-size:13px; color:var(--c-accent-text); font-weight:bold; margin:-10px auto 5px auto; width:90%; text-align:center;"></div>
     <button class="button" style="background-color:var(--c-primary);" onclick="openSettingsModal()">⚙️ 工作室設定</button>
     <button class="button" style="background-color:var(--c-gold);" onclick="openNotifyModal()">🔔 通知提醒</button>
+    <button class="button" style="background-color:var(--c-group);" onclick="openShareModal()">👨‍👩‍👧 家人看行程</button>
     <button class="button" onclick="openThemeModal()">🎨 外觀主題</button>
     <button class="button" style="background-color:var(--c-blue);" onclick="openFeedbackModal()">💬 意見回饋</button>
     <button class="button admin-link-btn" style="display:none; background-color:var(--c-text);" onclick="location.href='admin.html'">🛠️ 管理後台</button>
@@ -917,6 +918,7 @@
     <button class="small-btn mobile-only" style="width:90%; margin:0 auto 15px auto; display:block; padding:10px; background-color:var(--c-accent); color:white;" onclick="openExpensePage()">💸 支出紀錄</button>
     <button class="small-btn" style="width:90%; margin:0 auto 15px auto; display:block; padding:10px; background-color:var(--c-primary); color:white;" onclick="openSettingsModal()">⚙️ 工作室設定（名稱、上課地點）</button>
     <button class="small-btn" style="width:90%; margin:0 auto 15px auto; display:block; padding:10px; background-color:var(--c-gold); color:white;" onclick="openNotifyModal()">🔔 通知提醒</button>
+    <button class="small-btn" style="width:90%; margin:0 auto 15px auto; display:block; padding:10px; background-color:var(--c-group); color:white;" onclick="openShareModal()">👨‍👩‍👧 家人看行程</button>
     <button class="small-btn" style="width:90%; margin:0 auto 15px auto; display:block; padding:10px;" onclick="openThemeModal()">🎨 外觀主題</button>
     <button class="small-btn mobile-only" style="width:90%; margin:0 auto 15px auto; display:block; padding:10px; background-color:var(--c-blue); color:white;" onclick="openFeedbackModal()">💬 意見回饋</button>
     <button class="small-btn mobile-only admin-link-btn" style="display:none; width:90%; margin:0 auto 15px auto; padding:10px; background-color:var(--c-text); color:white;" onclick="location.href='admin.html'">🛠️ 管理後台</button>
@@ -1548,6 +1550,14 @@
       <p style="font-size:12px; color:var(--c-muted); line-height:1.5;">系統每次存檔都會自動保留最近 30 筆版本，可以還原到之前的某個時間點。還原會覆蓋目前的資料。</p>
       <div id="history-list">載入中...</div>
       <button class="button btn-secondary" style="width:100%; margin:10px 0 0 0;" onclick="closeHistoryModal()">關閉</button>
+    </div>
+  </div>
+
+  <div id="share-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--c-overlay); z-index: 9999; align-items: center; justify-content: center;">
+    <div class="modal-content" style="text-align: left;">
+      <h3 style="margin-top: 0; font-size: 18px; color: var(--c-text); text-align:center;">👨‍👩‍👧 家人看行程</h3>
+      <div id="share-body"></div>
+      <button class="button btn-secondary" style="width:100%; margin:10px 0 0 0;" onclick="closeShareModal()">關閉</button>
     </div>
   </div>
 
@@ -3339,6 +3349,7 @@
       lsSet('jess_expenses_v1', JSON.stringify(expenses));
       refreshCurrentView();
       onCloudDataReadyForReminders();
+      scheduleSharePublish(5000); // 別台改的、或過了一天行程範圍要往後推，也跟著更新
     }
 
     // 監聽雲端資料庫的即時變化：只要有任何裝置更新過資料，這裡就會自動收到最新版本
@@ -3403,6 +3414,7 @@
       let d = getSyncDirty() || { since: Date.now(), base: lsGet('sm_sync_base') || '', offline: false };
       if (navigator.onLine === false) d.offline = true; // 有在沒網路的時候改過，連上網後要提醒「已經上傳」
       d.count = (d.count || 0) + 1;
+      d.lastEdit = Date.now(); // 這台最後一次修改的時間（跟別台比「誰比較新」用）
       setSyncDirty(d);
       syncSeq++;
     }
@@ -3411,6 +3423,7 @@
       updateSyncBanner();
       if (!cloudDb || !cloudAuth || !cloudAuth.currentUser) return; // 還沒登入雲端服務時，只存本機，不報錯
       scheduleReminderSync(); // 資料有變動，接下來 7 天的提醒也跟著重算（幾秒後才做，連續修改只算一次）
+      scheduleSharePublish(); // 有開「家人看行程」的話，幾秒後更新那一份
       if (navigator.onLine === false) return; // 沒網路：先存在這台，連上網再一次上傳
       uploadLocalData(false);
     }
@@ -3427,25 +3440,32 @@
       let dirty = getSyncDirty();
       let ref = userDataDocRef();
       try {
-        // 這台有還沒上傳的修改：先看雲端現在是哪一版。
-        // 雲端已經不是「這台開始改之前看到的那一版」，也不是這台上次送出去的那一版 → 中間有別台裝置改過。
-        // 這時候以雲端（比較新）為準，不拿這台的整份資料去蓋掉；這台沒上傳的那份先存成一筆歷史版本，需要的話可以找回來。
-        // （以前是反過來以這台為準：一台很久沒開、留著沒上傳記號的裝置一打開，就會把別台比較新的資料整個蓋掉）
+        // 規則很單純：以「最後編輯時間」比較新的那一份為準。
+        // 這台有還沒上傳的修改、而且雲端中間被別台裝置改過的時候，比一比兩邊最後編輯的時間：
+        //   這台比較新 → 照常上傳（雲端原本那份本來就留在歷史版本裡）
+        //   雲端比較新 → 改用雲端那份；這台比較舊的那份存成一筆歷史版本，需要的話可以找回來
+        // （一台很久沒開、留著沒上傳修改的裝置一打開，它的修改時間比較舊，所以不會蓋掉別台比較新的資料）
+        let localEdit = dirty ? (dirty.lastEdit || dirty.since || Date.now()) : Date.now();
         if (dirty && dirty.base) {
           let snap = await withTimeout(cloudFns.getDoc(ref), 15000);
-          let serverAt = snap.exists() ? (snap.data().updatedAt || '') : '';
+          let sd = snap.exists() ? snap.data() : null;
+          let serverAt = sd ? (sd.updatedAt || '') : '';
           if (serverAt && serverAt !== dirty.base && serverAt !== dirty.lastTry) {
-            let mine = Object.assign({}, buildCloudPayload(), { savedAt: Date.now(), note: 'unsynced', since: dirty.since || null });
-            delete mine.updatedAt;
-            await withTimeout(cloudFns.addDoc(userBackupsColRef(), mine), 15000); // 確定存好了，才換掉這台的資料
-            trimOldBackups();
-            setSyncDirty(null);
-            applyCloudData(snap.data());
-            syncNotice = { kind: 'conflict', at: mine.savedAt };
-            return;
+            let serverEdit = Date.parse(sd.editedAt || sd.updatedAt) || 0;
+            if (serverEdit >= localEdit) {
+              let mine = Object.assign({}, buildCloudPayload(), { savedAt: Date.now(), note: 'unsynced', since: dirty.since || null, editedAt: new Date(localEdit).toISOString() });
+              delete mine.updatedAt;
+              await withTimeout(cloudFns.addDoc(userBackupsColRef(), mine), 15000); // 確定存好了，才換掉這台的資料
+              trimOldBackups();
+              setSyncDirty(null);
+              applyCloudData(sd);
+              smToast('已換成最新的資料（這台比較舊的修改另存在歷史版本）', 5000);
+              return;
+            }
           }
         }
         let payload = buildCloudPayload();
+        payload.editedAt = new Date(localEdit).toISOString();
         if (dirty) { dirty.lastTry = payload.updatedAt; setSyncDirty(dirty); }
         await cloudFns.setDoc(ref, payload);
         lsSet('sm_sync_base', payload.updatedAt);
@@ -3489,15 +3509,6 @@
       if (currentLocalUid === 'guest') { el.style.display = 'none'; return; }
       let dirty = getSyncDirty();
       let offline = navigator.onLine === false;
-      if (syncNotice && syncNotice.kind === 'conflict') {
-        let d = new Date(syncNotice.at);
-        let when = isNaN(d) ? '' : (d.getMonth() + 1) + '/' + d.getDate() + ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
-        el.className = 'sync-conflict';
-        el.innerHTML = '⚠️ 這台有修改還沒上傳，但另一台裝置已經更新過資料。為了不蓋掉比較新的資料，這台已經換成<b>雲端最新的版本</b>。<br>這台沒上傳的那份存在：更多 →「🕐 歷史版本」' + (when ? '裡 ' + when + ' 那一筆' : '') + '（標「某台裝置沒上傳的修改」）。' +
-          '<span class="sync-x" onclick="dismissSyncNotice()">✕</span>';
-        el.style.display = 'block';
-        return;
-      }
       if (offline) {
         el.className = 'sync-offline';
         el.innerHTML = '📴 目前沒有網路，顯示的是這台裝置上次存的資料。' + (dirty ? '<br>你的修改已經先存在這台，連上網後會自動上傳。' : '可以照常查看和修改。');
@@ -3575,6 +3586,109 @@
     }
 
     function closeHistoryModal() { document.getElementById('history-modal').style.display = 'none'; }
+
+    // ============ 家人看行程：一個「只能看行程」的連結 ============
+    // 打開這個功能後，App 會另外存一份「只有行程」的資料（日期、時間、名字、地點、類型），放在 shares/{連結代碼}，
+    // 家人用 family.html?k=連結代碼 打開就看得到，不用登入；學費、繳費、收入這些都不在裡面，也改不了任何東西。
+    // 任何一台裝置改了課表，幾秒後就會更新這份；不想給看了，重設或停止就好（舊的那份直接刪掉）。
+    function shareToken() { return (appSettings && appSettings.shareToken) || ''; }
+    function shareDocRef(token) { return cloudFns.doc(cloudDb, 'shares', token); }
+    function shareUrl(token) { return new URL('family.html?k=' + token, location.href).href; }
+    function newShareToken() {
+      let a = new Uint8Array(18); (window.crypto || window.msCrypto).getRandomValues(a);
+      return Array.from(a, b => 'abcdefghijkmnpqrstuvwxyz23456789'[b % 32]).join('');
+    }
+    // 前一週到之後兩個月，每一堂（沒有取消的）課和琴房出租
+    function buildShareItems() {
+      let today = formatDate(new Date()), from = addDaysStr(today, -7), to = addDaysStr(today, 62), items = [];
+      for (let d = from; d <= to; d = addDaysStr(d, 1)) {
+        getDisplayItemsForDate(d).forEach(it => {
+          if (it.allDay || isInactiveEventItem(it)) return;
+          let pr = it.props, kind = '上課';
+          if (pr.type === 'rental') kind = '琴房出租';
+          else if (pr.type === 'makeup') kind = '補課';
+          else if (pr.type === 'temp') { let t = tempLessons.find(x => x.id === pr.tempId); kind = isRescheduleTemp(t) ? '調課' : '臨時課'; }
+          else if (pr.type === 'group') kind = pr.kind === 'makeup' ? '團體補課' : '團體課';
+          items.push({ d: d, s: it.time, e: computeEndTime(it.time, getDurationForProps(pr)), n: it.name || '', l: getLocationAbbrByName(getItemLocation(it)) || '', k: kind, r: pr.type === 'rental' ? 1 : 0 });
+        });
+      }
+      return { from, to, items };
+    }
+    let sharePublishTimer = null, lastSharePublished = '', lastShareError = null;
+    function shareCloudReady() { return !!(cloudDb && cloudAuth && cloudAuth.currentUser && cloudFns); }
+    function scheduleSharePublish(delay) {
+      if (!shareToken() || !shareCloudReady()) return;
+      clearTimeout(sharePublishTimer);
+      sharePublishTimer = setTimeout(() => publishShare(false), delay === undefined ? 3000 : delay);
+    }
+    async function publishShare(force) {
+      let token = shareToken();
+      if (!token || !shareCloudReady()) return false;
+      let data = buildShareItems(), body = JSON.stringify(data.items);
+      let key = token + '|' + data.from + '|' + body + '|' + getStudioDisplayName();
+      if (!force && key === lastSharePublished) return true; // 內容沒變就不用再傳
+      try {
+        await withTimeout(cloudFns.setDoc(shareDocRef(token), { uid: cloudAuth.currentUser.uid, title: getStudioDisplayName(), from: data.from, to: data.to, items: body, publishedAt: Date.now() }), 15000);
+        lastSharePublished = key; lastShareError = null;
+        return true;
+      } catch (e) {
+        console.warn('家人看行程更新失敗：', e);
+        lastShareError = e; return false;
+      }
+    }
+    function openShareModal() {
+      if (!shareCloudReady()) { alert('要先登入、連上雲端，才能使用家人看行程。'); return; }
+      renderShareModal();
+      document.getElementById('share-modal').style.display = 'flex';
+    }
+    function closeShareModal() { document.getElementById('share-modal').style.display = 'none'; }
+    function renderShareModal() {
+      let t = shareToken(), box = document.getElementById('share-body');
+      if (!t) {
+        box.innerHTML = '<p style="font-size:14px; color:var(--c-text2); line-height:1.7;">建立一個<b>只能看行程</b>的連結傳給家人。家人打開後可以加入主畫面，像 App 一樣隨時看你的一週行程（時間、地點、學生名字），你一改就會更新。<br>學費、繳費、收入都看不到，也不能修改。</p>' +
+          '<button class="button" style="width:100%; margin:6px 0 0 0;" onclick="createShareLink()">建立分享連結</button>';
+        return;
+      }
+      let url = shareUrl(t);
+      box.innerHTML = '<p style="font-size:14px; color:var(--c-text2); line-height:1.7; margin-top:0;">把這個連結傳給家人。請他用手機打開，再按「分享」→「加入主畫面」，以後點圖示就能看。</p>' +
+        '<input type="text" class="form-control" readonly value="' + escHTML(url) + '" onclick="this.select()" style="font-size:13px;">' +
+        '<div style="display:flex; gap:8px; margin-top:8px;"><button class="small-btn" style="flex:1; padding:10px; background-color:var(--c-primary); color:white;" onclick="copyShareLink()">📋 複製連結</button>' +
+        '<button class="small-btn" style="flex:1; padding:10px; background-color:var(--c-sand); color:var(--c-text);" onclick="window.open(\'' + url + '\', \'_blank\')">👀 自己看看</button></div>' +
+        (lastShareError ? '<p style="font-size:13px; color:var(--c-danger-text); line-height:1.6;">⚠️ 行程還沒辦法更新上去。如果是第一次用，請先到 Firebase 貼上新的安全規則；不是的話，請確認網路。</p>' : '') +
+        '<p style="font-size:12px; color:var(--c-muted); line-height:1.6; margin:14px 0 6px;">拿到連結的人都看得到，不想給看了可以重設（舊連結失效）或停止。</p>' +
+        '<div style="display:flex; gap:8px;"><button class="small-btn" style="flex:1; padding:8px; background-color:var(--c-sand); color:var(--c-text);" onclick="resetShareLink()">🔁 重設連結</button>' +
+        '<button class="small-btn" style="flex:1; padding:8px; background-color:var(--c-danger-soft); color:var(--c-danger-text);" onclick="stopShareLink()">⏹ 停止分享</button></div>';
+    }
+    async function createShareLink() {
+      appSettings = Object.assign({}, appSettings, { shareToken: newShareToken() });
+      saveSettingsToMemory();
+      let ok = await publishShare(true);
+      renderShareModal();
+      if (!ok) alert('連結建立了，但行程還沒辦法傳上去。\n\n第一次用的話，請先到 Firebase 貼上新的安全規則，再回來按一次「重設連結」。');
+    }
+    async function resetShareLink() {
+      if (!await smConfirm('重設之後，舊的連結會失效，要把新的連結再傳給家人一次。確定要重設嗎？')) return;
+      let old = shareToken();
+      appSettings = Object.assign({}, appSettings, { shareToken: newShareToken() });
+      saveSettingsToMemory();
+      if (old) { try { await cloudFns.deleteDoc(shareDocRef(old)); } catch (e) { console.warn(e); } }
+      await publishShare(true);
+      renderShareModal();
+    }
+    async function stopShareLink() {
+      if (!await smConfirm('停止之後，家人的連結就看不到行程了。確定要停止嗎？')) return;
+      let old = shareToken();
+      let next = Object.assign({}, appSettings); delete next.shareToken; appSettings = next;
+      saveSettingsToMemory();
+      if (old) { try { await cloudFns.deleteDoc(shareDocRef(old)); } catch (e) { console.warn(e); } }
+      lastSharePublished = '';
+      renderShareModal();
+    }
+    function copyShareLink() {
+      let url = shareUrl(shareToken());
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(() => smToast('✅ 已複製連結')).catch(() => smCopyBox('複製這個連結傳給家人：', url));
+      else smCopyBox('複製這個連結傳給家人：', url);
+    }
 
     // ---- 歷史版本「跟現在比較」：列出這一份有、但現在的資料沒有（或不一樣）的地方，不用記得改過什麼，照著補就好 ----
     function closeBackupDiff() { document.getElementById('backup-diff-modal').style.display = 'none'; }
@@ -11587,7 +11701,7 @@
 
     // ============ 版本更新檢查 ============
     // 每次修改程式、上傳新檔案時，要把這個版本號改掉（任何不一樣的字都可以），手機才會知道有新版本。
-    const APP_VERSION = 'sm-2026.11.06-3';
+    const APP_VERSION = 'sm-2026.11.10-2';
 
     // 加入主畫面的 App 常常直接拿手機裡存的舊檔案，而且沒有重新整理按鈕。
     // 做法：去網路上抓一份「現在的這個網頁」（網址加上時間，強迫不能用舊的），比對裡面寫的版本號，不一樣就提示更新。
