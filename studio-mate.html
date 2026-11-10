@@ -393,7 +393,7 @@
     .usage-head { height: 30px; line-height: 30px; font-size: 12px; font-weight: bold; text-align: center; border-bottom: 1px solid var(--c-divider); background: var(--c-fill1); position: sticky; top: 0; z-index: 3; }
     .usage-slot-line { position: absolute; left: 0; right: 0; border-top: 1px solid var(--c-fill2); }
     .usage-time-label { position: absolute; right: 4px; font-size: 10px; color: var(--c-faint); transform: translateY(-6px); }
-    .usage-block { position: absolute; left: 3px; right: 3px; border-radius: 5px; padding: 2px 5px; font-size: 11px; color: white; overflow: hidden; line-height: 1.3; box-sizing: border-box; cursor: pointer; text-align: left; }
+    .usage-block { position: absolute; left: 3px; right: 3px; border-radius: 5px; padding: 2px 5px; font-size: 11px; color: white; overflow: hidden; line-height: 1.3; box-sizing: border-box; cursor: pointer; text-align: center; }
     /* 日／週切換 */
     .usage-seg { display: inline-flex; border: 1px solid var(--c-line); border-radius: 8px; overflow: hidden; flex-shrink: 0; }
     .usage-seg button { border: none; background: var(--c-surface); color: var(--c-muted2); padding: 7px 14px; font-size: 14px; cursor: pointer; }
@@ -408,9 +408,7 @@
     .usage-week .usage-head { height: 36px; line-height: 1.25; font-size: 11px; padding-top: 3px; box-sizing: border-box; }
     .usage-week .usage-head.is-today { color: var(--c-primary-text); background: var(--c-primary-soft); }
     .usage-week .usage-block { left: 2px; right: 2px; padding: 1px 2px; font-size: 10px; line-height: 1.2; border-radius: 4px; }
-    .usage-week .usage-block .ub-t { font-size: 9px; line-height: 1.15; opacity: 0.85; display: flex; flex-wrap: wrap; overflow: hidden; }
-    .usage-week .usage-block .ub-t span { white-space: nowrap; }
-    .usage-week .usage-block .ub-t.one { height: 1.15em; }
+    .usage-week .usage-block .ub-t { font-size: 9px; line-height: 1.15; opacity: 0.85; white-space: nowrap; overflow: hidden; }
     .usage-week .usage-block .ub-n { font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .usage-week .usage-time-label { font-size: 9px; right: 3px; }
     #avail-preview { -webkit-touch-callout: default; } /* 預覽圖可以長按存到相簿 */
@@ -10927,10 +10925,10 @@
           let w = 100 / c.lanes;
           let name = c.it.name; // 租借用金色區分，名字前面不再加圖示（週的格子很窄）
           let h = Math.max(16, (c.e0 - c.s0) * PX - 2);
-          // 起訖時間：格子窄的時候自動拆成兩行（16:30 ／ –17:20）；很短的課高度不夠放三行，放不下結束時間就只留開始時間
-          let range = '<span>' + c.it.time + '</span><span>–' + computeEndTime(c.it.time, c.e0 - c.s0) + '</span>';
+          // 起訖時間上下排（16:30 ／ 17:20）；很短的課高度不夠放三行，只放開始時間
+          let range = '<div>' + c.it.time + '</div>' + (h < 35 ? '' : '<div>' + computeEndTime(c.it.time, c.e0 - c.s0) + '</div>');
           return '<div class="usage-block" style="top:' + ((c.s0 - startMin) * PX) + 'px; height:' + h + 'px; left:calc(' + (w * c.lane) + '% + 2px); right:auto; width:calc(' + w + '% - 4px); background:' + (c.isRental ? 'var(--c-gold)' : 'var(--c-primary)') + ';" onclick="openUsageItem(\'' + d + '\',' + c.idx + ')">' +
-            '<div class="ub-t' + (h < 35 ? ' one' : '') + '">' + range + '</div><div class="ub-n">' + escHTML(name) + '</div></div>';
+            '<div class="ub-t">' + range + '</div><div class="ub-n">' + escHTML(name) + '</div></div>';
         }).join('');
         html += '<div class="usage-col"><div class="usage-head' + (d === today ? ' is-today' : '') + '">' + (dt.getMonth() + 1) + '/' + dt.getDate() + '<br>' + '日一二三四五六'[dt.getDay()] + '</div><div style="position:relative; height:' + height + 'px;">' + lines + blocks + '</div></div>';
       });
@@ -11711,7 +11709,7 @@
 
     // ============ 版本更新檢查 ============
     // 每次修改程式、上傳新檔案時，要把這個版本號改掉（任何不一樣的字都可以），手機才會知道有新版本。
-    const APP_VERSION = 'sm-2026.11.11-1';
+    const APP_VERSION = 'sm-2026.11.11-2';
 
     // 加入主畫面的 App 常常直接拿手機裡存的舊檔案，而且沒有重新整理按鈕。
     // 做法：去網路上抓一份「現在的這個網頁」（網址加上時間，強迫不能用舊的），比對裡面寫的版本號，不一樣就提示更新。
