@@ -390,7 +390,7 @@
     .usage-times { flex: 0 0 44px; position: relative; border-right: 1px solid var(--c-divider); }
     .usage-col { flex: 1 0 120px; position: relative; border-right: 1px solid var(--c-fill2); }
     .usage-col:last-child { border-right: none; }
-    .usage-head { height: 30px; line-height: 30px; font-size: 12px; font-weight: bold; text-align: center; border-bottom: 1px solid var(--c-divider); background: var(--c-fill1); position: sticky; top: 0; }
+    .usage-head { height: 30px; line-height: 30px; font-size: 12px; font-weight: bold; text-align: center; border-bottom: 1px solid var(--c-divider); background: var(--c-fill1); position: sticky; top: 0; z-index: 3; }
     .usage-slot-line { position: absolute; left: 0; right: 0; border-top: 1px solid var(--c-fill2); }
     .usage-time-label { position: absolute; right: 4px; font-size: 10px; color: var(--c-faint); transform: translateY(-6px); }
     .usage-block { position: absolute; left: 3px; right: 3px; border-radius: 5px; padding: 2px 5px; font-size: 11px; color: white; overflow: hidden; line-height: 1.3; box-sizing: border-box; cursor: pointer; text-align: left; }
@@ -398,13 +398,19 @@
     .usage-seg { display: inline-flex; border: 1px solid var(--c-line); border-radius: 8px; overflow: hidden; flex-shrink: 0; }
     .usage-seg button { border: none; background: var(--c-surface); color: var(--c-muted2); padding: 7px 14px; font-size: 14px; cursor: pointer; }
     .usage-seg button.active { background: var(--c-primary); color: #FFFFFF; font-weight: bold; }
+    .avail-seg { display: flex; margin: 0 0 14px 0; }
+    .avail-seg button { flex: 1; padding: 9px 6px; }
     /* 週：七天排在一起，手機也放得下 */
+    .usage-wrap.usage-week { overflow: hidden; overflow: clip; } /* 週不用左右捲；不當捲動框，日期列才會黏在畫面上方 */
+    html.mobile-shell body.mobile-tabs .usage-week .usage-head { top: -15px; } /* 手機版內容區上面留了 15px，日期列貼齊最上緣，不留縫 */
     .usage-week .usage-times { flex: 0 0 28px; }
     .usage-week .usage-col { flex: 1 1 0; min-width: 36px; }
     .usage-week .usage-head { height: 36px; line-height: 1.25; font-size: 11px; padding-top: 3px; box-sizing: border-box; }
     .usage-week .usage-head.is-today { color: var(--c-primary-text); background: var(--c-primary-soft); }
     .usage-week .usage-block { left: 2px; right: 2px; padding: 1px 2px; font-size: 10px; line-height: 1.2; border-radius: 4px; }
-    .usage-week .usage-block .ub-t { font-size: 9px; opacity: 0.85; white-space: nowrap; overflow: hidden; }
+    .usage-week .usage-block .ub-t { font-size: 9px; line-height: 1.15; opacity: 0.85; display: flex; flex-wrap: wrap; overflow: hidden; }
+    .usage-week .usage-block .ub-t span { white-space: nowrap; }
+    .usage-week .usage-block .ub-t.one { height: 1.15em; }
     .usage-week .usage-block .ub-n { font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .usage-week .usage-time-label { font-size: 9px; right: 3px; }
     #avail-preview { -webkit-touch-callout: default; } /* 預覽圖可以長按存到相簿 */
@@ -854,7 +860,6 @@
     <div id="payment-badge" style="display:none; font-size:13px; color:var(--c-accent-text); font-weight:bold; margin:-10px auto 5px auto; width:90%; text-align:center;"></div>
     <button class="button" style="background-color:var(--c-primary);" onclick="openSettingsModal()">⚙️ 工作室設定</button>
     <button class="button" style="background-color:var(--c-gold);" onclick="openNotifyModal()">🔔 通知提醒</button>
-    <button class="button" style="background-color:var(--c-group);" onclick="openShareModal()">👨‍👩‍👧 家人看行程</button>
     <button class="button" onclick="openThemeModal()">🎨 外觀主題</button>
     <button class="button" style="background-color:var(--c-blue);" onclick="openFeedbackModal()">💬 意見回饋</button>
     <button class="button admin-link-btn" style="display:none; background-color:var(--c-text);" onclick="location.href='admin.html'">🛠️ 管理後台</button>
@@ -918,7 +923,6 @@
     <button class="small-btn mobile-only" style="width:90%; margin:0 auto 15px auto; display:block; padding:10px; background-color:var(--c-accent); color:white;" onclick="openExpensePage()">💸 支出紀錄</button>
     <button class="small-btn" style="width:90%; margin:0 auto 15px auto; display:block; padding:10px; background-color:var(--c-primary); color:white;" onclick="openSettingsModal()">⚙️ 工作室設定（名稱、上課地點）</button>
     <button class="small-btn" style="width:90%; margin:0 auto 15px auto; display:block; padding:10px; background-color:var(--c-gold); color:white;" onclick="openNotifyModal()">🔔 通知提醒</button>
-    <button class="small-btn" style="width:90%; margin:0 auto 15px auto; display:block; padding:10px; background-color:var(--c-group); color:white;" onclick="openShareModal()">👨‍👩‍👧 家人看行程</button>
     <button class="small-btn" style="width:90%; margin:0 auto 15px auto; display:block; padding:10px;" onclick="openThemeModal()">🎨 外觀主題</button>
     <button class="small-btn mobile-only" style="width:90%; margin:0 auto 15px auto; display:block; padding:10px; background-color:var(--c-blue); color:white;" onclick="openFeedbackModal()">💬 意見回饋</button>
     <button class="small-btn mobile-only admin-link-btn" style="display:none; width:90%; margin:0 auto 15px auto; padding:10px; background-color:var(--c-text); color:white;" onclick="location.href='admin.html'">🛠️ 管理後台</button>
@@ -1553,13 +1557,6 @@
     </div>
   </div>
 
-  <div id="share-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--c-overlay); z-index: 9999; align-items: center; justify-content: center;">
-    <div class="modal-content" style="text-align: left;">
-      <h3 style="margin-top: 0; font-size: 18px; color: var(--c-text); text-align:center;">👨‍👩‍👧 家人看行程</h3>
-      <div id="share-body"></div>
-      <button class="button btn-secondary" style="width:100%; margin:10px 0 0 0;" onclick="closeShareModal()">關閉</button>
-    </div>
-  </div>
 
   <div id="backup-diff-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--c-overlay); z-index: 10000; align-items: center; justify-content: center;">
     <div class="modal-content" style="text-align: left;">
@@ -1884,7 +1881,7 @@
       <div id="usage-week-label" style="display:none; text-align:center; font-size:13px; font-weight:bold; color:var(--c-text2); margin:-2px 0 8px 0;"></div>
       <div id="usage-table"></div>
       <div id="usage-note" style="font-size:12px; color:var(--c-muted); margin-top:8px; line-height:1.6;"></div>
-      <button class="button" style="width:100%; margin:12px 0 0 0;" onclick="openAvailModal()">📤 匯出一週的空堂表（圖片）</button>
+      <button class="button" style="width:100%; margin:12px 0 0 0;" onclick="openAvailModal()">📤 匯出（圖片／分享連結）</button>
     </div>
   </div>
 
@@ -2063,7 +2060,10 @@
 
   <div id="avail-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--c-overlay); z-index: 9999; align-items: center; justify-content: center;">
     <div class="modal-content" style="text-align: left;">
-      <h3 style="margin-top: 0; font-size: 18px; color: var(--c-text); text-align:center;">📤 匯出空堂表</h3>
+      <h3 style="margin-top: 0; font-size: 18px; color: var(--c-text); text-align:center;">📤 匯出使用表</h3>
+      <div class="usage-seg avail-seg"><button type="button" data-mode="image" class="active" onclick="setAvailMode('image')">🖼️ 單次圖片</button><button type="button" data-mode="link" onclick="setAvailMode('link')">🔗 即時連結</button></div>
+      <div id="avail-link-pane" style="display:none;"><div id="share-body"></div></div>
+      <div id="avail-image-pane">
       <div style="display:flex; align-items:center; gap:6px; margin-bottom:12px;">
         <button class="small-btn" style="padding:8px 12px; background-color:var(--c-sand); color:var(--c-text); margin:0;" onclick="shiftAvailWeek(-7)">‹</button>
         <div id="avail-week-label" style="flex:1; text-align:center; font-weight:bold; color:var(--c-text);"></div>
@@ -2076,6 +2076,7 @@
       <label style="display:flex; align-items:center; gap:6px; font-weight:normal; font-size:14px; margin-bottom:12px;"><input type="checkbox" id="avail-names" onchange="renderAvailPreview()"> 顯示學生名字（傳給家長時不要勾）</label>
       <img id="avail-preview" alt="空堂表預覽" style="width:100%; border:1px solid var(--c-line); border-radius:8px; display:block; background:#fff;">
       <button class="button" style="width:100%; margin:12px 0 0 0;" onclick="shareAvailImage()">📤 分享／儲存圖片</button>
+      </div>
       <button class="button btn-secondary" style="width:100%; margin:10px 0 0 0;" onclick="closeAvailModal()">關閉</button>
     </div>
   </div>
@@ -3423,7 +3424,7 @@
       updateSyncBanner();
       if (!cloudDb || !cloudAuth || !cloudAuth.currentUser) return; // 還沒登入雲端服務時，只存本機，不報錯
       scheduleReminderSync(); // 資料有變動，接下來 7 天的提醒也跟著重算（幾秒後才做，連續修改只算一次）
-      scheduleSharePublish(); // 有開「家人看行程」的話，幾秒後更新那一份
+      scheduleSharePublish(); // 有建立分享連結的話，幾秒後更新那一份
       if (navigator.onLine === false) return; // 沒網路：先存在這台，連上網再一次上傳
       uploadLocalData(false);
     }
@@ -3587,9 +3588,9 @@
 
     function closeHistoryModal() { document.getElementById('history-modal').style.display = 'none'; }
 
-    // ============ 家人看行程：一個「只能看行程」的連結 ============
-    // 打開這個功能後，App 會另外存一份「只有行程」的資料（日期、時間、名字、地點、類型），放在 shares/{連結代碼}，
-    // 家人用 family.html?k=連結代碼 打開就看得到，不用登入；學費、繳費、收入這些都不在裡面，也改不了任何東西。
+    // ============ 使用表的分享連結（匯出 →「🔗 連結」）：一個「只能看行程」的網頁 ============
+    // 建立連結後，App 會另外存一份「只有行程」的資料（日期、時間、名字、地點、類型），放在 shares/{連結代碼}，
+    // 對方用 family.html?k=連結代碼 打開就看得到，不用登入；學費、繳費、收入這些都不在裡面，也改不了任何東西。
     // 任何一台裝置改了課表，幾秒後就會更新這份；不想給看了，重設或停止就好（舊的那份直接刪掉）。
     function shareToken() { return (appSettings && appSettings.shareToken) || ''; }
     function shareDocRef(token) { return cloudFns.doc(cloudDb, 'shares', token); }
@@ -3625,37 +3626,34 @@
       let token = shareToken();
       if (!token || !shareCloudReady()) return false;
       let data = buildShareItems(), body = JSON.stringify(data.items);
-      let key = token + '|' + data.from + '|' + body + '|' + getStudioDisplayName();
+      let hrs = getUsageHours(); // 網頁的時間範圍跟使用表一樣
+      let key = token + '|' + data.from + '|' + body + '|' + getStudioDisplayName() + '|' + hrs.start + '-' + hrs.end;
       if (!force && key === lastSharePublished) return true; // 內容沒變就不用再傳
       try {
-        await withTimeout(cloudFns.setDoc(shareDocRef(token), { uid: cloudAuth.currentUser.uid, title: getStudioDisplayName(), from: data.from, to: data.to, items: body, publishedAt: Date.now() }), 15000);
+        await withTimeout(cloudFns.setDoc(shareDocRef(token), { uid: cloudAuth.currentUser.uid, title: getStudioDisplayName(), from: data.from, to: data.to, items: body, hours: hrs, publishedAt: Date.now() }), 15000);
         lastSharePublished = key; lastShareError = null;
         return true;
       } catch (e) {
-        console.warn('家人看行程更新失敗：', e);
+        console.warn('分享連結更新失敗：', e);
         lastShareError = e; return false;
       }
     }
-    function openShareModal() {
-      if (!shareCloudReady()) { alert('要先登入、連上雲端，才能使用家人看行程。'); return; }
-      renderShareModal();
-      document.getElementById('share-modal').style.display = 'flex';
-    }
-    function closeShareModal() { document.getElementById('share-modal').style.display = 'none'; }
-    function renderShareModal() {
+    function renderShareLinkPane() {
       let t = shareToken(), box = document.getElementById('share-body');
+      const nameNote = '<p style="font-size:12px; color:var(--c-accent-text); line-height:1.6; margin:8px 0 0 0;">連結會顯示學生名字，只傳給自己的家人；要給家長看空檔，請用「單次圖片」。</p>';
+      if (!shareCloudReady()) { box.innerHTML = '<p style="font-size:14px; color:var(--c-text2); line-height:1.7; margin-top:0;">要先登入、連上雲端，才能建立連結。</p>'; return; }
       if (!t) {
-        box.innerHTML = '<p style="font-size:14px; color:var(--c-text2); line-height:1.7;">建立一個<b>只能看行程</b>的連結傳給家人。家人打開後可以加入主畫面，像 App 一樣隨時看你的一週行程（時間、地點、學生名字），你一改就會更新。<br>學費、繳費、收入都看不到，也不能修改。</p>' +
-          '<button class="button" style="width:100%; margin:6px 0 0 0;" onclick="createShareLink()">建立分享連結</button>';
+        box.innerHTML = '<p style="font-size:14px; color:var(--c-text2); line-height:1.7; margin-top:0;">建立一個<b>只能看</b>的使用表網頁連結。對方打開後可以加入主畫面，像 App 一樣隨時看（所有的課和琴房出租：時間、地點、學生名字），你一改就會自動更新。<br>學費、繳費、收入都看不到，也不能修改。</p>' + nameNote +
+          '<button class="button" style="width:100%; margin:12px 0 0 0;" onclick="createShareLink()">建立分享連結</button>';
         return;
       }
       let url = shareUrl(t);
-      box.innerHTML = '<p style="font-size:14px; color:var(--c-text2); line-height:1.7; margin-top:0;">把這個連結傳給家人。請他用手機打開，再按「分享」→「加入主畫面」，以後點圖示就能看。</p>' +
+      box.innerHTML = '<p style="font-size:14px; color:var(--c-text2); line-height:1.7; margin-top:0;">把這個連結傳出去。對方用手機打開，再按「分享」→「加入主畫面」，以後點圖示就能看，內容永遠是最新的。</p>' +
         '<input type="text" class="form-control" readonly value="' + escHTML(url) + '" onclick="this.select()" style="font-size:13px;">' +
         '<div style="display:flex; gap:8px; margin-top:8px;"><button class="small-btn" style="flex:1; padding:10px; background-color:var(--c-primary); color:white;" onclick="copyShareLink()">📋 複製連結</button>' +
         '<button class="small-btn" style="flex:1; padding:10px; background-color:var(--c-sand); color:var(--c-text);" onclick="window.open(\'' + url + '\', \'_blank\')">👀 自己看看</button></div>' +
-        (lastShareError ? '<p style="font-size:13px; color:var(--c-danger-text); line-height:1.6;">⚠️ 行程還沒辦法更新上去。如果是第一次用，請先到 Firebase 貼上新的安全規則；不是的話，請確認網路。</p>' : '') +
-        '<p style="font-size:12px; color:var(--c-muted); line-height:1.6; margin:14px 0 6px;">拿到連結的人都看得到，不想給看了可以重設（舊連結失效）或停止。</p>' +
+        (lastShareError ? '<p style="font-size:13px; color:var(--c-danger-text); line-height:1.6;">⚠️ 行程還沒辦法更新上去。如果是第一次用，請先到 Firebase 貼上新的安全規則；不是的話，請確認網路。</p>' : '') + nameNote +
+        '<p style="font-size:12px; color:var(--c-muted); line-height:1.6; margin:10px 0 6px;">拿到連結的人都看得到，不想給看了可以重設（舊連結失效）或停止。</p>' +
         '<div style="display:flex; gap:8px;"><button class="small-btn" style="flex:1; padding:8px; background-color:var(--c-sand); color:var(--c-text);" onclick="resetShareLink()">🔁 重設連結</button>' +
         '<button class="small-btn" style="flex:1; padding:8px; background-color:var(--c-danger-soft); color:var(--c-danger-text);" onclick="stopShareLink()">⏹ 停止分享</button></div>';
     }
@@ -3663,31 +3661,31 @@
       appSettings = Object.assign({}, appSettings, { shareToken: newShareToken() });
       saveSettingsToMemory();
       let ok = await publishShare(true);
-      renderShareModal();
+      renderShareLinkPane();
       if (!ok) alert('連結建立了，但行程還沒辦法傳上去。\n\n第一次用的話，請先到 Firebase 貼上新的安全規則，再回來按一次「重設連結」。');
     }
     async function resetShareLink() {
-      if (!await smConfirm('重設之後，舊的連結會失效，要把新的連結再傳給家人一次。確定要重設嗎？')) return;
+      if (!await smConfirm('重設之後，舊的連結會失效，要把新的連結再傳一次。確定要重設嗎？')) return;
       let old = shareToken();
       appSettings = Object.assign({}, appSettings, { shareToken: newShareToken() });
       saveSettingsToMemory();
       if (old) { try { await cloudFns.deleteDoc(shareDocRef(old)); } catch (e) { console.warn(e); } }
       await publishShare(true);
-      renderShareModal();
+      renderShareLinkPane();
     }
     async function stopShareLink() {
-      if (!await smConfirm('停止之後，家人的連結就看不到行程了。確定要停止嗎？')) return;
+      if (!await smConfirm('停止之後，這個連結就看不到行程了。確定要停止嗎？')) return;
       let old = shareToken();
       let next = Object.assign({}, appSettings); delete next.shareToken; appSettings = next;
       saveSettingsToMemory();
       if (old) { try { await cloudFns.deleteDoc(shareDocRef(old)); } catch (e) { console.warn(e); } }
       lastSharePublished = '';
-      renderShareModal();
+      renderShareLinkPane();
     }
     function copyShareLink() {
       let url = shareUrl(shareToken());
-      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(() => smToast('✅ 已複製連結')).catch(() => smCopyBox('複製這個連結傳給家人：', url));
-      else smCopyBox('複製這個連結傳給家人：', url);
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(() => smToast('✅ 已複製連結')).catch(() => smCopyBox('複製這個連結：', url));
+      else smCopyBox('複製這個連結：', url);
     }
 
     // ---- 歷史版本「跟現在比較」：列出這一份有、但現在的資料沒有（或不一樣）的地方，不用記得改過什麼，照著補就好 ----
@@ -10856,7 +10854,7 @@
     let usageMode = 'day';
     function setUsageMode(m) {
       usageMode = m;
-      document.querySelectorAll('.usage-seg button').forEach(b => b.classList.toggle('active', b.dataset.mode === m));
+      document.querySelectorAll('#rental-subtab-usage .usage-seg button').forEach(b => b.classList.toggle('active', b.dataset.mode === m));
       renderStudioUsage();
     }
     function weekStartOf(dateStr) { let d = new Date(dateStr + 'T00:00:00'); d.setDate(d.getDate() - (d.getDay() + 6) % 7); return formatDate(d); } // 週一開始
@@ -10928,8 +10926,11 @@
         let blocks = per[i].map(c => {
           let w = 100 / c.lanes;
           let name = c.it.name; // 租借用金色區分，名字前面不再加圖示（週的格子很窄）
-          return '<div class="usage-block" style="top:' + ((c.s0 - startMin) * PX) + 'px; height:' + Math.max(16, (c.e0 - c.s0) * PX - 2) + 'px; left:calc(' + (w * c.lane) + '% + 2px); right:auto; width:calc(' + w + '% - 4px); background:' + (c.isRental ? 'var(--c-gold)' : 'var(--c-primary)') + ';" onclick="openUsageItem(\'' + d + '\',' + c.idx + ')">' +
-            '<div class="ub-t">' + c.it.time + '</div><div class="ub-n">' + escHTML(name) + '</div></div>';
+          let h = Math.max(16, (c.e0 - c.s0) * PX - 2);
+          // 起訖時間：格子窄的時候自動拆成兩行（16:30 ／ –17:20）；很短的課高度不夠放三行，放不下結束時間就只留開始時間
+          let range = '<span>' + c.it.time + '</span><span>–' + computeEndTime(c.it.time, c.e0 - c.s0) + '</span>';
+          return '<div class="usage-block" style="top:' + ((c.s0 - startMin) * PX) + 'px; height:' + h + 'px; left:calc(' + (w * c.lane) + '% + 2px); right:auto; width:calc(' + w + '% - 4px); background:' + (c.isRental ? 'var(--c-gold)' : 'var(--c-primary)') + ';" onclick="openUsageItem(\'' + d + '\',' + c.idx + ')">' +
+            '<div class="ub-t' + (h < 35 ? ' one' : '') + '">' + range + '</div><div class="ub-n">' + escHTML(name) + '</div></div>';
         }).join('');
         html += '<div class="usage-col"><div class="usage-head' + (d === today ? ' is-today' : '') + '">' + (dt.getMonth() + 1) + '/' + dt.getDate() + '<br>' + '日一二三四五六'[dt.getDay()] + '</div><div style="position:relative; height:' + height + 'px;">' + lines + blocks + '</div></div>';
       });
@@ -10951,7 +10952,16 @@
       document.getElementById('avail-end').innerHTML = opts(12, 24, hrs.end);
       document.getElementById('avail-names').checked = false;
       document.getElementById('avail-modal').style.display = 'flex';
-      renderAvailPreview();
+      setAvailMode(availMode);
+    }
+    // 兩種匯出：圖片（單次，存下來或傳出去）、連結（對方打開看到的永遠是最新的）
+    let availMode = 'image';
+    function setAvailMode(m) {
+      availMode = m;
+      document.querySelectorAll('.avail-seg button').forEach(b => b.classList.toggle('active', b.dataset.mode === m));
+      document.getElementById('avail-image-pane').style.display = m === 'image' ? '' : 'none';
+      document.getElementById('avail-link-pane').style.display = m === 'link' ? '' : 'none';
+      if (m === 'image') renderAvailPreview(); else renderShareLinkPane();
     }
     function closeAvailModal() { document.getElementById('avail-modal').style.display = 'none'; }
     function shiftAvailWeek(n) { availWeekStart = addDaysStr(availWeekStart, n); renderAvailPreview(); }
@@ -11117,7 +11127,7 @@
           let overlapsOther = col.some(o => o !== c && o.s0 < c.e0 && c.s0 < o.e0);
           let w = 100 / c.lanes;
           return '<div class="usage-block" style="top:' + ((c.s0 - startMin) * PX) + 'px; height:' + Math.max(16, (c.e0 - c.s0) * PX - 2) + 'px; left:calc(' + (w * c.lane) + '% + 3px); right:auto; width:calc(' + w + '% - 6px); background:' + (isRental ? 'var(--c-gold)' : 'var(--c-primary)') + ';' + (overlapsOther ? ' box-shadow:0 0 0 2px var(--c-danger);' : '') + '" onclick="openUsageItem(\'' + dateStr + '\',' + c.idx + ')">' +
-            '<b>' + c.it.time + '</b> ' + escHTML(isRental ? '🔑 ' + c.it.name : c.it.name) + '</div>';
+            '<b>' + c.it.time + '–' + computeEndTime(c.it.time, c.e0 - c.s0) + '</b> ' + escHTML(isRental ? '🔑 ' + c.it.name : c.it.name) + '</div>';
         }).join('');
         html += '<div class="usage-col"><div class="usage-head">' + escHTML(getLocationAbbrByName(loc)) + '</div><div style="position:relative; height:' + height + 'px;">' + lines + blocks + '</div></div>';
       });
@@ -11701,7 +11711,7 @@
 
     // ============ 版本更新檢查 ============
     // 每次修改程式、上傳新檔案時，要把這個版本號改掉（任何不一樣的字都可以），手機才會知道有新版本。
-    const APP_VERSION = 'sm-2026.11.10-2';
+    const APP_VERSION = 'sm-2026.11.11-1';
 
     // 加入主畫面的 App 常常直接拿手機裡存的舊檔案，而且沒有重新整理按鈕。
     // 做法：去網路上抓一份「現在的這個網頁」（網址加上時間，強迫不能用舊的），比對裡面寫的版本號，不一樣就提示更新。

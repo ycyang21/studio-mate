@@ -2,7 +2,8 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<script>['gesturestart', 'gesturechange', 'gestureend'].forEach(function(t) { document.addEventListener(t, function(e) { e.preventDefault(); }, { passive: false }); });</script>
 <title>行程</title>
 <!-- 家人看行程：只能看行程（時間、名字、地點），看不到任何金額，也不能修改。資料是老師的 App 另外存的一份。 -->
 <link rel="manifest" href="manifest-family.json">
@@ -16,6 +17,7 @@
 <style>
   :root { --bg: #FAF7F2; --card: #FFFFFF; --ink: #1E2A3A; --ink2: #3F4856; --muted: #6B7280; --faint: #9AA0A8; --line: #E8E1D6; --line2: #F1ECE4; --lesson: #1F3A5F; --rent: #C08A1E; --today: #E3EAF3; --sel: #1F3A5F; }
   * { box-sizing: border-box; }
+  html, body, * { touch-action: pan-x pan-y; } /* 快速點兩下不會放大 */
   html, body { margin: 0; background: var(--bg); color: var(--ink); font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", "Helvetica Neue", Arial, sans-serif; -webkit-text-size-adjust: 100%; }
   body { padding: calc(14px + env(safe-area-inset-top)) 12px calc(24px + env(safe-area-inset-bottom)); max-width: 760px; margin: 0 auto; -webkit-user-select: none; user-select: none; }
   h1 { font-size: 20px; margin: 4px 2px 2px; }
@@ -23,18 +25,21 @@
   .nav { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; }
   .nav button { border: 1px solid var(--line); background: var(--card); color: var(--ink); border-radius: 10px; padding: 8px 12px; font-size: 15px; cursor: pointer; }
   .nav #range { flex: 1; text-align: center; font-weight: bold; font-size: 15px; }
-  .grid { display: flex; background: var(--card); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+  .grid { display: flex; background: var(--card); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; overflow: clip; }
   .times { flex: 0 0 30px; position: relative; border-right: 1px solid var(--line); }
   .col { flex: 1 1 0; min-width: 0; position: relative; border-right: 1px solid var(--line2); }
   .col:last-child { border-right: none; }
-  .head { height: 40px; text-align: center; font-size: 12px; line-height: 1.3; padding-top: 4px; border-bottom: 1px solid var(--line); background: #F8F5F0; cursor: pointer; }
+  .head { height: 40px; text-align: center; font-size: 12px; line-height: 1.3; padding-top: 4px; border-bottom: 1px solid var(--line); background: #F8F5F0; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 3; }
+  .col { cursor: pointer; }
   .head .wd { color: var(--muted); font-size: 11px; }
   .head.today { background: var(--today); color: var(--lesson); font-weight: bold; }
   .head.sel { box-shadow: inset 0 -3px 0 var(--sel); }
   .line { position: absolute; left: 0; right: 0; border-top: 1px solid var(--line2); }
   .tl { position: absolute; right: 3px; font-size: 9px; color: var(--faint); transform: translateY(-6px); }
   .blk { position: absolute; border-radius: 4px; padding: 1px 2px; color: #fff; overflow: hidden; font-size: 10px; line-height: 1.2; cursor: pointer; }
-  .blk .t { font-size: 9px; opacity: .85; white-space: nowrap; }
+  .blk .t { font-size: 9px; line-height: 1.15; opacity: .85; display: flex; flex-wrap: wrap; overflow: hidden; }
+  .blk .t span { white-space: nowrap; }
+  .blk .t.one { height: 1.15em; }
   .blk .n { font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .blk.rent { background: var(--rent); }
   .blk.lesson { background: var(--lesson); }
@@ -93,10 +98,11 @@
     if (!days.includes(sel)) sel = days.includes(today) ? today : days[0];
     let byDay = {};
     items.forEach(it => { (byDay[it.d] = byDay[it.d] || []).push(it); });
-    // 時間範圍：至少 09–21，有更早／更晚的就往外延
-    let st = 9 * 60, en = 21 * 60;
+    // 時間範圍：跟老師的使用表一樣（預設 09–21），有更早／更晚的就往外延
+    let hr = share.hours || {};
+    let st = (Number.isInteger(hr.start) ? hr.start : 9) * 60, en = (Number.isInteger(hr.end) ? hr.end : 21) * 60;
     days.forEach(d => (byDay[d] || []).forEach(it => { st = Math.min(st, Math.floor(mins(it.s) / 60) * 60); en = Math.max(en, Math.ceil(mins(it.e) / 60) * 60); }));
-    const PX = 0.75, H = (en - st) * PX;
+    const PX = 0.9, H = (en - st) * PX;
     let lines = '', labels = '';
     for (let m = st; m <= en; m += 60) { let top = (m - st) * PX; lines += '<div class="line" style="top:' + top + 'px"></div>'; labels += '<div class="tl" style="top:' + top + 'px' + (m === st ? ';transform:none' : m === en ? ';transform:translateY(-100%)' : '') + '">' + pad(m / 60) + '</div>'; }
     let html = '<div class="nav"><button id="prev" aria-label="上一週">‹</button><div id="range">' + md(days[0]) + '（一）– ' + md(days[6]) + '（日）</div><button id="next" aria-label="下一週">›</button><button id="thisweek">本週</button></div>';
@@ -109,12 +115,12 @@
       list.forEach(c => { if (c.s0 >= end && cluster.length) flush(); let used = cluster.filter(o => o.e0 > c.s0).map(o => o.lane); c.lane = 0; while (used.includes(c.lane)) c.lane++; cluster.push(c); end = Math.max(end, c.e0); });
       if (cluster.length) flush();
       let blocks = list.map(c => {
-        let w = 100 / c.lanes;
-        return '<div class="blk ' + (c.it.r ? 'rent' : 'lesson') + '" data-d="' + d + '" style="top:' + ((c.s0 - st) * PX) + 'px;height:' + Math.max(14, (c.e0 - c.s0) * PX - 2) + 'px;left:calc(' + (w * c.lane) + '% + 2px);width:calc(' + w + '% - 4px)"><div class="t">' + esc(c.it.s) + '</div><div class="n">' + esc(c.it.n) + '</div></div>';
+        let w = 100 / c.lanes, h = Math.max(14, (c.e0 - c.s0) * PX - 2);
+        return '<div class="blk ' + (c.it.r ? 'rent' : 'lesson') + '" style="top:' + ((c.s0 - st) * PX) + 'px;height:' + h + 'px;left:calc(' + (w * c.lane) + '% + 2px);width:calc(' + w + '% - 4px)"><div class="t' + (h < 35 ? ' one' : '') + '"><span>' + esc(c.it.s) + '</span><span>–' + esc(c.it.e) + '</span></div><div class="n">' + esc(c.it.n) + '</div></div>';
       }).join('');
-      html += '<div class="col"><div class="head' + (d === today ? ' today' : '') + (d === sel ? ' sel' : '') + '" data-d="' + d + '">' + md(d) + '<br><span class="wd">' + wd(d) + '</span></div><div style="position:relative;height:' + H + 'px">' + lines + blocks + '</div></div>';
+      html += '<div class="col" data-d="' + d + '"><div class="head' + (d === today ? ' today' : '') + (d === sel ? ' sel' : '') + '">' + md(d) + '<br><span class="wd">' + wd(d) + '</span></div><div style="position:relative;height:' + H + 'px">' + lines + blocks + '</div></div>';
     });
-    html += '</div><div class="legend"><i style="background:var(--lesson)"></i>上課<i style="background:var(--rent)"></i>琴房出租　點日期或色塊看那天的詳細</div>';
+    html += '</div><div class="legend"><i style="background:var(--lesson)"></i>上課<i style="background:var(--rent)"></i>琴房出租　點任何一天看那天的行程</div>';
     // 選到的那一天：完整列出
     let dl = (byDay[sel] || []).slice().sort((a, b) => mins(a.s) - mins(b.s));
     html += '<div class="day"><h2>' + md(sel) + '（' + wd(sel) + '）' + (sel === today ? '・今天' : '') + '</h2>' +
@@ -125,7 +131,13 @@
     $('prev').onclick = () => { ws = addDays(ws, -7); render(); };
     $('next').onclick = () => { ws = addDays(ws, 7); render(); };
     $('thisweek').onclick = () => { ws = weekStart(today); sel = today; render(); };
-    document.querySelectorAll('[data-d]').forEach(el => el.onclick = () => { sel = el.dataset.d; render(); });
+    document.querySelectorAll('.col[data-d]').forEach(el => el.onclick = () => { sel = el.dataset.d; render(); revealDay(); });
+  }
+  // 選了一天：下面那天的行程如果還在畫面外，往下捲一點讓它露出來（上面的週表還看得到一部分，日期也一直黏在上面）
+  function revealDay() {
+    let el = document.querySelector('.day'); if (!el) return;
+    let r = el.getBoundingClientRect();
+    if (r.top > innerHeight - 90) window.scrollBy({ top: r.top - innerHeight * 0.45, behavior: 'smooth' });
   }
 
   // 加入主畫面的說明（已經是從主畫面打開的就不顯示）
